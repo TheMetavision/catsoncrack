@@ -4,7 +4,7 @@ import react from '@astrojs/react';
 import sitemap from '@astrojs/sitemap';
 
 export default defineConfig({
-  site: 'https://catsoncrack.com',
+  site: 'https://catsoncrack.co.uk',
   output: 'static',
   adapter: netlify(),
   integrations: [react(), sitemap()],

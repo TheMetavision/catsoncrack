@@ -1,8 +1,8 @@
 export function organizationSchema() {
   return {
     '@context': 'https://schema.org', '@type': 'Organization',
-    name: 'Cats On Crack', url: 'https://catsoncrack.com',
-    logo: 'https://catsoncrack.com/favicon.svg',
+    name: 'Cats On Crack', url: 'https://catsoncrack.co.uk',
+    logo: 'https://catsoncrack.co.uk/favicon.svg',
     description: 'Join Cats On Crack for wild, chaotic adventures in our animated series. Watch character videos, read the book series, and shop official merch!',
     sameAs: [
       'https://www.youtube.com/@CatsOnCrackMedia',
@@ -17,7 +17,7 @@ export function organizationSchema() {
 export function websiteSchema() {
   return {
     '@context': 'https://schema.org', '@type': 'WebSite',
-    name: 'Cats On Crack', url: 'https://catsoncrack.com',
+    name: 'Cats On Crack', url: 'https://catsoncrack.co.uk',
     description: 'The wildest alley cats you\'ll ever meet — animated series, book universe, and official merch.',
     publisher: { '@type': 'Organization', name: 'Cats On Crack' },
   };
@@ -35,7 +35,7 @@ export function tvSeriesSchema() {
     '@context': 'https://schema.org', '@type': 'TVSeries',
     name: 'Cats On Crack',
     description: 'An animated series following six chaotic alley cats navigating street life with grit, humour, and zero impulse control.',
-    genre: ['Animation', 'Comedy', 'Urban'], url: 'https://catsoncrack.com',
+    genre: ['Animation', 'Comedy', 'Urban'], url: 'https://catsoncrack.co.uk',
     productionCompany: { '@type': 'Organization', name: 'The Metavision Multimedia Limited' },
   };
 }
@@ -89,6 +89,6 @@ export function collectionSchema(collection: { name: string; description: string
   return {
     '@context': 'https://schema.org', '@type': 'CollectionPage',
     name: collection.name, description: collection.description, url: collection.url, numberOfItems: collection.itemCount,
-    isPartOf: { '@type': 'WebSite', name: 'Cats On Crack', url: 'https://catsoncrack.com' },
+    isPartOf: { '@type': 'WebSite', name: 'Cats On Crack', url: 'https://catsoncrack.co.uk' },
   };
 }
