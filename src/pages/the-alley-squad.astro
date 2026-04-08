@@ -2,100 +2,51 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
+import { createClient } from '@sanity/client';
 
-const characters = [
-	{
-		name: "Whiskers McScruff",
-		role: "The Leader",
-		badge: "The Leader",
-		tagline: "The Self-Proclaimed King",
-		bio: "A pampered house cat turned chaos prophet. Escaped into the alley, found the glowing pipes, and convinced himself the resulting madness was actually a philosophy. Runs the crew on pure conviction and absolutely no strategy.",
-		traits: ["Chaotic", "Magnetic", "Reckless"],
-		quote: "Chaos is the cure. I've said it before. I've said it to the bins. The bins agree with me.",
-		accent: "#ff8c00",
-		accentDim: "rgba(255, 140, 0, 0.15)",
-		accentGlow: "rgba(255, 140, 0, 0.35)",
-		initials: "WM",
-		svgPath: "M50,10 L70,25 L75,50 L60,75 L50,85 L40,75 L25,50 L30,25 Z",
-		bgShape: "polygon(15% 0%, 85% 0%, 100% 15%, 100% 85%, 85% 100%, 15% 100%, 0% 85%, 0% 15%)",
-	},
-	{
-		name: "Luna the Loner",
-		role: "The Ghost",
-		badge: "The Ghost",
-		tagline: "Born Feral, Sharpened by the Streets",
-		bio: "Silent, precise, and already three steps ahead of everyone — she stays because she chooses to, which is the most powerful thing anyone in the Alley has ever done.",
-		traits: ["Feral", "Precise", "Quietly Loyal"],
-		quote: "I don't have opinions about your plan. I have information.",
-		accent: "#00d4ff",
-		accentDim: "rgba(0, 212, 255, 0.12)",
-		accentGlow: "rgba(0, 212, 255, 0.3)",
-		initials: "LL",
-		svgPath: "M50,5 L90,30 L90,70 L50,95 L10,70 L10,30 Z",
-		bgShape: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)",
-	},
-	{
-		name: "Chubby Cheeks",
-		role: "The Muscle",
-		badge: "The Muscle",
-		tagline: "Ex-Show Cat, Escaped a Diet",
-		bio: "A round, cheerful British Shorthair who found something better than a life of grooming appointments — five people who've stopped trying to improve him. Don't mistake the warmth for softness.",
-		traits: ["Warm", "Accidental Philosopher", "Surprisingly Dangerous"],
-		quote: "You don't just find snacks. You earn them. And by 'earn,' I mean you take them from the weak.",
-		accent: "#ff3d3d",
-		accentDim: "rgba(255, 61, 61, 0.12)",
-		accentGlow: "rgba(255, 61, 61, 0.3)",
-		initials: "CC",
-		svgPath: "M20,20 L80,20 L95,50 L80,80 L20,80 L5,50 Z",
-		bgShape: "polygon(25% 0%, 75% 0%, 100% 50%, 75% 100%, 25% 100%, 0% 50%)",
-	},
-	{
-		name: "Gizmo the Genius",
-		role: "The Inventor",
-		badge: "The Inventor",
-		tagline: "The Mad Inventor",
-		bio: "A cross-eyed Siamese whose brain was already running too fast before the pipes. Now operating at a frequency the laws of physics can't reliably contain. The gang's best problem-solver and most reliable problem-generator — simultaneously.",
-		traits: ["Brilliant", "Explosive", "Uncontainable"],
-		quote: "Now, the beautiful thing about this is — oh, that's interesting. Actually, everyone move.",
-		accent: "#ff00cc",
-		accentDim: "rgba(255, 0, 204, 0.12)",
-		accentGlow: "rgba(255, 0, 204, 0.3)",
-		initials: "GG",
-		svgPath: "M50,5 L95,25 L85,75 L50,95 L15,75 L5,25 Z",
-		bgShape: "polygon(50% 0%, 100% 20%, 80% 100%, 20% 100%, 0% 20%)",
-	},
-	{
-		name: "Trixie the Trickster",
-		role: "The Artist",
-		badge: "The Artist",
-		tagline: "The Graffiti Queen",
-		bio: "A calico live wire who processes the entire world through spray paint. The Alley's visual historian, whether it wants one or not. Operates entirely in the present tense — future consequences are a theoretical concept she has chosen not to engage with.",
-		traits: ["Kinetic", "Creative", "Consequence-Blind"],
-		quote: "I don't make mistakes. I make unexpectedly vivid decisions.",
-		accent: "#00ff88",
-		accentDim: "rgba(0, 255, 136, 0.1)",
-		accentGlow: "rgba(0, 255, 136, 0.28)",
-		initials: "TT",
-		svgPath: "M10,50 L30,10 L70,10 L90,50 L70,90 L30,90 Z",
-		bgShape: "polygon(30% 0%, 70% 0%, 100% 30%, 100% 70%, 70% 100%, 30% 100%, 0% 70%, 0% 30%)",
-	},
-	{
-		name: "Toothless Terry",
-		role: "The Scheme Engine",
-		badge: "The Scheme Engine",
-		tagline: "The Kramer of the Alley",
-		bio: "A hairless Sphynx with a wide grin, missing several teeth, and the absolute conviction of someone who has never once considered the possibility that a plan of his has failed. He always knows a guy. The guy is always problematic.",
-		traits: ["Optimistic", "Transactional", "Indispensable"],
-		quote: "Here's the thing about problems, pal — a problem is just a deal that hasn't been structured yet.",
-		accent: "#f5c518",
-		accentDim: "rgba(245, 197, 24, 0.1)",
-		accentGlow: "rgba(245, 197, 24, 0.28)",
-		initials: "TT",
-		svgPath: "M50,5 L75,20 L95,50 L75,80 L50,95 L25,80 L5,50 L25,20 Z",
-		bgShape: "polygon(50% 0%, 100% 50%, 50% 100%, 0% 50%)",
-		realImage: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1024,h=1275,fit=crop/YanqXRJ3EDIXPJ8q/d700a221-efab-493b-94b1-5bc213c72b36-mp8qZRbbzEiL6R2D.png",
-	},
-];
+const client = createClient({
+	projectId: import.meta.env.SANITY_PROJECT_ID,
+	dataset: import.meta.env.SANITY_DATASET || 'production',
+	apiVersion: '2026-04-01',
+	useCdn: true,
+});
+
+const allCharacters = await client.fetch(`
+	*[_type == "character"] | order(sortOrder asc) {
+		name,
+		role,
+		bio,
+		tagline,
+		tag,
+		traits,
+		quote,
+		accent,
+		initials,
+		externalImageUrl,
+		"imageUrl": image.asset->url,
+		sortOrder
+	}
+`);
+
+const characters = allCharacters.map((char: any) => {
+	const accent = char.accent || '#ff8c00';
+	const r = parseInt(accent.slice(1, 3), 16);
+	const g = parseInt(accent.slice(3, 5), 16);
+	const b = parseInt(accent.slice(5, 7), 16);
+	return {
+		...char,
+		accent,
+		accentDim: `rgba(${r}, ${g}, ${b}, 0.12)`,
+		accentGlow: `rgba(${r}, ${g}, ${b}, 0.3)`,
+		initials: char.initials || char.name.split(' ').map((w: string) => w[0]).join('').slice(0, 2).toUpperCase(),
+		traits: char.traits || [],
+		quote: char.quote || '',
+		tagline: char.tagline || char.role || '',
+		role: char.role || '',
+		bio: char.bio || '',
+		realImage: char.imageUrl || char.externalImageUrl || null,
+	};
+});
 ---
 
 <Layout title="The Alley Squad - Cats On Crack" description="Meet the legendary cats who rule the streets.">
@@ -106,11 +57,11 @@ const characters = [
 			<div class="hero-grain"></div>
 			<div class="hero-grid-lines"></div>
 			<div class="container hero-banner-inner">
-				<div class="hero-eyebrow">Est. The Streets — Series 1</div>
+				<div class="hero-eyebrow">Est. The Streets</div>
 				<h1 class="page-title">The Alley Squad</h1>
-				<p class="hero-subtitle">Six cats. Zero rules. One alley.</p>
+				<p class="hero-subtitle">{characters.length} characters. Zero rules. One alley.</p>
 				<div class="member-count-bar">
-					{characters.map(c => (
+					{characters.map((c: any) => (
 						<div class="member-pip" style={`--pip-color: ${c.accent}`} title={c.name}></div>
 					))}
 				</div>
@@ -123,7 +74,7 @@ const characters = [
 				<div class="intro-grid fade-in">
 					<div class="intro-art-block">
 						<div class="squad-mosaic">
-							{characters.map((c, i) => (
+							{characters.slice(0, 9).map((c: any, i: number) => (
 								<div class="mosaic-tile" style={`--accent: ${c.accent}; --accent-dim: ${c.accentDim}; --delay: ${i * 0.08}s`}>
 									<svg viewBox="0 0 100 100" class="mosaic-shape">
 										<polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill={c.accentDim} stroke={c.accent} stroke-width="1.5" opacity="0.6"/>
@@ -133,7 +84,7 @@ const characters = [
 								</div>
 							))}
 						</div>
-						<div class="squad-caption">The Crew — All Six</div>
+						<div class="squad-caption">The Crew — {characters.length} Strong</div>
 					</div>
 					<div class="intro-text">
 						<div class="section-eyebrow">The Gang</div>
@@ -141,7 +92,7 @@ const characters = [
 						<p>This isn't your average crew. Each member brings their own brand of chaos, skill, and attitude. From the mastermind strategist to the wild card troublemaker, they're a family forged in the fires of alley life.</p>
 						<p>Together they've pulled off the impossible, survived the unsurvivable, and made a name that echoes through every back street in the city.</p>
 						<div class="intro-tags">
-							{characters.map(c => (
+							{characters.map((c: any) => (
 								<span class="intro-tag" style={`--t-color: ${c.accent}; --t-dim: ${c.accentDim}`}>{c.name}</span>
 							))}
 						</div>
@@ -153,7 +104,7 @@ const characters = [
 		<section class="section characters-section">
 			<div class="container">
 				<div class="character-profiles">
-					{characters.map((char, i) => (
+					{characters.map((char: any, i: number) => (
 						<article
 							class={`character-profile fade-in ${i % 2 === 1 ? 'reverse' : ''}`}
 							style={`--char-accent: ${char.accent}; --char-dim: ${char.accentDim}; --char-glow: ${char.accentGlow}`}
@@ -165,31 +116,11 @@ const characters = [
 											<defs>
 												<filter id={`glow-${i}`} x="-30%" y="-30%" width="160%" height="160%">
 													<feGaussianBlur stdDeviation="3" result="blur"/>
-													<feMerge>
-														<feMergeNode in="blur"/>
-														<feMergeNode in="SourceGraphic"/>
-													</feMerge>
+													<feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
 												</filter>
 											</defs>
-											<polygon
-												points="50,5 95,25 95,75 50,95 5,75 5,25"
-												fill={char.accentDim}
-												stroke={char.accent}
-												stroke-width="0.8"
-												opacity="0.4"
-											/>
-											<text
-												x="50"
-												y="52"
-												text-anchor="middle"
-												dominant-baseline="middle"
-												font-size="28"
-												font-weight="900"
-												font-family="Impact, sans-serif"
-												fill={char.accent}
-												filter={`url(#glow-${i})`}
-												opacity="0.7"
-											>{char.initials}</text>
+											<polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill={char.accentDim} stroke={char.accent} stroke-width="0.8" opacity="0.4"/>
+											<text x="50" y="52" text-anchor="middle" dominant-baseline="middle" font-size="28" font-weight="900" font-family="Impact, sans-serif" fill={char.accent} filter={`url(#glow-${i})`} opacity="0.7">{char.initials}</text>
 										</svg>
 										{char.realImage && (
 											<img src={char.realImage} alt={char.name} class="char-real-image" />
@@ -197,31 +128,31 @@ const characters = [
 										<div class="char-scanlines"></div>
 										<div class="char-vignette"></div>
 									</div>
-									<div class="char-badge" style={`background: ${char.accentDim}; border-color: ${char.accent}; color: ${char.accent}`}>
-										{char.badge}
-									</div>
+									<div class="char-badge" style={`background: ${char.accentDim}; border-color: ${char.accent}; color: ${char.accent}`}>{char.role}</div>
 								</div>
 							</div>
 
 							<div class="character-info">
 								<div class="char-role-line">
-									<span class="char-role-badge" style={`background: ${char.accentDim}; border-color: ${char.accent}; color: ${char.accent}`}>
-										{char.role}
-									</span>
+									<span class="char-role-badge" style={`background: ${char.accentDim}; border-color: ${char.accent}; color: ${char.accent}`}>{char.role}</span>
 								</div>
 								<h2 class="char-name">{char.name}</h2>
 								<p class="char-tagline">"{char.tagline}"</p>
 								<p class="character-bio">{char.bio}</p>
-								<div class="character-traits">
-									{char.traits.map(t => (
-										<span class="trait" style={`background: ${char.accentDim}; border-color: ${char.accent}; color: ${char.accent}`}>{t}</span>
-									))}
-								</div>
-								<blockquote class="character-quote-block" style={`border-color: ${char.accent}`}>
-									<span class="quote-mark" style={`color: ${char.accent}`}>"</span>
-									{char.quote}
-									<span class="quote-mark" style={`color: ${char.accent}`}>"</span>
-								</blockquote>
+								{char.traits.length > 0 && (
+									<div class="character-traits">
+										{char.traits.map((t: string) => (
+											<span class="trait" style={`background: ${char.accentDim}; border-color: ${char.accent}; color: ${char.accent}`}>{t}</span>
+										))}
+									</div>
+								)}
+								{char.quote && (
+									<blockquote class="character-quote-block" style={`border-color: ${char.accent}`}>
+										<span class="quote-mark" style={`color: ${char.accent}`}>&ldquo;</span>
+										{char.quote}
+										<span class="quote-mark" style={`color: ${char.accent}`}>&rdquo;</span>
+									</blockquote>
+								)}
 							</div>
 						</article>
 					))}
@@ -251,667 +182,75 @@ const characters = [
 </Layout>
 
 <style>
-	.hero-banner {
-		background: #181b22;
-		padding: 160px 0 100px;
-		text-align: center;
-		position: relative;
-		overflow: hidden;
-	}
-
-	.hero-grain {
-		position: absolute;
-		inset: 0;
-		background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.05'/%3E%3C/svg%3E");
-		background-size: 200px 200px;
-		opacity: 0.6;
-		pointer-events: none;
-	}
-
-	.hero-grid-lines {
-		position: absolute;
-		inset: 0;
-		background-image:
-			repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.03) 60px, rgba(255,255,255,0.03) 61px),
-			repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.02) 60px, rgba(255,255,255,0.02) 61px);
-		pointer-events: none;
-	}
-
-	.hero-banner::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		background:
-			radial-gradient(ellipse 50% 60% at 50% 50%, rgba(255, 0, 255, 0.07) 0%, transparent 70%),
-			radial-gradient(ellipse 70% 40% at 20% 80%, rgba(255, 0, 255, 0.04) 0%, transparent 60%);
-		pointer-events: none;
-	}
-
-	.hero-banner-inner {
-		position: relative;
-		z-index: 2;
-	}
-
-	.hero-eyebrow {
-		font-family: 'Bebas Neue', sans-serif;
-		font-size: 0.85rem;
-		letter-spacing: 5px;
-		text-transform: uppercase;
-		color: #ff00ff;
-		margin-bottom: 12px;
-		opacity: 0.9;
-	}
-
-	.page-title {
-		font-family: 'Bebas Neue', 'Impact', sans-serif;
-		font-size: clamp(4rem, 10vw, 9rem);
-		line-height: 0.9;
-		color: #fff;
-		letter-spacing: 4px;
-		margin-bottom: 20px;
-		white-space: nowrap;
-		text-shadow:
-			4px 4px 0 rgba(255,0,255,0.4),
-			8px 8px 0 rgba(255,0,255,0.15),
-			0 0 60px rgba(255,0,255,0.2);
-	}
-
-	.hero-subtitle {
-		font-family: 'Bebas Neue', sans-serif;
-		font-size: 1.1rem;
-		color: rgba(255,255,255,0.5);
-		letter-spacing: 2px;
-		text-transform: uppercase;
-		margin-bottom: 36px;
-	}
-
-	.member-count-bar {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		gap: 12px;
-	}
-
-	.member-pip {
-		width: 32px;
-		height: 4px;
-		background: var(--pip-color, #fff);
-		border-radius: 2px;
-		opacity: 0.6;
-		box-shadow: 0 0 8px var(--pip-color, #fff);
-		transition: opacity 0.2s;
-	}
-
-	.hero-bottom-fade {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		height: 80px;
-		background: linear-gradient(to top, var(--bg-navy) 0%, transparent 100%);
-		pointer-events: none;
-	}
-
-	.intro-section {
-		background: var(--bg-navy);
-	}
-
-	.intro-grid {
-		display: grid;
-		grid-template-columns: 1fr 1.1fr;
-		gap: 70px;
-		align-items: center;
-	}
-
-	.intro-art-block {
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		gap: 16px;
-	}
-
-	.squad-mosaic {
-		display: grid;
-		grid-template-columns: repeat(3, 1fr);
-		gap: 12px;
-		width: 100%;
-		max-width: 420px;
-	}
-
-	.mosaic-tile {
-		position: relative;
-		aspect-ratio: 1;
-		background: var(--accent-dim);
-		border: 1px solid var(--accent);
-		border-radius: 8px;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		justify-content: center;
-		gap: 4px;
-		overflow: hidden;
-		transition: all 0.35s ease;
-		cursor: default;
-		animation: tile-in 0.5s ease both;
-		animation-delay: var(--delay);
-	}
-
-	@keyframes tile-in {
-		from { opacity: 0; transform: scale(0.85); }
-		to { opacity: 1; transform: scale(1); }
-	}
-
-	.mosaic-tile:hover {
-		transform: scale(1.06);
-		box-shadow: 0 0 20px var(--accent);
-		border-color: var(--accent);
-		z-index: 2;
-	}
-
-	.mosaic-shape {
-		position: absolute;
-		width: 70%;
-		height: 70%;
-		opacity: 0.4;
-	}
-
-	.mosaic-initials {
-		font-family: 'Bebas Neue', 'Impact', sans-serif;
-		font-size: 1.4rem;
-		letter-spacing: 2px;
-		position: relative;
-		z-index: 1;
-		text-shadow: 0 0 10px currentColor;
-	}
-
-	.mosaic-name {
-		font-size: 0.6rem;
-		font-weight: 700;
-		letter-spacing: 2px;
-		text-transform: uppercase;
-		color: rgba(200, 195, 188, 0.6);
-		position: relative;
-		z-index: 1;
-	}
-
-	.squad-caption {
-		font-size: 0.7rem;
-		font-weight: 700;
-		letter-spacing: 3px;
-		text-transform: uppercase;
-		color: rgba(180, 175, 170, 0.45);
-	}
-
-	.section-eyebrow {
-		font-size: 0.7rem;
-		font-weight: 700;
-		letter-spacing: 4px;
-		text-transform: uppercase;
-		color: var(--primary);
-		margin-bottom: 16px;
-		display: flex;
-		align-items: center;
-		gap: 10px;
-	}
-
-	.section-eyebrow::before {
-		content: '';
-		display: inline-block;
-		width: 24px;
-		height: 2px;
-		background: var(--primary);
-	}
-
-	.intro-text h2 {
-		font-size: clamp(2rem, 3.5vw, 3rem);
-		color: #fff;
-		margin-bottom: 24px;
-		line-height: 1.1;
-		letter-spacing: 1px;
-	}
-
-	.intro-text p {
-		font-size: 1.05rem;
-		color: var(--text-secondary);
-		line-height: 1.8;
-		margin-bottom: 18px;
-	}
-
-	.intro-tags {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 8px;
-		margin-top: 28px;
-	}
-
-	.intro-tag {
-		padding: 5px 14px;
-		background: var(--t-dim);
-		border: 1px solid var(--t-color);
-		border-radius: 20px;
-		font-size: 0.75rem;
-		font-weight: 700;
-		letter-spacing: 1px;
-		color: var(--t-color);
-		text-transform: uppercase;
-		opacity: 0.85;
-	}
-
-	.characters-section {
-		background: var(--bg-dark);
-	}
-
-	.character-profiles {
-		display: flex;
-		flex-direction: column;
-		gap: 60px;
-	}
-
-	.character-profile {
-		display: grid;
-		grid-template-columns: 380px 1fr;
-		gap: 50px;
-		align-items: start;
-		padding: 40px;
-		background: var(--bg-card);
-		border-radius: 16px;
-		border: 1px solid rgba(255, 255, 255, 0.07);
-		transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-		position: relative;
-		overflow: hidden;
-	}
-
-	.character-profile::before {
-		content: '';
-		position: absolute;
-		inset: 0;
-		border-radius: 16px;
-		border: 2px solid transparent;
-		background: linear-gradient(135deg, var(--char-accent), transparent 60%) border-box;
-		-webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0);
-		-webkit-mask-composite: destination-out;
-		mask-composite: exclude;
-		opacity: 0;
-		transition: opacity 0.4s ease;
-	}
-
-	.character-profile::after {
-		content: '';
-		position: absolute;
-		top: 0;
-		left: 0;
-		right: 0;
-		height: 3px;
-		background: linear-gradient(90deg, transparent, var(--char-accent), transparent);
-		opacity: 0;
-		transition: opacity 0.4s ease;
-		border-radius: 16px 16px 0 0;
-	}
-
-	.character-profile:hover {
-		transform: translateY(-6px);
-		border-color: var(--char-glow);
-		box-shadow:
-			0 20px 50px rgba(0, 0, 0, 0.4),
-			0 0 30px var(--char-glow),
-			0 0 60px rgba(0, 0, 0, 0.2);
-	}
-
-	.character-profile:hover::before,
-	.character-profile:hover::after {
-		opacity: 1;
-	}
-
-	.character-profile.reverse {
-		grid-template-columns: 1fr 380px;
-	}
-
-	.character-profile.reverse .character-image-col {
-		order: 2;
-	}
-
-	.character-profile.reverse .character-info {
-		order: 1;
-	}
-
-	.character-image-col {
-		position: relative;
-	}
-
-	.character-frame {
-		position: relative;
-		border-radius: 12px;
-		overflow: hidden;
-		aspect-ratio: 3/4;
-		background: var(--char-dim);
-		border: 1px solid var(--char-glow);
-		transition: all 0.4s ease;
-	}
-
-	.character-profile:hover .character-frame {
-		box-shadow: 0 0 30px var(--char-glow);
-		border-color: var(--char-accent);
-	}
-
-	.char-silhouette {
-		position: relative;
-		width: 100%;
-		height: 100%;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		background: var(--bg-darker);
-	}
-
-	.silhouette-svg {
-		position: absolute;
-		width: 80%;
-		height: 80%;
-		top: 10%;
-		left: 10%;
-	}
-
-	.char-real-image {
-		position: absolute;
-		inset: 0;
-		width: 100%;
-		height: 100%;
-		object-fit: cover;
-		object-position: top center;
-		z-index: 2;
-	}
-
-	.char-scanlines {
-		position: absolute;
-		inset: 0;
-		background-image: repeating-linear-gradient(
-			0deg,
-			transparent,
-			transparent 3px,
-			rgba(0, 0, 0, 0.08) 3px,
-			rgba(0, 0, 0, 0.08) 4px
-		);
-		pointer-events: none;
-		z-index: 3;
-	}
-
-	.char-vignette {
-		position: absolute;
-		inset: 0;
-		background:
-			linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%),
-			linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%);
-		z-index: 4;
-		pointer-events: none;
-	}
-
-	.char-badge {
-		position: absolute;
-		top: 14px;
-		right: 14px;
-		padding: 5px 14px;
-		border: 1px solid;
-		border-radius: 20px;
-		font-size: 0.7rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 2px;
-		z-index: 6;
-		backdrop-filter: blur(8px);
-	}
-
-	.char-quote-reveal {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		padding: 20px 16px 16px;
-		background: linear-gradient(to top, rgba(0,0,0,0.95) 70%, transparent 100%);
-		z-index: 5;
-		transform: translateY(100%);
-		transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-	}
-
-	.character-profile:hover .char-quote-reveal {
-		transform: translateY(0);
-	}
-
-	.char-quote-reveal p {
-		font-size: 0.82rem;
-		font-style: italic;
-		color: rgba(220, 215, 208, 0.9);
-		line-height: 1.6;
-		margin: 0;
-	}
-
-	.character-info {
-		display: flex;
-		flex-direction: column;
-		gap: 0;
-	}
-
-	.char-role-line {
-		margin-bottom: 10px;
-	}
-
-	.char-role-badge {
-		display: inline-block;
-		padding: 4px 14px;
-		border: 1px solid;
-		border-radius: 3px;
-		font-size: 0.7rem;
-		font-weight: 700;
-		letter-spacing: 3px;
-		text-transform: uppercase;
-	}
-
-	.char-name {
-		font-family: 'Bebas Neue', 'Impact', sans-serif;
-		font-size: clamp(2.2rem, 4vw, 3.5rem);
-		color: #fff;
-		letter-spacing: 3px;
-		line-height: 1;
-		margin-bottom: 12px;
-		text-shadow: 0 0 20px var(--char-glow);
-	}
-
-	.char-tagline {
-		font-size: 0.88rem;
-		font-style: italic;
-		color: var(--char-accent);
-		opacity: 0.8;
-		margin-bottom: 20px;
-		letter-spacing: 0.3px;
-	}
-
-	.character-bio {
-		color: var(--text-secondary);
-		line-height: 1.8;
-		margin-bottom: 22px;
-		font-size: 1rem;
-	}
-
-	.character-traits {
-		display: flex;
-		gap: 8px;
-		flex-wrap: wrap;
-		margin-bottom: 22px;
-	}
-
-	.trait {
-		padding: 5px 12px;
-		border: 1px solid;
-		border-radius: 20px;
-		font-size: 0.72rem;
-		font-weight: 700;
-		text-transform: uppercase;
-		letter-spacing: 1px;
-	}
-
-	.character-quote-block {
-		padding: 16px 20px;
-		background: rgba(255, 255, 255, 0.03);
-		border-left: 3px solid;
-		border-radius: 0 8px 8px 0;
-		color: rgba(200, 195, 188, 0.8);
-		font-style: italic;
-		font-size: 0.95rem;
-		line-height: 1.7;
-		margin: 0;
-	}
-
-	.quote-mark {
-		font-family: Georgia, serif;
-		font-size: 1.4em;
-		font-style: normal;
-		opacity: 0.6;
-		margin: 0 2px;
-	}
-
-	.cta-section {
-		background: var(--bg-navy);
-	}
-
-	.cta-box {
-		position: relative;
-		background: var(--bg-card);
-		padding: 70px 60px;
-		border-radius: 20px;
-		text-align: center;
-		border: 1px solid rgba(255, 0, 204, 0.25);
-		box-shadow: 0 0 50px rgba(255, 0, 204, 0.1);
-		overflow: hidden;
-	}
-
-	.cta-grid-bg {
-		position: absolute;
-		inset: 0;
-		background-image:
-			repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(255,255,255,0.02) 30px, rgba(255,255,255,0.02) 31px),
-			repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(255,255,255,0.015) 30px, rgba(255,255,255,0.015) 31px);
-		pointer-events: none;
-	}
-
-	.cta-box h2 {
-		position: relative;
-		z-index: 1;
-		font-size: clamp(1.8rem, 3.5vw, 2.8rem);
-		color: #fff;
-		margin-bottom: 16px;
-		letter-spacing: 1px;
-	}
-
-	.cta-box p {
-		position: relative;
-		z-index: 1;
-		font-size: 1.1rem;
-		color: var(--text-secondary);
-		margin-bottom: 36px;
-		line-height: 1.7;
-		max-width: 520px;
-		margin-left: auto;
-		margin-right: auto;
-	}
-
-	.cta-buttons {
-		position: relative;
-		z-index: 1;
-		display: flex;
-		gap: 20px;
-		justify-content: center;
-		flex-wrap: wrap;
-	}
-
-	.cta-button {
-		display: inline-flex;
-		align-items: center;
-		gap: 10px;
-		padding: 16px 40px;
-		font-family: 'Bebas Neue', sans-serif;
-		font-size: 1.1rem;
-		letter-spacing: 2px;
-		border-radius: 8px;
-		text-transform: uppercase;
-		transition: all 0.3s ease;
-		text-decoration: none;
-	}
-
-	.cta-button.primary {
-		background: #ff00ff;
-		color: white;
-		box-shadow: 0 4px 20px rgba(255, 0, 255, 0.35);
-	}
-
-	.cta-button.primary:hover {
-		transform: translateY(-3px);
-		box-shadow: 0 8px 30px rgba(255, 0, 255, 0.5);
-		color: white;
-	}
-
-	.cta-button.secondary {
-		background: transparent;
-		border: 1px solid rgba(255, 255, 255, 0.2);
-		color: rgba(210, 205, 200, 0.85);
-	}
-
-	.cta-button.secondary:hover {
-		background: rgba(255, 255, 255, 0.06);
-		border-color: rgba(255, 255, 255, 0.4);
-		color: #fff;
-		transform: translateY(-2px);
-	}
-
-	@media (max-width: 1100px) {
-		.character-profile,
-		.character-profile.reverse {
-			grid-template-columns: 300px 1fr;
-		}
-	}
-
-	@media (max-width: 968px) {
-		.intro-grid {
-			grid-template-columns: 1fr;
-			gap: 40px;
-		}
-
-		.character-profile,
-		.character-profile.reverse {
-			grid-template-columns: 1fr;
-			gap: 30px;
-		}
-
-		.character-profile.reverse .character-image-col,
-		.character-profile.reverse .character-info {
-			order: unset;
-		}
-
-		.character-frame {
-			aspect-ratio: 4/3;
-		}
-
-		.squad-mosaic {
-			max-width: 320px;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.character-profile {
-			padding: 28px 20px;
-		}
-
-		.cta-box {
-			padding: 50px 30px;
-		}
-
-		.cta-buttons {
-			flex-direction: column;
-			align-items: center;
-		}
-
-		.cta-button {
-			width: 100%;
-			max-width: 300px;
-			justify-content: center;
-		}
-	}
+	.hero-banner { background: #181b22; padding: 160px 0 100px; text-align: center; position: relative; overflow: hidden; }
+	.hero-grain { position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='grain'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23grain)' opacity='0.05'/%3E%3C/svg%3E"); background-size: 200px 200px; opacity: 0.6; pointer-events: none; }
+	.hero-grid-lines { position: absolute; inset: 0; background-image: repeating-linear-gradient(0deg, transparent, transparent 60px, rgba(255,255,255,0.03) 60px, rgba(255,255,255,0.03) 61px), repeating-linear-gradient(90deg, transparent, transparent 60px, rgba(255,255,255,0.02) 60px, rgba(255,255,255,0.02) 61px); pointer-events: none; }
+	.hero-banner::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 50% 60% at 50% 50%, rgba(255, 0, 255, 0.07) 0%, transparent 70%), radial-gradient(ellipse 70% 40% at 20% 80%, rgba(255, 0, 255, 0.04) 0%, transparent 60%); pointer-events: none; }
+	.hero-banner-inner { position: relative; z-index: 2; }
+	.hero-eyebrow { font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 5px; text-transform: uppercase; color: #ff00ff; margin-bottom: 12px; opacity: 0.9; }
+	.page-title { font-family: 'Bebas Neue', 'Impact', sans-serif; font-size: clamp(4rem, 10vw, 9rem); line-height: 0.9; color: #fff; letter-spacing: 4px; margin-bottom: 20px; white-space: nowrap; text-shadow: 4px 4px 0 rgba(255,0,255,0.4), 8px 8px 0 rgba(255,0,255,0.15), 0 0 60px rgba(255,0,255,0.2); }
+	.hero-subtitle { font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; margin-bottom: 36px; }
+	.member-count-bar { display: flex; align-items: center; justify-content: center; gap: 8px; flex-wrap: wrap; }
+	.member-pip { width: 24px; height: 4px; background: var(--pip-color, #fff); border-radius: 2px; opacity: 0.6; box-shadow: 0 0 8px var(--pip-color, #fff); }
+	.hero-bottom-fade { position: absolute; bottom: 0; left: 0; right: 0; height: 80px; background: linear-gradient(to top, var(--bg-navy) 0%, transparent 100%); pointer-events: none; }
+	.intro-section { background: var(--bg-navy); }
+	.intro-grid { display: grid; grid-template-columns: 1fr 1.1fr; gap: 70px; align-items: center; }
+	.intro-art-block { display: flex; flex-direction: column; align-items: center; gap: 16px; }
+	.squad-mosaic { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; width: 100%; max-width: 420px; }
+	.mosaic-tile { position: relative; aspect-ratio: 1; background: var(--accent-dim); border: 1px solid var(--accent); border-radius: 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; overflow: hidden; transition: all 0.35s ease; cursor: default; animation: tile-in 0.5s ease both; animation-delay: var(--delay); }
+	@keyframes tile-in { from { opacity: 0; transform: scale(0.85); } to { opacity: 1; transform: scale(1); } }
+	.mosaic-tile:hover { transform: scale(1.06); box-shadow: 0 0 20px var(--accent); border-color: var(--accent); z-index: 2; }
+	.mosaic-shape { position: absolute; width: 70%; height: 70%; opacity: 0.4; }
+	.mosaic-initials { font-family: 'Bebas Neue', 'Impact', sans-serif; font-size: 1.4rem; letter-spacing: 2px; position: relative; z-index: 1; text-shadow: 0 0 10px currentColor; }
+	.mosaic-name { font-size: 0.6rem; font-weight: 700; letter-spacing: 2px; text-transform: uppercase; color: rgba(200, 195, 188, 0.6); position: relative; z-index: 1; }
+	.squad-caption { font-size: 0.7rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; color: rgba(180, 175, 170, 0.45); }
+	.section-eyebrow { font-size: 0.7rem; font-weight: 700; letter-spacing: 4px; text-transform: uppercase; color: var(--primary); margin-bottom: 16px; display: flex; align-items: center; gap: 10px; }
+	.section-eyebrow::before { content: ''; display: inline-block; width: 24px; height: 2px; background: var(--primary); }
+	.intro-text h2 { font-size: clamp(2rem, 3.5vw, 3rem); color: #fff; margin-bottom: 24px; line-height: 1.1; letter-spacing: 1px; }
+	.intro-text p { font-size: 1.05rem; color: var(--text-secondary); line-height: 1.8; margin-bottom: 18px; }
+	.intro-tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+	.intro-tag { padding: 5px 14px; background: var(--t-dim); border: 1px solid var(--t-color); border-radius: 20px; font-size: 0.75rem; font-weight: 700; letter-spacing: 1px; color: var(--t-color); text-transform: uppercase; opacity: 0.85; }
+	.characters-section { background: var(--bg-dark); }
+	.character-profiles { display: flex; flex-direction: column; gap: 60px; }
+	.character-profile { display: grid; grid-template-columns: 380px 1fr; gap: 50px; align-items: start; padding: 40px; background: var(--bg-card); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.07); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
+	.character-profile::before { content: ''; position: absolute; inset: 0; border-radius: 16px; border: 2px solid transparent; background: linear-gradient(135deg, var(--char-accent), transparent 60%) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude; opacity: 0; transition: opacity 0.4s ease; }
+	.character-profile::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--char-accent), transparent); opacity: 0; transition: opacity 0.4s ease; border-radius: 16px 16px 0 0; }
+	.character-profile:hover { transform: translateY(-6px); border-color: var(--char-glow); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 30px var(--char-glow), 0 0 60px rgba(0, 0, 0, 0.2); }
+	.character-profile:hover::before, .character-profile:hover::after { opacity: 1; }
+	.character-profile.reverse { grid-template-columns: 1fr 380px; }
+	.character-profile.reverse .character-image-col { order: 2; }
+	.character-profile.reverse .character-info { order: 1; }
+	.character-image-col { position: relative; }
+	.character-frame { position: relative; border-radius: 12px; overflow: hidden; aspect-ratio: 3/4; background: var(--char-dim); border: 1px solid var(--char-glow); transition: all 0.4s ease; }
+	.character-profile:hover .character-frame { box-shadow: 0 0 30px var(--char-glow); border-color: var(--char-accent); }
+	.char-silhouette { position: relative; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: var(--bg-darker); }
+	.silhouette-svg { position: absolute; width: 80%; height: 80%; top: 10%; left: 10%; }
+	.char-real-image { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: top center; z-index: 2; }
+	.char-scanlines { position: absolute; inset: 0; background-image: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0, 0, 0, 0.08) 3px, rgba(0, 0, 0, 0.08) 4px); pointer-events: none; z-index: 3; }
+	.char-vignette { position: absolute; inset: 0; background: linear-gradient(to top, rgba(0,0,0,0.8) 0%, transparent 50%), linear-gradient(to bottom, rgba(0,0,0,0.3) 0%, transparent 30%); z-index: 4; pointer-events: none; }
+	.char-badge { position: absolute; top: 14px; right: 14px; padding: 5px 14px; border: 1px solid; border-radius: 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 2px; z-index: 6; backdrop-filter: blur(8px); }
+	.character-info { display: flex; flex-direction: column; gap: 0; }
+	.char-role-line { margin-bottom: 10px; }
+	.char-role-badge { display: inline-block; padding: 4px 14px; border: 1px solid; border-radius: 3px; font-size: 0.7rem; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; }
+	.char-name { font-family: 'Bebas Neue', 'Impact', sans-serif; font-size: clamp(2.2rem, 4vw, 3.5rem); color: #fff; letter-spacing: 3px; line-height: 1; margin-bottom: 12px; text-shadow: 0 0 20px var(--char-glow); }
+	.char-tagline { font-size: 0.88rem; font-style: italic; color: var(--char-accent); opacity: 0.8; margin-bottom: 20px; letter-spacing: 0.3px; }
+	.character-bio { color: var(--text-secondary); line-height: 1.8; margin-bottom: 22px; font-size: 1rem; }
+	.character-traits { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 22px; }
+	.trait { padding: 5px 12px; border: 1px solid; border-radius: 20px; font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; }
+	.character-quote-block { padding: 16px 20px; background: rgba(255, 255, 255, 0.03); border-left: 3px solid; border-radius: 0 8px 8px 0; color: rgba(200, 195, 188, 0.8); font-style: italic; font-size: 0.95rem; line-height: 1.7; margin: 0; }
+	.quote-mark { font-family: Georgia, serif; font-size: 1.4em; font-style: normal; opacity: 0.6; margin: 0 2px; }
+	.cta-section { background: var(--bg-navy); }
+	.cta-box { position: relative; background: var(--bg-card); padding: 70px 60px; border-radius: 20px; text-align: center; border: 1px solid rgba(255, 0, 204, 0.25); box-shadow: 0 0 50px rgba(255, 0, 204, 0.1); overflow: hidden; }
+	.cta-grid-bg { position: absolute; inset: 0; background-image: repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(255,255,255,0.02) 30px, rgba(255,255,255,0.02) 31px), repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(255,255,255,0.015) 30px, rgba(255,255,255,0.015) 31px); pointer-events: none; }
+	.cta-box h2 { position: relative; z-index: 1; font-size: clamp(1.8rem, 3.5vw, 2.8rem); color: #fff; margin-bottom: 16px; letter-spacing: 1px; }
+	.cta-box p { position: relative; z-index: 1; font-size: 1.1rem; color: var(--text-secondary); margin-bottom: 36px; line-height: 1.7; max-width: 520px; margin-left: auto; margin-right: auto; }
+	.cta-buttons { position: relative; z-index: 1; display: flex; gap: 20px; justify-content: center; flex-wrap: wrap; }
+	.cta-button { display: inline-flex; align-items: center; gap: 10px; padding: 16px 40px; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 2px; border-radius: 8px; text-transform: uppercase; transition: all 0.3s ease; text-decoration: none; }
+	.cta-button.primary { background: #ff00ff; color: white; box-shadow: 0 4px 20px rgba(255, 0, 255, 0.35); }
+	.cta-button.primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255, 0, 255, 0.5); color: white; }
+	.cta-button.secondary { background: transparent; border: 1px solid rgba(255, 255, 255, 0.2); color: rgba(210, 205, 200, 0.85); }
+	.cta-button.secondary:hover { background: rgba(255, 255, 255, 0.06); border-color: rgba(255, 255, 255, 0.4); color: #fff; transform: translateY(-2px); }
+	@media (max-width: 1100px) { .character-profile, .character-profile.reverse { grid-template-columns: 300px 1fr; } }
+	@media (max-width: 968px) { .intro-grid { grid-template-columns: 1fr; gap: 40px; } .character-profile, .character-profile.reverse { grid-template-columns: 1fr; gap: 30px; } .character-profile.reverse .character-image-col, .character-profile.reverse .character-info { order: unset; } .character-frame { aspect-ratio: 4/3; } .squad-mosaic { max-width: 320px; } }
+	@media (max-width: 768px) { .character-profile { padding: 28px 20px; } .cta-box { padding: 50px 30px; } .cta-buttons { flex-direction: column; align-items: center; } .cta-button { width: 100%; max-width: 300px; justify-content: center; } }
 </style>
