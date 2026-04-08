@@ -1,0 +1,175 @@
+---
+import { organizationSchema, websiteSchema } from '../lib/schema';
+
+interface Props {
+	title: string;
+	description?: string;
+	jsonLd?: Record<string, any> | Record<string, any>[];
+	noIndex?: boolean;
+}
+
+const {
+	title,
+	description = "Join Cats On Crack for wild, chaotic adventures in our animated series. Watch character videos, read the book series, and shop official merch!",
+	jsonLd,
+	noIndex = false,
+} = Astro.props;
+
+const allSchemas = [organizationSchema(), websiteSchema()];
+if (jsonLd) {
+	if (Array.isArray(jsonLd)) allSchemas.push(...jsonLd);
+	else allSchemas.push(jsonLd);
+}
+---
+
+<!doctype html>
+<html lang="en">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content={description} />
+		<meta name="viewport" content="width=device-width" />
+		{noIndex && <meta name="robots" content="noindex, nofollow" />}
+		<link rel="icon" type="image/x-icon" href="/favicon.ico">
+		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
+		<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
+		<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512x512.png">
+		<link rel="canonical" href={Astro.url.href} />
+		<link rel="sitemap" href="/sitemap-index.xml" />
+		<link rel="preconnect" href="https://fonts.googleapis.com">
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+		<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+
+		<!-- Open Graph -->
+		<meta property="og:title" content={`${title} | Cats On Crack`} />
+		<meta property="og:description" content={description} />
+		<meta property="og:type" content="website" />
+		<meta property="og:url" content={Astro.url.href} />
+		<meta property="og:site_name" content="Cats On Crack" />
+
+		<!-- Twitter -->
+		<meta name="twitter:card" content="summary_large_image" />
+		<meta name="twitter:site" content="@Cats_on_Crack_" />
+		<meta name="twitter:title" content={title} />
+		<meta name="twitter:description" content={description} />
+
+		<!-- JSON-LD -->
+		{allSchemas.map((schema) => (
+			<script type="application/ld+json" set:html={JSON.stringify(schema)} />
+		))}
+
+		<title>{title}</title>
+	</head>
+	<body>
+		<slot />
+	</body>
+</html>
+
+<style is:global>
+	:root {
+		--black:        #181b22;
+		--charcoal:     #181b22;
+		--charcoal-mid: #181b22;
+		--charcoal-light: #1f232e;
+		--charcoal-card: #252a38;
+		--amber:        #ff8c00;
+		--amber-light:  #ffaa33;
+		--amber-dim:    rgba(255,140,0,0.55);
+		--neon:         #ff00ff;
+		--neon-dim:     rgba(255,0,255,0.45);
+		--neon-glow:    0 0 18px rgba(255,0,255,0.55), 0 0 40px rgba(255,0,255,0.25);
+		--primary:       #ff00ff;
+		--primary-dark:  #cc00cc;
+		--primary-light: #ff33ff;
+		--secondary:     #ff00ff;
+		--bg-dark:       #1f232e;
+		--bg-darker:     #181b22;
+		--bg-navy:       #181b22;
+		--bg-card:       #252a38;
+		--text-primary:  #f0ede8;
+		--text-secondary: #9ea3b0;
+		--accent-gradient: linear-gradient(135deg, #ff00ff 0%, #cc00cc 100%);
+		--glow:       0 0 18px rgba(255,0,255,0.4);
+		--glow-strong:0 0 30px rgba(255,0,255,0.6);
+	}
+
+	* { box-sizing: border-box; margin: 0; padding: 0; }
+
+	html {
+		font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+		background: #181b22;
+		color: var(--text-primary);
+		scroll-behavior: smooth;
+		overflow-x: hidden;
+	}
+
+	body { line-height: 1.6; background: #181b22; min-height: 100vh; }
+
+	h1, h2, h3, h4, h5, h6 {
+		font-family: 'Bebas Neue', 'Impact', sans-serif;
+		letter-spacing: 1px;
+		line-height: 1.15;
+	}
+
+	a { color: var(--primary); text-decoration: none; transition: all 0.3s ease; }
+	a:hover { color: var(--primary-light); text-shadow: var(--neon-glow); }
+	button { font-family: 'Bebas Neue', 'Impact', sans-serif; cursor: pointer; border: none; transition: all 0.3s ease; }
+	img { max-width: 100%; height: auto; display: block; }
+
+	.container { max-width: 1400px; margin: 0 auto; padding: 0 20px; }
+	.section { padding: 100px 0; position: relative; }
+
+	@media (max-width: 768px) { .section { padding: 60px 0; } }
+
+	.glow-text { text-shadow: 0 0 10px rgba(255,0,255,0.6), 0 0 22px rgba(255,0,255,0.35), 0 0 45px rgba(255,0,255,0.18); }
+	.glow-amber { text-shadow: 0 0 10px rgba(255,140,0,0.7), 0 0 24px rgba(255,140,0,0.35); }
+
+	.fade-up { opacity: 0; transform: translateY(40px); transition: opacity 0.75s cubic-bezier(0.22,1,0.36,1), transform 0.75s cubic-bezier(0.22,1,0.36,1); }
+	.fade-up.visible { opacity: 1; transform: translateY(0); }
+	.fade-left { opacity: 0; transform: translateX(-48px); transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1); }
+	.fade-left.visible { opacity: 1; transform: translateX(0); }
+	.fade-right { opacity: 0; transform: translateX(48px); transition: opacity 0.8s cubic-bezier(0.22,1,0.36,1), transform 0.8s cubic-bezier(0.22,1,0.36,1); }
+	.fade-right.visible { opacity: 1; transform: translateX(0); }
+	.stagger-children > * { opacity: 0; transform: translateY(32px); transition: opacity 0.6s cubic-bezier(0.22,1,0.36,1), transform 0.6s cubic-bezier(0.22,1,0.36,1); }
+	.stagger-children.visible > *:nth-child(1) { transition-delay: 0ms; }
+	.stagger-children.visible > *:nth-child(2) { transition-delay: 80ms; }
+	.stagger-children.visible > *:nth-child(3) { transition-delay: 160ms; }
+	.stagger-children.visible > *:nth-child(4) { transition-delay: 240ms; }
+	.stagger-children.visible > *:nth-child(5) { transition-delay: 320ms; }
+	.stagger-children.visible > * { opacity: 1; transform: translateY(0); }
+	.fade-in { opacity: 0; transform: translateY(30px); transition: opacity 0.8s ease, transform 0.8s ease; }
+	.fade-in.visible { opacity: 1; transform: translateY(0); }
+
+	::-webkit-scrollbar { width: 10px; }
+	::-webkit-scrollbar-track { background: #181b22; }
+	::-webkit-scrollbar-thumb { background: var(--primary); border-radius: 5px; }
+	::-webkit-scrollbar-thumb:hover { background: var(--primary-light); }
+</style>
+
+<script>
+	document.addEventListener('DOMContentLoaded', () => {
+		const obs = new IntersectionObserver((entries) => {
+			entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('visible'); });
+		}, { threshold: 0.08, rootMargin: '0px 0px -80px 0px' });
+		document.querySelectorAll('.fade-in,.fade-up,.fade-left,.fade-right,.stagger-children').forEach(el => obs.observe(el));
+
+		const counterObs = new IntersectionObserver((entries) => {
+			entries.forEach(e => {
+				if (!e.isIntersecting) return;
+				const el = e.target as HTMLElement;
+				const target = parseInt(el.dataset.count || '0', 10);
+				const suffix = el.dataset.suffix || '';
+				if (!target) return;
+				const duration = 1400;
+				const step = (timestamp: number, startTime: number) => {
+					const progress = Math.min((timestamp - startTime) / duration, 1);
+					const eased = 1 - Math.pow(1 - progress, 3);
+					el.textContent = Math.floor(eased * target) + suffix;
+					if (progress < 1) requestAnimationFrame(ts => step(ts, startTime));
+				};
+				requestAnimationFrame(ts => step(ts, ts));
+				counterObs.unobserve(el);
+			});
+		}, { threshold: 0.5 });
+		document.querySelectorAll('[data-count]').forEach(el => counterObs.observe(el));
+	});
+</script>

@@ -1,0 +1,347 @@
+---
+const currentPath = Astro.url.pathname;
+---
+
+<nav class="navbar">
+	<div class="navbar-bg"></div>
+	<div class="container">
+		<div class="nav-content">
+
+			<a href="/" class="logo" aria-label="Cats On Crack Home">
+				<div class="logo-glow"></div>
+				<img src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=375,h=192,fit=crop/YanqXRJ3EDIXPJ8q/catsoncracklandscape-YNqP10bgBquLGBKp.jpeg" alt="Cats On Crack logo" />
+			</a>
+
+			<div class="nav-links">
+				<a href="/" class={currentPath === '/' ? 'active' : ''}>Home</a>
+				<a href="/the-alley-squad" class={currentPath === '/the-alley-squad' || currentPath.startsWith('/the-alley-squad/') ? 'active' : ''}>The Alley Squad</a>
+				<a href="/merch" class={currentPath === '/merch' || currentPath.startsWith('/merch/') ? 'active' : ''}>Merch</a>
+				<a href="/alleyway-gazette" class={currentPath === '/alleyway-gazette' || currentPath.startsWith('/alleyway-gazette/') ? 'active' : ''}>The Alleyway Gazette</a>
+				<a href="/contact" class={currentPath === '/contact' || currentPath.startsWith('/contact/') ? 'active' : ''}>Get In Touch</a>
+			</div>
+
+			<div class="nav-socials">
+				<a href="https://www.youtube.com/@CatsOnCrackMedia" target="_blank" rel="noopener noreferrer" class="social-icon social-youtube" aria-label="YouTube">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+						<path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+					</svg>
+				</a>
+				<a href="https://www.tiktok.com/@catsoncrackmedia" target="_blank" rel="noopener noreferrer" class="social-icon social-tiktok" aria-label="TikTok">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+						<path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.22 8.22 0 004.79 1.53V6.77a4.85 4.85 0 01-1.02-.08z"/>
+					</svg>
+				</a>
+				<a href="https://www.instagram.com/catsoncrack2025" target="_blank" rel="noopener noreferrer" class="social-icon social-instagram" aria-label="Instagram">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+						<path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+					</svg>
+				</a>
+				<a href="https://x.com/Cats_on_Crack_" target="_blank" rel="noopener noreferrer" class="social-icon social-x" aria-label="X (Twitter)">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+						<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>
+					</svg>
+				</a>
+				<a href="https://www.facebook.com/catsoncrack" target="_blank" rel="noopener noreferrer" class="social-icon social-facebook" aria-label="Facebook">
+					<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+						<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>
+					</svg>
+				</a>
+			</div>
+
+			<button class="mobile-menu-btn" aria-label="Toggle menu">
+				<span></span>
+				<span></span>
+				<span></span>
+			</button>
+		</div>
+	</div>
+</nav>
+
+<style>
+	.navbar {
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		z-index: 1000;
+		transition: all 0.4s ease;
+	}
+
+	.navbar-bg {
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(180deg, rgba(8, 8, 10, 0.97) 0%, rgba(14, 14, 18, 0.94) 100%);
+		backdrop-filter: blur(12px);
+		-webkit-backdrop-filter: blur(12px);
+		border-bottom: 1px solid rgba(255, 0, 255, 0.15);
+		z-index: -1;
+	}
+
+	.navbar-bg::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image:
+			url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.04'/%3E%3C/svg%3E");
+		background-size: 180px 180px;
+		opacity: 0.35;
+		mix-blend-mode: overlay;
+		pointer-events: none;
+	}
+
+	.navbar-bg::after {
+		content: '';
+		position: absolute;
+		bottom: 0;
+		left: 0;
+		right: 0;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, rgba(255, 0, 255, 0.5), rgba(255, 0, 255, 0.5), transparent);
+	}
+
+	.navbar.scrolled .navbar-bg {
+		background:
+			linear-gradient(180deg, rgba(6, 6, 8, 0.99) 0%, rgba(10, 10, 14, 0.98) 100%);
+		box-shadow:
+			0 4px 30px rgba(0, 0, 0, 0.6),
+			0 0 60px rgba(255, 0, 255, 0.05);
+	}
+
+	.nav-content {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 10px 0;
+		gap: 24px;
+	}
+
+	.logo {
+		position: relative;
+		display: flex;
+		align-items: center;
+		flex-shrink: 0;
+	}
+
+	.logo-glow {
+		position: absolute;
+		inset: -8px;
+		background: radial-gradient(ellipse at center, rgba(255, 0, 255, 0.18) 0%, rgba(255, 0, 255, 0.06) 50%, transparent 75%);
+		border-radius: 12px;
+		pointer-events: none;
+		transition: opacity 0.3s ease;
+	}
+
+	.logo:hover .logo-glow {
+		opacity: 1.4;
+	}
+
+	.logo img {
+		height: 90px;
+		width: auto;
+		border-radius: 10px;
+		position: relative;
+		z-index: 1;
+		filter:
+			drop-shadow(0 0 12px rgba(255, 0, 255, 0.35))
+			drop-shadow(0 4px 16px rgba(0, 0, 0, 0.7));
+		transition: filter 0.3s ease, transform 0.3s ease;
+	}
+
+	.logo:hover img {
+		transform: scale(1.04);
+		filter:
+			drop-shadow(0 0 18px rgba(255, 0, 255, 0.55))
+			drop-shadow(0 4px 20px rgba(0, 0, 0, 0.8));
+	}
+
+	.nav-links {
+		display: flex;
+		gap: 28px;
+		align-items: center;
+		flex: 1;
+		justify-content: center;
+	}
+
+	.nav-links a {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 1.1rem;
+		letter-spacing: 1.5px;
+		position: relative;
+		color: rgba(220, 220, 220, 0.75);
+		text-shadow: none;
+		padding-bottom: 4px;
+		transition: color 0.25s ease;
+		white-space: nowrap;
+	}
+
+	.nav-links a::after {
+		content: '';
+		position: absolute;
+		bottom: -2px;
+		left: 0;
+		width: 0;
+		height: 2px;
+		background: #ff00ff;
+		transition: width 0.3s ease;
+		border-radius: 2px;
+	}
+
+	.nav-links a:hover {
+		color: #ffffff;
+		text-shadow: 0 0 8px rgba(255, 0, 255, 0.4);
+	}
+
+	.nav-links a:hover::after {
+		width: 100%;
+	}
+
+	.nav-links a.active {
+		color: #ffffff;
+		text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
+	}
+
+	.nav-links a.active::after {
+		width: 100%;
+		background: #ff00ff;
+		box-shadow: 0 0 8px rgba(255, 0, 255, 0.5);
+	}
+
+	.nav-socials {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		flex-shrink: 0;
+		border-left: 1px solid rgba(255, 255, 255, 0.1);
+		padding-left: 20px;
+	}
+
+	.social-icon {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		width: 32px;
+		height: 32px;
+		border-radius: 6px;
+		background: rgba(255, 255, 255, 0.05);
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		color: rgba(255, 255, 255, 0.8);
+		transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+		text-decoration: none;
+		text-shadow: none;
+	}
+
+	.social-icon:hover {
+		transform: translateY(-2px);
+	}
+
+	.social-icon.social-youtube:hover {
+		color: #FF0000;
+		background: rgba(255, 0, 0, 0.12);
+		border-color: rgba(255, 0, 0, 0.35);
+		box-shadow: 0 0 12px rgba(255, 0, 0, 0.2);
+	}
+
+	.social-icon.social-tiktok:hover {
+		color: #69C9D0;
+		background: rgba(105, 201, 208, 0.12);
+		border-color: rgba(105, 201, 208, 0.35);
+		box-shadow: 0 0 12px rgba(105, 201, 208, 0.2);
+	}
+
+	.social-icon.social-instagram:hover {
+		color: #E1306C;
+		background: rgba(225, 48, 108, 0.12);
+		border-color: rgba(225, 48, 108, 0.35);
+		box-shadow: 0 0 12px rgba(225, 48, 108, 0.2);
+	}
+
+	.social-icon.social-x:hover {
+		color: #1DA1F2;
+		background: rgba(29, 161, 242, 0.12);
+		border-color: rgba(29, 161, 242, 0.35);
+		box-shadow: 0 0 12px rgba(29, 161, 242, 0.2);
+	}
+
+	.social-icon.social-facebook:hover {
+		color: #1877F2;
+		background: rgba(24, 119, 242, 0.12);
+		border-color: rgba(24, 119, 242, 0.35);
+		box-shadow: 0 0 12px rgba(24, 119, 242, 0.2);
+	}
+
+	.mobile-menu-btn {
+		display: none;
+		flex-direction: column;
+		gap: 5px;
+		background: transparent;
+		padding: 5px;
+	}
+
+	.mobile-menu-btn span {
+		width: 25px;
+		height: 3px;
+		background: white;
+		border-radius: 2px;
+		transition: all 0.3s ease;
+	}
+
+	@media (max-width: 1200px) {
+		.nav-links {
+			gap: 18px;
+		}
+
+		.nav-links a {
+			font-size: 0.95rem;
+		}
+
+		.logo img {
+			height: 76px;
+		}
+	}
+
+	@media (max-width: 980px) {
+		.nav-links {
+			gap: 12px;
+		}
+
+		.nav-links a {
+			font-size: 0.85rem;
+		}
+
+		.nav-socials {
+			gap: 6px;
+			padding-left: 14px;
+		}
+	}
+
+	@media (max-width: 768px) {
+		.nav-links {
+			display: none;
+		}
+
+		.nav-socials {
+			display: none;
+		}
+
+		.mobile-menu-btn {
+			display: flex;
+		}
+
+		.logo img {
+			height: 64px;
+		}
+	}
+</style>
+
+<script>
+	const navbar = document.querySelector('.navbar');
+
+	window.addEventListener('scroll', () => {
+		if (window.scrollY > 50) {
+			navbar?.classList.add('scrolled');
+		} else {
+			navbar?.classList.remove('scrolled');
+		}
+	});
+</script>

@@ -1,0 +1,841 @@
+---
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+
+const products = [
+	{ name: "Alley Boss Hoodie", desc: "Premium heavyweight hoodie with crew artwork", price: "$65.00", icon: "hoodie" },
+	{ name: "Street Cats Tee", desc: "Soft cotton tee with signature character design", price: "$35.00", icon: "tee" },
+	{ name: "Crack Pipe Crew Cap", desc: "Embroidered snapback with logo patch", price: "$30.00", icon: "cap" },
+	{ name: "Character Sticker Pack", desc: "10 weatherproof vinyl stickers", price: "$15.00", icon: "sticker" },
+	{ name: "Limited Edition Print", desc: "Signed 18x24\" poster on premium paper", price: "$50.00", icon: "print" },
+	{ name: "Gang Enamel Pins", desc: "Collectible pin set featuring all characters", price: "$25.00", icon: "pin" },
+];
+---
+
+<Layout title="Merch - Cats On Crack" description="Shop official Cats On Crack merchandise. Get your paws on exclusive apparel, accessories, and collectibles featuring your favorite alley cats!">
+	<Navigation />
+
+	<main class="merch-main">
+
+		<section class="hero-banner">
+			<div class="hero-noise"></div>
+			<div class="container hero-inner">
+				<p class="hero-eyebrow">Official Drop — Season 01</p>
+				<h1 class="hero-title">Street Gear</h1>
+				<p class="hero-sub">Rep the alley. COC merch drops soon.</p>
+			</div>
+		</section>
+
+		<section class="countdown-bar">
+			<div class="container countdown-inner">
+				<p class="countdown-label">Store opens in</p>
+				<div class="countdown-slots">
+					<div class="countdown-unit">
+						<span class="countdown-num" id="cd-days">--</span>
+						<span class="countdown-name">Days</span>
+					</div>
+					<span class="countdown-sep">:</span>
+					<div class="countdown-unit">
+						<span class="countdown-num" id="cd-hours">--</span>
+						<span class="countdown-name">Hours</span>
+					</div>
+					<span class="countdown-sep">:</span>
+					<div class="countdown-unit">
+						<span class="countdown-num" id="cd-mins">--</span>
+						<span class="countdown-name">Mins</span>
+					</div>
+					<span class="countdown-sep">:</span>
+					<div class="countdown-unit">
+						<span class="countdown-num" id="cd-secs">--</span>
+						<span class="countdown-name">Secs</span>
+					</div>
+				</div>
+				<div class="early-access-pill">
+					<span class="pill-dot"></span>
+					Early access for subscribers only
+				</div>
+			</div>
+		</section>
+
+		<section class="section products-section">
+			<div class="container">
+				<div class="section-header">
+					<div class="header-rule"></div>
+					<h2 class="section-title">The Drop</h2>
+					<div class="header-rule"></div>
+				</div>
+
+				<div class="products-grid">
+					{products.map((p) => (
+						<div class="product-card fade-in">
+							<div class="card-worn-edge top-edge"></div>
+							<div class="card-worn-edge bottom-edge"></div>
+
+							<div class="product-thumb">
+								<div class="thumb-bg-noise"></div>
+								<div class={`thumb-art thumb-${p.icon}`}>
+									{p.icon === 'hoodie' && (
+										<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" class="product-svg">
+											<path d="M20 20 L10 35 L20 38 L20 65 H60 V38 L70 35 L60 20 C56 24 52 26 40 26 C28 26 24 24 20 20 Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+											<path d="M34 20 C34 26 46 26 46 20" fill="none" stroke="currentColor" stroke-width="2"/>
+										</svg>
+									)}
+									{p.icon === 'tee' && (
+										<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" class="product-svg">
+											<path d="M22 18 L8 30 L18 38 L18 65 H62 V38 L72 30 L58 18 C54 24 48 26 40 26 C32 26 26 24 22 18 Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+										</svg>
+									)}
+									{p.icon === 'cap' && (
+										<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" class="product-svg">
+											<path d="M15 50 Q40 18 65 50" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+											<path d="M15 50 Q40 46 65 50 Q60 58 20 58 Z" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+											<path d="M65 50 L72 54" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+											<circle cx="40" cy="36" r="3" fill="currentColor" opacity="0.5"/>
+										</svg>
+									)}
+									{p.icon === 'sticker' && (
+										<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" class="product-svg">
+											<polygon points="40,14 46,28 62,30 50,42 54,58 40,50 26,58 30,42 18,30 34,28" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linejoin="round"/>
+											<circle cx="40" cy="38" r="8" fill="currentColor" opacity="0.25"/>
+										</svg>
+									)}
+									{p.icon === 'print' && (
+										<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" class="product-svg">
+											<rect x="16" y="12" width="48" height="56" rx="2" fill="none" stroke="currentColor" stroke-width="2.5"/>
+											<line x1="24" y1="28" x2="56" y2="28" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+											<line x1="24" y1="36" x2="56" y2="36" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+											<line x1="24" y1="44" x2="44" y2="44" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+											<path d="M24 52 L36 42 L44 50 L54 38 L64 52" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+										</svg>
+									)}
+									{p.icon === 'pin' && (
+										<svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" class="product-svg">
+											<circle cx="40" cy="36" r="18" fill="none" stroke="currentColor" stroke-width="2.5"/>
+											<circle cx="40" cy="36" r="10" fill="currentColor" opacity="0.2"/>
+											<line x1="40" y1="54" x2="40" y2="68" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"/>
+											<circle cx="40" cy="36" r="4" fill="currentColor" opacity="0.6"/>
+										</svg>
+									)}
+								</div>
+
+								<div class="coming-soon-stamp">
+									<div class="stamp-inner">
+										<span>Coming</span>
+										<span>Soon</span>
+									</div>
+								</div>
+							</div>
+
+							<div class="product-info">
+								<h3>{p.name}</h3>
+								<p class="product-desc">{p.desc}</p>
+								<div class="product-footer">
+									<span class="product-price">{p.price}</span>
+									<button class="notify-btn">Notify Me</button>
+								</div>
+							</div>
+						</div>
+					))}
+				</div>
+			</div>
+		</section>
+
+		<section class="early-access-section">
+			<div class="ea-noise"></div>
+			<div class="container">
+				<div class="ea-box fade-in">
+					<div class="ea-stamp-corner">EXCLUSIVE</div>
+					<div class="ea-inner-border">
+						<p class="ea-eyebrow">&#9670; Limited Early Access &#9670;</p>
+						<h2 class="ea-title">Get In Before<br/>The Drop</h2>
+						<div class="ea-divider"></div>
+						<p class="ea-body">
+							The COC merch store launches soon — and early subscribers jump the line. Be the first to cop limited drops, get exclusive pre-sale prices, and access colourways that never hit the public shelves.
+						</p>
+						<ul class="ea-perks">
+							<li><span class="perk-icon">&#9733;</span> First access to every drop</li>
+							<li><span class="perk-icon">&#9733;</span> Subscriber-only colourways</li>
+							<li><span class="perk-icon">&#9733;</span> 15% off launch day prices</li>
+							<li><span class="perk-icon">&#9733;</span> Signed limited edition print — free with first order</li>
+						</ul>
+						<form class="ea-form" id="ea-form">
+							<div class="ea-input-group">
+								<input type="email" placeholder="Drop your email to get in early" required id="ea-email" />
+								<button type="submit" class="ea-submit">
+									<span class="ea-btn-text">Secure My Spot</span>
+									<span class="ea-btn-arrow">&#8594;</span>
+								</button>
+							</div>
+							<p class="ea-disclaimer">No spam. Unsubscribe anytime. We hate junk mail as much as Chubby Cheeks hates a closed bin lid.</p>
+						</form>
+						<div class="ea-success" id="ea-success" style="display:none;">
+							<p class="ea-success-msg">&#10003; You're on the list. We'll hit you when the drop goes live.</p>
+						</div>
+					</div>
+				</div>
+			</div>
+		</section>
+
+	</main>
+
+	<Footer />
+</Layout>
+
+<style>
+	.merch-main {
+		background: #181b22;
+	}
+
+	/* ── HERO ── */
+	.hero-banner {
+		position: relative;
+		padding: 150px 0 80px;
+		background: #181b22;
+		text-align: center;
+		overflow: hidden;
+	}
+
+	.hero-noise {
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(ellipse at 30% 50%, rgba(255,0,255,0.12) 0%, transparent 60%),
+			radial-gradient(ellipse at 70% 30%, rgba(255,0,255,0.06) 0%, transparent 50%);
+		pointer-events: none;
+	}
+
+	.hero-inner {
+		position: relative;
+	}
+
+	.hero-eyebrow {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.85rem;
+		letter-spacing: 5px;
+		color: #ff00ff;
+		text-transform: uppercase;
+		margin-bottom: 12px;
+		opacity: 0.9;
+	}
+
+	.hero-title {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: clamp(4rem, 10vw, 9rem);
+		color: #ffffff;
+		line-height: 0.9;
+		letter-spacing: 4px;
+		margin-bottom: 20px;
+		text-shadow:
+			4px 4px 0 rgba(255,0,255,0.4),
+			8px 8px 0 rgba(255,0,255,0.15),
+			0 0 60px rgba(255,0,255,0.2);
+	}
+
+	.hero-sub {
+		font-size: 1.1rem;
+		color: rgba(255,255,255,0.5);
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		font-family: 'Bebas Neue', sans-serif;
+	}
+
+	/* ── COUNTDOWN BAR ── */
+	.countdown-bar {
+		background: #ff00ff;
+		padding: 0;
+		overflow: hidden;
+	}
+
+	.countdown-inner {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 32px;
+		flex-wrap: wrap;
+		padding: 20px 20px;
+	}
+
+	.countdown-label {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.8rem;
+		letter-spacing: 3px;
+		text-transform: uppercase;
+		color: rgba(0,0,0,0.6);
+	}
+
+	.countdown-slots {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.countdown-unit {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		min-width: 52px;
+	}
+
+	.countdown-num {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 2.2rem;
+		color: #000;
+		line-height: 1;
+		background: rgba(255,255,255,0.25);
+		padding: 2px 8px;
+		min-width: 52px;
+		text-align: center;
+	}
+
+	.countdown-name {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.6rem;
+		letter-spacing: 2px;
+		color: rgba(0,0,0,0.5);
+		margin-top: 3px;
+	}
+
+	.countdown-sep {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 2rem;
+		color: rgba(0,0,0,0.4);
+		line-height: 1;
+		margin-bottom: 12px;
+	}
+
+	.early-access-pill {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		background: rgba(0,0,0,0.15);
+		padding: 6px 16px;
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.78rem;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		color: rgba(0,0,0,0.7);
+	}
+
+	.pill-dot {
+		width: 7px;
+		height: 7px;
+		background: #000;
+		border-radius: 50%;
+		opacity: 0.5;
+		animation: pulse-dot 1.6s ease-in-out infinite;
+	}
+
+	@keyframes pulse-dot {
+		0%, 100% { opacity: 0.5; transform: scale(1); }
+		50% { opacity: 1; transform: scale(1.3); }
+	}
+
+	/* ── PRODUCTS SECTION ── */
+	.products-section {
+		background: #181b22;
+		padding: 100px 0;
+	}
+
+	.section-header {
+		display: flex;
+		align-items: center;
+		gap: 24px;
+		margin-bottom: 60px;
+	}
+
+	.header-rule {
+		flex: 1;
+		height: 1px;
+		background: linear-gradient(90deg, transparent, rgba(255,0,255,0.4) 60%);
+	}
+
+	.header-rule:last-child {
+		background: linear-gradient(270deg, transparent, rgba(255,0,255,0.4) 60%);
+	}
+
+	.section-title {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: clamp(2rem, 4vw, 3.5rem);
+		color: #fff;
+		letter-spacing: 4px;
+		white-space: nowrap;
+		text-shadow: 0 0 30px rgba(255,0,255,0.3);
+	}
+
+	.products-grid {
+		display: grid;
+		grid-template-columns: repeat(auto-fill, minmax(290px, 1fr));
+		gap: 32px;
+	}
+
+	/* ── PRODUCT CARD ── */
+	.product-card {
+		position: relative;
+		background: #1a1d2e;
+		border: 1px solid rgba(255,0,255,0.15);
+		overflow: visible;
+		transition: transform 0.3s ease, box-shadow 0.3s ease;
+	}
+
+	.card-worn-edge {
+		position: absolute;
+		left: -2px;
+		right: -2px;
+		height: 4px;
+		z-index: 2;
+		background: #181b22;
+		clip-path: polygon(
+			0% 0%, 3% 100%, 6% 0%, 9% 100%, 12% 0%, 15% 100%, 18% 0%,
+			21% 100%, 24% 0%, 27% 100%, 30% 0%, 33% 100%, 36% 0%,
+			39% 100%, 42% 0%, 45% 100%, 48% 0%, 51% 100%, 54% 0%,
+			57% 100%, 60% 0%, 63% 100%, 66% 0%, 69% 100%, 72% 0%,
+			75% 100%, 78% 0%, 81% 100%, 84% 0%, 87% 100%, 90% 0%,
+			93% 100%, 96% 0%, 100% 100%, 100% 0%
+		);
+	}
+
+	.top-edge { top: -2px; }
+	.bottom-edge { bottom: -2px; transform: rotate(180deg); }
+
+	.product-card:hover {
+		transform: translateY(-8px) rotate(-0.3deg);
+		box-shadow:
+			0 20px 50px rgba(0,0,0,0.6),
+			0 0 0 1px rgba(255,0,255,0.3),
+			0 0 30px rgba(255,0,255,0.12);
+	}
+
+	/* ── PRODUCT THUMBNAIL ── */
+	.product-thumb {
+		position: relative;
+		aspect-ratio: 1;
+		overflow: hidden;
+		background: #252838;
+	}
+
+	.thumb-bg-noise {
+		position: absolute;
+		inset: 0;
+		background-image:
+			url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E");
+		background-size: 200px 200px;
+		pointer-events: none;
+	}
+
+	.thumb-art {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.product-svg {
+		width: 100px;
+		height: 100px;
+		opacity: 0.3;
+		color: #ff00ff;
+		transition: opacity 0.3s ease;
+	}
+
+	.product-card:hover .product-svg {
+		opacity: 0.5;
+	}
+
+	/* Subtle tint per product */
+	.thumb-hoodie  { background: radial-gradient(ellipse at center, #2a1e3a 0%, #1a1d2e 70%); }
+	.thumb-tee     { background: radial-gradient(ellipse at center, #1e2a3a 0%, #1a1d2e 70%); }
+	.thumb-cap     { background: radial-gradient(ellipse at center, #3a2a1e 0%, #1a1d2e 70%); }
+	.thumb-sticker { background: radial-gradient(ellipse at center, #1e3a2a 0%, #1a1d2e 70%); }
+	.thumb-print   { background: radial-gradient(ellipse at center, #3a1e2a 0%, #1a1d2e 70%); }
+	.thumb-pin     { background: radial-gradient(ellipse at center, #2a3a1e 0%, #1a1d2e 70%); }
+
+	/* ── COMING SOON STAMP ── */
+	.coming-soon-stamp {
+		position: absolute;
+		inset: 0;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		pointer-events: none;
+	}
+
+	.stamp-inner {
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		border: 4px solid rgba(255, 0, 255, 0.7);
+		padding: 10px 22px;
+		transform: rotate(-12deg);
+		background: transparent;
+		box-shadow:
+			0 0 0 1px rgba(255,0,255,0.2),
+			inset 0 0 0 2px rgba(255,0,255,0.1);
+		opacity: 0.75;
+		transition: opacity 0.3s ease;
+	}
+
+	.stamp-inner::before {
+		content: '';
+		position: absolute;
+		inset: -6px;
+		border: 1px dashed rgba(255,0,255,0.3);
+	}
+
+	.stamp-inner span {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 1.6rem;
+		color: rgba(255,0,255,0.9);
+		letter-spacing: 6px;
+		line-height: 1.1;
+		text-transform: uppercase;
+		text-shadow: 0 0 12px rgba(255,0,255,0.5);
+	}
+
+	.product-card:hover .stamp-inner {
+		opacity: 0.95;
+	}
+
+	/* Spray-paint grunge applied via pseudo */
+	.product-thumb::after {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(ellipse 60% 40% at 20% 80%, rgba(255,0,255,0.06) 0%, transparent 70%),
+			radial-gradient(ellipse 40% 60% at 80% 20%, rgba(255,0,255,0.04) 0%, transparent 70%);
+		pointer-events: none;
+	}
+
+	/* ── PRODUCT INFO ── */
+	.product-info {
+		padding: 20px 22px 22px;
+		border-top: 1px solid rgba(255,0,255,0.1);
+	}
+
+	.product-info h3 {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 1.4rem;
+		color: #fff;
+		letter-spacing: 1px;
+		margin-bottom: 6px;
+	}
+
+	.product-desc {
+		font-size: 0.82rem;
+		color: rgba(255,255,255,0.4);
+		margin-bottom: 16px;
+		line-height: 1.5;
+	}
+
+	.product-footer {
+		display: flex;
+		align-items: center;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.product-price {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 1.5rem;
+		color: rgba(255,255,255,0.5);
+		letter-spacing: 1px;
+		text-decoration: line-through;
+		text-decoration-color: rgba(255,0,255,0.5);
+	}
+
+	.notify-btn {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.75rem;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		color: #ff00ff;
+		background: transparent;
+		border: 1px solid rgba(255,0,255,0.4);
+		padding: 6px 16px;
+		cursor: pointer;
+		transition: all 0.25s ease;
+	}
+
+	.notify-btn:hover {
+		background: rgba(255,0,255,0.12);
+		border-color: #ff00ff;
+		box-shadow: 0 0 12px rgba(255,0,255,0.2);
+	}
+
+	/* ── EARLY ACCESS SECTION ── */
+	.early-access-section {
+		position: relative;
+		padding: 100px 0;
+		background: #181b22;
+		overflow: hidden;
+	}
+
+	.ea-noise {
+		position: absolute;
+		inset: 0;
+		background:
+			radial-gradient(ellipse at 50% 0%, rgba(255,0,255,0.18) 0%, transparent 55%),
+			radial-gradient(ellipse at 80% 100%, rgba(255,0,255,0.08) 0%, transparent 50%);
+		pointer-events: none;
+	}
+
+	.ea-box {
+		position: relative;
+		max-width: 760px;
+		margin: 0 auto;
+		background: #1f2233;
+		border: 1px solid rgba(255,0,255,0.3);
+		overflow: hidden;
+	}
+
+	.ea-box::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image:
+			url("data:image/svg+xml,%3Csvg viewBox='0 0 400 400' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.7' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+		background-size: 300px 300px;
+		pointer-events: none;
+	}
+
+	.ea-stamp-corner {
+		position: absolute;
+		top: 0;
+		right: 0;
+		background: #ff00ff;
+		color: #fff;
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.7rem;
+		letter-spacing: 3px;
+		padding: 8px 20px;
+		text-transform: uppercase;
+	}
+
+	.ea-inner-border {
+		border: 1px solid rgba(255,0,255,0.08);
+		margin: 12px;
+		padding: 52px 60px;
+		text-align: center;
+		position: relative;
+	}
+
+	.ea-eyebrow {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.75rem;
+		letter-spacing: 4px;
+		color: #ff00ff;
+		text-transform: uppercase;
+		margin-bottom: 20px;
+		opacity: 0.9;
+	}
+
+	.ea-title {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: clamp(2.5rem, 6vw, 5rem);
+		color: #fff;
+		line-height: 0.95;
+		letter-spacing: 3px;
+		margin-bottom: 24px;
+		text-shadow:
+			3px 3px 0 rgba(255,0,255,0.3),
+			0 0 40px rgba(255,0,255,0.15);
+	}
+
+	.ea-divider {
+		width: 60px;
+		height: 3px;
+		background: #ff00ff;
+		margin: 0 auto 24px;
+	}
+
+	.ea-body {
+		font-size: 0.95rem;
+		color: rgba(255,255,255,0.55);
+		line-height: 1.8;
+		max-width: 520px;
+		margin: 0 auto 28px;
+	}
+
+	.ea-perks {
+		list-style: none;
+		display: grid;
+		grid-template-columns: 1fr 1fr;
+		gap: 10px 24px;
+		max-width: 500px;
+		margin: 0 auto 36px;
+		text-align: left;
+	}
+
+	.ea-perks li {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.82rem;
+		letter-spacing: 1px;
+		color: rgba(255,255,255,0.6);
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.perk-icon {
+		color: #ff00ff;
+		font-size: 0.7rem;
+		flex-shrink: 0;
+	}
+
+	.ea-form {
+		max-width: 520px;
+		margin: 0 auto;
+	}
+
+	.ea-input-group {
+		display: flex;
+		gap: 0;
+		border: 1px solid rgba(255,0,255,0.5);
+		background: rgba(0,0,0,0.4);
+		transition: border-color 0.3s ease, box-shadow 0.3s ease;
+	}
+
+	.ea-input-group:focus-within {
+		border-color: #ff00ff;
+		box-shadow: 0 0 0 3px rgba(255,0,255,0.15);
+	}
+
+	.ea-input-group input {
+		flex: 1;
+		padding: 16px 20px;
+		background: transparent;
+		border: none;
+		color: #fff;
+		font-size: 0.9rem;
+		outline: none;
+	}
+
+	.ea-input-group input::placeholder {
+		color: rgba(255,255,255,0.3);
+	}
+
+	.ea-submit {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 16px 28px;
+		background: #ff00ff;
+		color: #fff;
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.85rem;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		border: none;
+		cursor: pointer;
+		transition: all 0.3s ease;
+		white-space: nowrap;
+	}
+
+	.ea-submit:hover {
+		background: #cc00cc;
+		box-shadow: 0 0 20px rgba(255,0,255,0.3);
+	}
+
+	.ea-btn-arrow {
+		font-size: 1rem;
+		transition: transform 0.2s ease;
+	}
+
+	.ea-submit:hover .ea-btn-arrow {
+		transform: translateX(3px);
+	}
+
+	.ea-disclaimer {
+		font-size: 0.72rem;
+		color: rgba(255,255,255,0.25);
+		margin-top: 12px;
+		line-height: 1.5;
+	}
+
+	.ea-success-msg {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 1rem;
+		letter-spacing: 2px;
+		color: #fff;
+		padding: 20px;
+		border: 1px solid rgba(255,0,255,0.3);
+		background: rgba(255,0,255,0.06);
+	}
+
+	@media (max-width: 768px) {
+		.countdown-inner {
+			gap: 16px;
+		}
+
+		.early-access-pill {
+			display: none;
+		}
+
+		.products-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.ea-inner-border {
+			padding: 36px 24px;
+		}
+
+		.ea-perks {
+			grid-template-columns: 1fr;
+		}
+
+		.ea-input-group {
+			flex-direction: column;
+		}
+
+		.ea-submit {
+			justify-content: center;
+		}
+	}
+</style>
+
+<script>
+	(function() {
+		const launchDate = new Date();
+		launchDate.setDate(launchDate.getDate() + 47);
+		launchDate.setHours(12, 0, 0, 0);
+
+		function tick() {
+			const now = new Date();
+			const diff = launchDate - now;
+			if (diff <= 0) return;
+
+			const days  = Math.floor(diff / 86400000);
+			const hours = Math.floor((diff % 86400000) / 3600000);
+			const mins  = Math.floor((diff % 3600000)  / 60000);
+			const secs  = Math.floor((diff % 60000)    / 1000);
+
+			const pad = (n) => String(n).padStart(2, '0');
+
+			const dEl = document.getElementById('cd-days');
+			const hEl = document.getElementById('cd-hours');
+			const mEl = document.getElementById('cd-mins');
+			const sEl = document.getElementById('cd-secs');
+
+			if (dEl) dEl.textContent = pad(days);
+			if (hEl) hEl.textContent = pad(hours);
+			if (mEl) mEl.textContent = pad(mins);
+			if (sEl) sEl.textContent = pad(secs);
+		}
+
+		tick();
+		setInterval(tick, 1000);
+
+		const form = document.getElementById('ea-form');
+		const success = document.getElementById('ea-success');
+		if (form && success) {
+			form.addEventListener('submit', (e) => {
+				e.preventDefault();
+				form.style.display = 'none';
+				success.style.display = 'block';
+			});
+		}
+	})();
+</script>

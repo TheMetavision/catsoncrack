@@ -1,0 +1,171 @@
+---
+interface Props {
+	variant?: 'torn' | 'crack' | 'spray';
+	flip?: boolean;
+	topColor?: string;
+	bottomColor?: string;
+}
+
+const {
+	variant = 'torn',
+	flip = false,
+	topColor = 'transparent',
+	bottomColor = 'transparent',
+} = Astro.props;
+---
+
+<div class={`section-divider divider-${variant}${flip ? ' flip' : ''}`} aria-hidden="true">
+	{variant === 'torn' && (
+		<svg viewBox="0 0 1440 60" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+			<path
+				d="M0,0 L0,28
+				C22,38 35,18 55,30
+				C75,42 90,12 115,24
+				C140,36 158,8 180,20
+				C202,32 218,10 242,22
+				C266,34 280,6 305,18
+				C330,30 348,4 372,16
+				C396,28 412,2 438,14
+				C464,26 480,0 506,12
+				C532,24 548,0 574,10
+				C600,20 618,2 642,14
+				C666,26 682,0 708,12
+				C734,24 752,2 778,14
+				C804,26 820,0 846,10
+				C872,20 890,4 914,16
+				C938,28 954,4 978,16
+				C1002,28 1020,4 1044,16
+				C1068,28 1085,6 1110,18
+				C1135,30 1150,8 1176,20
+				C1202,32 1218,8 1244,20
+				C1270,32 1286,8 1312,18
+				C1338,28 1355,6 1380,16
+				C1405,26 1420,8 1440,18
+				L1440,0 Z"
+				fill="var(--divider-top, transparent)"
+			/>
+			<path
+				d="M0,60 L0,32
+				C22,22 35,42 55,30
+				C75,18 90,48 115,36
+				C140,24 158,52 180,40
+				C202,28 218,50 242,38
+				C266,26 280,54 305,42
+				C330,30 348,56 372,44
+				C396,32 412,58 438,46
+				C464,34 480,60 506,48
+				C532,36 548,60 574,50
+				C600,40 618,58 642,46
+				C666,34 682,60 708,48
+				C734,36 752,58 778,46
+				C804,34 820,60 846,50
+				C872,40 890,56 914,44
+				C938,32 954,56 978,44
+				C1002,32 1020,56 1044,44
+				C1068,32 1085,54 1110,42
+				C1135,30 1150,52 1176,40
+				C1202,28 1218,52 1244,40
+				C1270,28 1286,52 1312,42
+				C1338,32 1355,54 1380,44
+				C1405,34 1420,52 1440,42
+				L1440,60 Z"
+				fill="var(--divider-bottom, transparent)"
+			/>
+			<rect x="0" y="26" width="1440" height="8" fill="url(#grunge-stripe)" opacity="0.4"/>
+			<defs>
+				<pattern id="grunge-stripe" x="0" y="0" width="4" height="8" patternUnits="userSpaceOnUse">
+					<rect width="1" height="8" fill="rgba(255,0,255,0.15)"/>
+				</pattern>
+			</defs>
+		</svg>
+	)}
+
+	{variant === 'crack' && (
+		<svg viewBox="0 0 1440 48" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+			<line x1="0" y1="24" x2="1440" y2="24" stroke="rgba(255,0,255,0.08)" stroke-width="1"/>
+			<polyline
+				points="0,24 120,22 200,26 280,20 360,28 440,22 520,26 600,20 680,28 760,22 840,26 920,20 1000,28 1080,22 1160,25 1240,21 1320,25 1440,24"
+				fill="none"
+				stroke="rgba(255,0,255,0.35)"
+				stroke-width="1.5"
+				stroke-linecap="round"
+			/>
+			<line x1="200" y1="26" x2="215" y2="34" stroke="rgba(255,0,255,0.2)" stroke-width="0.8"/>
+			<line x1="360" y1="28" x2="350" y2="38" stroke="rgba(255,0,255,0.18)" stroke-width="0.8"/>
+			<line x1="600" y1="20" x2="612" y2="12" stroke="rgba(255,0,255,0.2)" stroke-width="0.8"/>
+			<line x1="760" y1="22" x2="748" y2="32" stroke="rgba(255,0,255,0.18)" stroke-width="0.8"/>
+			<line x1="1000" y1="28" x2="1014" y2="38" stroke="rgba(255,0,255,0.2)" stroke-width="0.8"/>
+			<line x1="1240" y1="21" x2="1228" y2="12" stroke="rgba(255,0,255,0.18)" stroke-width="0.8"/>
+			<polyline
+				points="0,24 120,22 200,26 280,20 360,28 440,22 520,26 600,20 680,28 760,22 840,26 920,20 1000,28 1080,22 1160,25 1240,21 1320,25 1440,24"
+				fill="none"
+				stroke="rgba(255,0,255,0.12)"
+				stroke-width="3"
+				stroke-linecap="round"
+			/>
+		</svg>
+	)}
+
+	{variant === 'spray' && (
+		<svg viewBox="0 0 1440 56" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+			<rect x="0" y="20" width="1440" height="16" fill="url(#spray-grad)" opacity="0.6"/>
+			<defs>
+				<radialGradient id="spray-grad" cx="50%" cy="50%" r="50%">
+					<stop offset="0%" stop-color="#ff00ff" stop-opacity="0.3"/>
+					<stop offset="100%" stop-color="#ff00ff" stop-opacity="0"/>
+				</radialGradient>
+			</defs>
+			<circle cx="80"   cy="24" r="1.2" fill="#ff00ff" opacity="0.5"/>
+			<circle cx="160"  cy="30" r="0.8" fill="#ff00ff" opacity="0.4"/>
+			<circle cx="320"  cy="22" r="1.5" fill="#ff00ff" opacity="0.35"/>
+			<circle cx="480"  cy="28" r="1"   fill="#ff00ff" opacity="0.45"/>
+			<circle cx="640"  cy="20" r="1.8" fill="#ff00ff" opacity="0.3"/>
+			<circle cx="720"  cy="32" r="0.9" fill="#ff00ff" opacity="0.4"/>
+			<circle cx="900"  cy="24" r="1.3" fill="#ff00ff" opacity="0.35"/>
+			<circle cx="1060" cy="30" r="1"   fill="#ff00ff" opacity="0.45"/>
+			<circle cx="1200" cy="22" r="1.5" fill="#ff00ff" opacity="0.3"/>
+			<circle cx="1380" cy="28" r="0.8" fill="#ff00ff" opacity="0.4"/>
+			<rect x="0"   y="27" width="340" height="1" fill="rgba(255,0,255,0.18)" rx="1"/>
+			<rect x="400" y="25" width="260" height="1" fill="rgba(255,0,255,0.14)" rx="1"/>
+			<rect x="700" y="29" width="200" height="1" fill="rgba(255,0,255,0.16)" rx="1"/>
+			<rect x="950" y="24" width="300" height="1" fill="rgba(255,0,255,0.12)" rx="1"/>
+			<rect x="1300" y="27" width="140" height="1" fill="rgba(255,0,255,0.15)" rx="1"/>
+		</svg>
+	)}
+</div>
+
+<style>
+	.section-divider {
+		position: relative;
+		width: 100%;
+		overflow: hidden;
+		line-height: 0;
+		pointer-events: none;
+		user-select: none;
+	}
+
+	.section-divider svg {
+		display: block;
+		width: 100%;
+	}
+
+	.divider-torn svg    { height: 60px; }
+	.divider-crack svg   { height: 48px; }
+	.divider-spray svg   { height: 56px; }
+
+	.flip svg {
+		transform: scaleX(-1);
+	}
+
+	.section-divider::before {
+		content: '';
+		position: absolute;
+		inset: 0;
+		background-image:
+			url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.8' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+		background-size: 160px 160px;
+		opacity: 0.6;
+		mix-blend-mode: overlay;
+		pointer-events: none;
+	}
+</style>
