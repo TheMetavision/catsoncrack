@@ -233,8 +233,8 @@ import SectionDivider from '../components/SectionDivider.astro';
 					<div class="image-side fade-left">
 						<div class="image-card">
 							<img
-								src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=915,fit=crop/YanqXRJ3EDIXPJ8q/d0bae9bd-dbc9-49ad-a286-efd5eede6ac5-A1aBEM9plKCW0Ol8.png"
-								alt="Cats on Crack Book"
+								src="/images/coc-coming-soon.jpg"
+								alt="Cats on Crack - Coming Soon"
 							/>
 						</div>
 					</div>
@@ -260,7 +260,7 @@ import SectionDivider from '../components/SectionDivider.astro';
 					<div class="image-side fade-right">
 						<div class="image-card">
 							<img
-								src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=768,h=1014,fit=crop/YanqXRJ3EDIXPJ8q/93b19814-7a63-4180-b0a3-bd6b7b534cb8-mjEqlnbNMpslVaQr.png"
+								src="/images/coc-characters.png"
 								alt="Cats on Crack Characters"
 							/>
 						</div>
@@ -276,8 +276,8 @@ import SectionDivider from '../components/SectionDivider.astro';
 				<div class="newsletter-content fade-up">
 					<div class="newsletter-image">
 						<img
-							src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1024,h=1170,fit=crop/YanqXRJ3EDIXPJ8q/510cd283-5bfb-41c5-bda4-e2899b6276c4-YBge0Nwj37Fzjj43.png"
-							alt="Newsletter"
+							src="/images/coc-pipes.jpg"
+							alt="Cats on Crack Newsletter"
 						/>
 					</div>
 					<div class="newsletter-text">
@@ -675,10 +675,10 @@ import SectionDivider from '../components/SectionDivider.astro';
 
 	.character-tagline {
 		position: absolute;
-		top: 0;
+		top: 30px;
 		left: -20px;
 		right: -20px;
-		z-index: 5;
+		z-index: 4;
 		font-family: 'Inter', sans-serif;
 		font-size: 0.82rem;
 		font-style: italic;
@@ -687,8 +687,6 @@ import SectionDivider from '../components/SectionDivider.astro';
 		line-height: 1.6;
 		letter-spacing: 0.3px;
 		text-shadow: 0 0 12px rgba(255, 0, 255, 0.4), 0 1px 4px rgba(0, 0, 0, 0.9);
-		background: linear-gradient(to bottom, rgba(24, 27, 34, 0.95) 0%, rgba(24, 27, 34, 0.75) 70%, transparent 100%);
-		padding: 14px 24px 22px;
 	}
 
 	/* ── CAROUSEL CONTROLS ── */
@@ -965,18 +963,29 @@ import SectionDivider from '../components/SectionDivider.astro';
 	}
 
 	.content-split {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 80px;
+		display: flex;
+		flex-direction: column;
+		gap: 40px;
 		align-items: center;
+		max-width: 900px;
+		margin: 0 auto;
 	}
 
 	.content-split.reverse {
-		direction: rtl;
+		direction: ltr;
 	}
 
 	.content-split.reverse > * {
 		direction: ltr;
+	}
+
+	.content-split .image-side {
+		width: 100%;
+	}
+
+	.content-split .text-side {
+		text-align: center;
+		width: 100%;
 	}
 
 	.section-title {
@@ -1019,15 +1028,33 @@ import SectionDivider from '../components/SectionDivider.astro';
 	}
 
 	.newsletter-content {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 60px;
+		display: flex;
+		flex-direction: column;
+		gap: 40px;
 		align-items: center;
 		background: var(--bg-card);
 		border-radius: 20px;
-		padding: 60px;
+		padding: 0;
 		box-shadow: 0 10px 50px rgba(0, 0, 0, 0.5);
 		border: 2px solid rgba(255, 0, 255, 0.2);
+		overflow: hidden;
+	}
+
+	.newsletter-image {
+		width: 100%;
+		border-radius: 0;
+		overflow: hidden;
+	}
+
+	.newsletter-image img {
+		width: 100%;
+		height: auto;
+		display: block;
+	}
+
+	.newsletter-text {
+		padding: 0 60px 60px;
+		text-align: center;
 	}
 
 	.newsletter-text h2 {
@@ -1068,11 +1095,7 @@ import SectionDivider from '../components/SectionDivider.astro';
 		box-shadow: 0 0 0 3px rgba(255, 0, 255, 0.1);
 	}
 
-	.newsletter-image {
-		border-radius: 12px;
-		overflow: hidden;
-		border: 2px solid rgba(255, 0, 255, 0.2);
-	}
+	/* newsletter-image styles defined above with newsletter-content */
 
 	@media (max-width: 1100px) {
 		.hero-split {
@@ -1111,21 +1134,11 @@ import SectionDivider from '../components/SectionDivider.astro';
 		}
 
 		.character-tagline {
-			top: 0;
+			top: 16px;
 		}
 	}
 
 	@media (max-width: 968px) {
-		.content-split,
-		.newsletter-content {
-			grid-template-columns: 1fr;
-			gap: 40px;
-		}
-
-		.content-split.reverse {
-			direction: ltr;
-		}
-
 		.pillars {
 			grid-template-columns: 1fr;
 		}
@@ -1144,6 +1157,10 @@ import SectionDivider from '../components/SectionDivider.astro';
 
 		.pillar {
 			padding: 40px 32px;
+		}
+
+		.newsletter-text {
+			padding: 0 30px 40px;
 		}
 	}
 
