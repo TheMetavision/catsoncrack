@@ -19,7 +19,7 @@ export async function getAllCharacters() {
   return client.fetch(`
     *[_type == "character"] | order(sortOrder asc) {
       _id, name, "slug": slug.current, role, badge, tagline, bio, extendedBio,
-      traits, quote, accent, accentDim, accentGlow, initials,
+      traits, quote, "accent": coalesce(accentColor, accent), accentDim, accentGlow, initials,
       portrait, galleryImages, sortOrder, seoTitle, seoDescription
     }
   `);
@@ -29,7 +29,7 @@ export async function getCharacterBySlug(slug: string) {
   return client.fetch(`
     *[_type == "character" && slug.current == $slug][0] {
       _id, name, "slug": slug.current, role, badge, tagline, bio, extendedBio,
-      traits, quote, accent, accentDim, accentGlow, initials,
+      traits, quote, "accent": coalesce(accentColor, accent), accentDim, accentGlow, initials,
       portrait, galleryImages, seoTitle, seoDescription
     }
   `, { slug });

@@ -20,7 +20,7 @@ const allCharacters = await client.fetch(`
 		tag,
 		traits,
 		quote,
-		accent,
+		"accent": coalesce(accentColor, accent),
 		initials,
 		externalImageUrl,
 		"imageUrl": image.asset->url,
