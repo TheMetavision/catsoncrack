@@ -3,30 +3,6 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionDivider from '../components/SectionDivider.astro';
-
-const carouselCharacters = [
-  { name: "Toothless Terry", role: "The Scheme Engine", quote: "Here's the thing about problems, pal — a problem is just a deal that hasn't been structured yet.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1024,h=1275,fit=crop/YanqXRJ3EDIXPJ8q/d700a221-efab-493b-94b1-5bc213c72b36-mp8qZRbbzEiL6R2D.png" },
-  { name: "Whiskers McScruff", role: "The Leader", quote: "Chaos is the cure. I've said it before. I've said it to the bins. The bins agree with me.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/whiskers_mcscruff_-original-AR0MxrWrnVtX62ob.jpeg" },
-  { name: "Luna the Loner", role: "The Ghost", quote: "I don't have opinions about your plan. I have information.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/luna_the_loner_-original-m7V56avNg6CygRZ4.jpeg" },
-  { name: "Chubby Cheeks", role: "The Muscle", quote: "You don't just find snacks. You earn them. And by 'earn,' I mean you take them from the weak.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/93b19814-7a63-4180-b0a3-bd6b7b534cb8-mjEqlnbNMpslVaQr.png" },
-  { name: "Gizmo the Genius", role: "The Inventor", quote: "Now, the beautiful thing about this is — oh, that's interesting. Actually, everyone move.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/gizmo_the_genius_-original-mk3qPR6XQwSVJaZ0.jpeg" },
-  { name: "Trixie the Trickster", role: "The Artist", quote: "I don't make mistakes. I make unexpectedly vivid decisions.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/trixie_the_trickster_-original-mxBMLRbg1wc529pZ.jpeg" },
-  { name: "Patches", role: "The Enforcer", quote: "I didn't lose an eye. I traded it for a reputation.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/patches-original-m5KLq1E48OceGq6d.jpeg" },
-  { name: "Mittens the Muscle", role: "The Gentle Giant", quote: "I don't want to fight. But I will. And you won't enjoy it.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/mittens-original-YD0BVWe77ZHyyoE0.jpeg" },
-  { name: "Smudge", role: "The Chemist", quote: "Beauty fades. Stench? Stench is eternal.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/smudge-original-ALp734WKVpF3Bo5N.jpeg" },
-  { name: "Felix the Fancy", role: "The Strategist", quote: "I didn't fall from grace. I relocated to a more interesting postcode.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/felix-original-AE0alJn9lpSNenvZ.jpeg" },
-  { name: "Professor Paws", role: "The Scholar", quote: "The pipes speak to me. Not in words. In frequencies. Beautiful, terrible frequencies.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/professor_paws_-original-1-m7V56avLyMHZyEwD.jpeg" },
-  { name: "Old Man Whiskers", role: "The Historian", quote: "Back in my day, the pipes didn't glow. They hummed. Respectfully.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/old_man_whiskers_-original-dWxB7R2ql8hgVrvM.jpeg" },
-  { name: "Madame Meow", role: "The Fortune Teller", quote: "The milk shows me things. Terrible things. Also, someone's stealing the cream again.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/madame_meow_-original-YrDqeRZkDMugx1Er.jpeg" },
-  { name: "Penny the Pigeon", role: "The Gossip", quote: "Information is free, darling. Acting on it costs extra.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/penny_the_pigeon_-original-AGBn8wa14gCVKgQP.jpeg" },
-  { name: "Spike", role: "The Reluctant Ally", quote: "I'm not helping you. I'm helping myself. You just happen to be in the way of my help.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/spike-YbNqQRgRRQh7zxgD.jpeg" },
-  { name: "Rita the Raccoon", role: "The Scavenger", quote: "I'm a cat. A big cat. With hands. Very normal cat hands.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/rita_the_raccoon_-original-AMqleKWN7auR60Pz.jpeg" },
-  { name: "Mr. Snips", role: "The Sky Terror", quote: "SHINY. MINE. SHINY. MINE. SHI— oh, a bottle cap.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/mrsnips-original-AMqleKE5jZfoqEbb.jpeg" },
-  { name: "The Alley Cat King", role: "The Tyrant", quote: "The pipes chose me. Everyone else is just visiting.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/the_alley_cat_king_-original-YbNqQRgjZnuNxWVB.jpeg" },
-  { name: "Duke the Dogcatcher", role: "The Corrupt Official", quote: "Look, I don't make the rules. I just... bend them. For a fee.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/duke_the_dogcatcher_-original-YBge0NZJaXspVLrE.jpeg" },
-  { name: "The Rat Pack", role: "The Underground Intelligence", quote: "We don't deal in gossip. We deal in leverage.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/the_rat_pack_-original-Yleq8RbJaZT745kZ.jpeg" },
-  { name: "Fido the Fence", role: "The Black Market Dealer", quote: "Fell off a truck. Don't ask which truck. Don't ask whose truck. Just take the deal.", image: "https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=600,fit=crop/YanqXRJ3EDIXPJ8q/fido_the-_fence-_-original-mePb4REj9KcXK7Zp.jpeg" },
-];
 ---
 
 <Layout title="Cats On Crack - The Wildest Alley Cats You'll Ever Meet">
@@ -41,32 +17,119 @@ const carouselCharacters = [
 				<div class="hero-image-col fade-left hero-anim-immediate">
 					<div class="character-carousel" id="heroCarousel">
 
-						{carouselCharacters.map((char, i) => (
-							<div class={`carousel-slide${i === 0 ? ' active' : ''}`} data-index={i}>
-								<div class="character-frame">
-									<img
-										src={char.image}
-										alt={char.name}
-										class="hero-character"
-										loading={i === 0 ? 'eager' : 'lazy'}
-									/>
-									<div class="character-ground-vignette"></div>
-									<div class="character-nameplate">
-										<div class="nameplate-name">{char.name}</div>
-										<div class="nameplate-role">{char.role}</div>
-									</div>
-									<div class="character-tagline">"{char.quote}"</div>
+						<div class="carousel-slide active" data-index="0">
+							<div class="character-frame">
+								<img
+									src="https://assets.zyrosite.com/cdn-cgi/image/format=auto,w=1024,h=1275,fit=crop/YanqXRJ3EDIXPJ8q/d700a221-efab-493b-94b1-5bc213c72b36-mp8qZRbbzEiL6R2D.png"
+									alt="Toothless Terry"
+									class="hero-character"
+									loading="eager"
+									fetchpriority="high"
+								/>
+								<div class="character-ground-vignette"></div>
+								<div class="character-nameplate">
+									<div class="nameplate-name">Toothless Terry</div>
+									<div class="nameplate-role">The Scheme Engine</div>
 								</div>
+								<div class="character-tagline">"Here's the thing about problems, pal — a problem is just a deal that hasn't been structured yet."</div>
 							</div>
-						))}
+						</div>
+
+						<div class="carousel-slide" data-index="1">
+							<div class="character-frame">
+								<img
+									src="https://cdn.sanity.io/images/8ksun996/production/d96725d0e76a478fea8c4cab6f210bab4367d0f9-896x1344.png"
+									alt="Whiskers McScruff"
+									class="hero-character"
+									loading="lazy"
+								/>
+								<div class="character-ground-vignette"></div>
+								<div class="character-nameplate">
+									<div class="nameplate-name">Whiskers McScruff</div>
+									<div class="nameplate-role">The Leader</div>
+								</div>
+								<div class="character-tagline">"Chaos is the cure. I've said it before. I've said it to the bins. The bins agree with me."</div>
+							</div>
+						</div>
+
+						<div class="carousel-slide" data-index="2">
+							<div class="character-frame">
+								<img
+									src="https://cdn.sanity.io/images/8ksun996/production/87fee4d99ed54660972e1f7253091a621f4d4d24-896x1344.png"
+									alt="Luna the Loner"
+									class="hero-character"
+									loading="lazy"
+								/>
+								<div class="character-ground-vignette"></div>
+								<div class="character-nameplate">
+									<div class="nameplate-name">Luna the Loner</div>
+									<div class="nameplate-role">The Ghost</div>
+								</div>
+								<div class="character-tagline">"I don't have opinions about your plan. I have information."</div>
+							</div>
+						</div>
+
+						<div class="carousel-slide" data-index="3">
+							<div class="character-frame">
+								<img
+									src="https://cdn.sanity.io/images/8ksun996/production/e1ed30a067bbe4cff4f6b4962859557dd7fa103a-896x1344.png"
+									alt="Chubby Cheeks"
+									class="hero-character"
+									loading="lazy"
+								/>
+								<div class="character-ground-vignette"></div>
+								<div class="character-nameplate">
+									<div class="nameplate-name">Chubby Cheeks</div>
+									<div class="nameplate-role">The Muscle</div>
+								</div>
+								<div class="character-tagline">"You don't just find snacks. You earn them. And by 'earn,' I mean you take them from the weak."</div>
+							</div>
+						</div>
+
+						<div class="carousel-slide" data-index="4">
+							<div class="character-frame">
+								<img
+									src="https://cdn.sanity.io/images/8ksun996/production/2058d4f4b5dff10ada3007a9c58828708cf2d685-896x1344.png"
+									alt="Gizmo the Genius"
+									class="hero-character"
+									loading="lazy"
+								/>
+								<div class="character-ground-vignette"></div>
+								<div class="character-nameplate">
+									<div class="nameplate-name">Gizmo the Genius</div>
+									<div class="nameplate-role">The Inventor</div>
+								</div>
+								<div class="character-tagline">"Now, the beautiful thing about this is — oh, that's interesting. Actually, everyone move."</div>
+							</div>
+						</div>
+
+						<div class="carousel-slide" data-index="5">
+							<div class="character-frame">
+								<img
+									src="https://cdn.sanity.io/images/8ksun996/production/e323f904272aa43242549c2743913bdc24cb755c-896x1344.png"
+									alt="Trixie the Trickster"
+									class="hero-character"
+									loading="lazy"
+								/>
+								<div class="character-ground-vignette"></div>
+								<div class="character-nameplate">
+									<div class="nameplate-name">Trixie the Trickster</div>
+									<div class="nameplate-role">The Artist</div>
+								</div>
+								<div class="character-tagline">"I don't make mistakes. I make unexpectedly vivid decisions."</div>
+							</div>
+						</div>
 
 						<button class="carousel-arrow carousel-prev" id="carouselPrev" aria-label="Previous character">&#8592;</button>
 						<button class="carousel-arrow carousel-next" id="carouselNext" aria-label="Next character">&#8594;</button>
 
 						<div class="carousel-dots" id="carouselDots">
-							{carouselCharacters.map((_, i) => (
-								<button class={`carousel-dot${i === 0 ? ' active' : ''}`} data-dot={i} aria-label={`Slide ${i + 1}`}></button>
-							))}
+							<button class="carousel-dot active" data-dot="0" aria-label="Slide 1"></button>
+							<button class="carousel-dot" data-dot="1" aria-label="Slide 2"></button>
+							<button class="carousel-dot" data-dot="2" aria-label="Slide 3"></button>
+							<button class="carousel-dot" data-dot="3" aria-label="Slide 4"></button>
+							<button class="carousel-dot" data-dot="4" aria-label="Slide 5"></button>
+							<button class="carousel-dot" data-dot="5" aria-label="Slide 6"></button>
 						</div>
 					</div>
 				</div>
@@ -87,7 +150,7 @@ const carouselCharacters = [
 					</div>
 					<div class="hero-stats stagger-children">
 						<div class="stat">
-							<span class="stat-number" data-count="21" data-suffix="">21</span>
+							<span class="stat-number" data-count="5" data-suffix="+">5+</span>
 							<span class="stat-label">Characters</span>
 						</div>
 						<div class="stat-divider"></div>
@@ -661,12 +724,12 @@ const carouselCharacters = [
 		z-index: 10;
 		display: flex;
 		justify-content: center;
-		gap: 5px;
+		gap: 8px;
 	}
 
 	.carousel-dot {
-		width: 6px;
-		height: 6px;
+		width: 8px;
+		height: 8px;
 		border-radius: 50%;
 		background: rgba(255, 0, 255, 0.25);
 		border: 1px solid rgba(255, 0, 255, 0.4);
@@ -677,7 +740,7 @@ const carouselCharacters = [
 
 	.carousel-dot.active {
 		background: #ff00ff;
-		transform: scale(1.35);
+		transform: scale(1.25);
 		box-shadow: 0 0 6px rgba(255, 0, 255, 0.6);
 	}
 
@@ -1136,7 +1199,7 @@ const carouselCharacters = [
 		}
 
 		function startTimer() {
-			timer = setInterval(() => goTo(current + 1), 5000);
+			timer = setInterval(() => goTo(current + 1), 4000);
 		}
 
 		function resetTimer() {
