@@ -41,6 +41,7 @@ import SectionDivider from '../components/SectionDivider.astro';
 									src="https://cdn.sanity.io/images/8ksun996/production/d96725d0e76a478fea8c4cab6f210bab4367d0f9-896x1344.png"
 									alt="Whiskers McScruff"
 									class="hero-character"
+									style="max-width: 360px;"
 									loading="lazy"
 								/>
 								<div class="character-ground-vignette"></div>
@@ -592,7 +593,6 @@ import SectionDivider from '../components/SectionDivider.astro';
 		z-index: 2;
 		width: 100%;
 		max-width: 460px;
-		max-height: 55vh;
 		height: auto;
 		object-fit: contain;
 		filter:
@@ -675,10 +675,10 @@ import SectionDivider from '../components/SectionDivider.astro';
 
 	.character-tagline {
 		position: absolute;
-		top: 30px;
+		top: 0;
 		left: -20px;
 		right: -20px;
-		z-index: 4;
+		z-index: 5;
 		font-family: 'Inter', sans-serif;
 		font-size: 0.82rem;
 		font-style: italic;
@@ -687,6 +687,8 @@ import SectionDivider from '../components/SectionDivider.astro';
 		line-height: 1.6;
 		letter-spacing: 0.3px;
 		text-shadow: 0 0 12px rgba(255, 0, 255, 0.4), 0 1px 4px rgba(0, 0, 0, 0.9);
+		background: linear-gradient(to bottom, rgba(24, 27, 34, 0.95) 0%, rgba(24, 27, 34, 0.75) 70%, transparent 100%);
+		padding: 14px 24px 22px;
 	}
 
 	/* ── CAROUSEL CONTROLS ── */
@@ -1097,7 +1099,6 @@ import SectionDivider from '../components/SectionDivider.astro';
 
 		.hero-character {
 			max-width: 320px;
-			max-height: 50vh;
 			margin: 0 auto;
 		}
 
@@ -1110,7 +1111,7 @@ import SectionDivider from '../components/SectionDivider.astro';
 		}
 
 		.character-tagline {
-			top: 16px;
+			top: 0;
 		}
 	}
 
