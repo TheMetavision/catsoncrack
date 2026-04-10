@@ -829,13 +829,32 @@ const products = [
 		setInterval(tick, 1000);
 
 		const form = document.getElementById('ea-form');
-		const success = document.getElementById('ea-success');
-		if (form && success) {
-			form.addEventListener('submit', (e) => {
-				e.preventDefault();
-				form.style.display = 'none';
-				success.style.display = 'block';
-			});
-		}
+const success = document.getElementById('ea-success');
+if (form && success) {
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('ea-email')?.value;
+        if (!email) return;
+        const btn = form.querySelector('.ea-submit');
+        const btnText = form.querySelector('.ea-btn-text');
+        if (btnText) btnText.textContent = 'Securing...';
+        if (btn) btn.disabled = true;
+        try {
+            await fetch('https://connect.mailerlite.com/api/subscribers', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiMTY2ZGZiYWEzYmFhMzQ2NGE2ZTY4YzgyZTYwNDFjNGZlMjM2MTZkN2YwMmVlNGVlNmQzYmJlY2YxNmMxOWE0N2ZlN2VjZTAwYTEwYzA0OTUiLCJpYXQiOjE3NzU4MjAyNzUuNzQxMTQ1LCJuYmYiOjE3NzU4MjAyNzUuNzQxMTQ3LCJleHAiOjQ5MzE0OTM4NzUuNzM0NDc1LCJzdWIiOiIyMjc4Mzk3Iiwic2NvcGVzIjpbXX0.D_zKiP5yLqx0XKrNeOt146s6arBj9oorzQFkOsmNHAjcpACKTlkEcckUDnaAlPbTZMJKJ2zJKacOmrjKUJURql5F6xako4CYgbLo5EqaMoDH5fznm_GtVDaWDcbm9QCBxgeeqYcamOfPnsvwPHUJThgKz2IZ4Y4Hc8H7IudylESYoktYoz91nBk4osPApnI5G0-PiTXaNvH0EdHdWl_0aNfnq7aLcg0bNjmL4a-xxxON6-t-ApS6EA6Wb87bVU568XlMk7AATxW800qHCEfU47YmoQ2jBLuLXWaFUYmzKgP4hhgzd8ku2GCERPUiJj90ZBevup-WSSgKCpIeRW0AZFmTW7bWRQlxuYzbw03Xw_l9MD__aK47JGLtSf7jZWTKBwrAv-gfe6brflahxjDmfNot0NfK8gYDnZkLOCHyDp8Ky7kNLZK8YCEl-jhQQOVBY_zVz3tu-omxMqHSE7PLX5_mDNt-Lslc6lkdk---Jg6hnLMTSfKnQRrC-awJ4ZYCgjtWUG2g1kQXpEQ8VXg6sdGwYKsf-64nMFQ05laakp-QOWr9vC52ZC1fr9Ctlykl2jUKJui2HY_akqSxjXgCY14apcGzmmMWEtNljC_A6qARuu6U5qcRDEmhCTew3yGrML8JMos4cbxbTTO5fndMbcYktjZ006PZasHlv4zyKX4'
+                },
+                body: JSON.stringify({ email: email, groups: ['184361347785426604'], status: 'active' })
+            });
+            form.style.display = 'none';
+            success.style.display = 'block';
+        } catch (error) {
+            if (btnText) btnText.textContent = 'Secure My Spot';
+            if (btn) btn.disabled = false;
+        }
+    });
+}
 	})();
 </script>
