@@ -41,7 +41,6 @@ import SectionDivider from '../components/SectionDivider.astro';
 									src="https://cdn.sanity.io/images/8ksun996/production/d96725d0e76a478fea8c4cab6f210bab4367d0f9-896x1344.png"
 									alt="Whiskers McScruff"
 									class="hero-character"
-									style="max-width: 360px;"
 									loading="lazy"
 								/>
 								<div class="character-ground-vignette"></div>
@@ -567,18 +566,19 @@ import SectionDivider from '../components/SectionDivider.astro';
 	}
 
 	.carousel-slide {
-		display: none;
+		position: absolute;
+		top: 0;
+		left: 0;
 		width: 100%;
+		opacity: 0;
+		transition: opacity 0.5s ease;
+		pointer-events: none;
 	}
 
 	.carousel-slide.active {
-		display: block;
-		animation: slideIn 0.45s cubic-bezier(0.22,1,0.36,1) both;
-	}
-
-	@keyframes slideIn {
-		from { opacity: 0; transform: translateX(24px); }
-		to   { opacity: 1; transform: translateX(0); }
+		position: relative;
+		opacity: 1;
+		pointer-events: auto;
 	}
 
 	.character-frame {
@@ -1170,6 +1170,17 @@ import SectionDivider from '../components/SectionDivider.astro';
 		.hero {
 			padding-top: 110px;
 			padding-bottom: 40px;
+		}
+
+		.hero-ctas {
+			flex-direction: column;
+		}
+
+		.hero-ctas .primary-cta,
+		.hero-ctas .secondary-cta {
+			width: 100%;
+			justify-content: center;
+			text-align: center;
 		}
 
 		.hero-stats {
