@@ -77,9 +77,12 @@ import Footer from '../components/Footer.astro';
 					</div>
 
 					<div class="contact-form-wrapper fade-in">
-						<form class="contact-form" id="contactForm" name="contact" method="POST" data-netlify="true" netlify-honeypot="bot-field">
-							<input type="hidden" name="form-name" value="contact" />
-							<p class="hidden-field"><label>Don't fill this out: <input name="bot-field" /></label></p>
+						<form class="contact-form" id="contactForm" action="https://api.web3forms.com/submit" method="POST">
+							<input type="hidden" name="access_key" value="c1f6d9fd-c10e-4633-a842-19702c4e5ab2" />
+							<input type="hidden" name="subject" value="New Contact Form Submission - Cats On Crack" />
+							<input type="hidden" name="from_name" value="Cats On Crack Website" />
+							<input type="hidden" name="redirect" value="https://catsoncrack.netlify.app/contact?success=true" />
+							<input type="checkbox" name="botcheck" class="hidden-field" style="display:none" />
 							<h3>Send Us a Message</h3>
 
 							<div class="form-group">
@@ -93,15 +96,15 @@ import Footer from '../components/Footer.astro';
 							</div>
 
 							<div class="form-group">
-								<label for="subject">Subject</label>
-								<select id="subject" name="subject" required>
+								<label for="topic">Subject</label>
+								<select id="topic" name="topic" required>
 									<option value="">Choose a topic...</option>
-									<option value="general">General Inquiry</option>
-									<option value="fan">Fan Message</option>
-									<option value="collab">Collaboration</option>
-									<option value="press">Press & Media</option>
-									<option value="merch">Merch Question</option>
-									<option value="other">Other</option>
+									<option value="General Inquiry">General Inquiry</option>
+									<option value="Fan Message">Fan Message</option>
+									<option value="Collaboration">Collaboration</option>
+									<option value="Press & Media">Press & Media</option>
+									<option value="Merch Question">Merch Question</option>
+									<option value="Other">Other</option>
 								</select>
 							</div>
 
@@ -615,27 +618,18 @@ import Footer from '../components/Footer.astro';
 
 <script>
 	const contactForm = document.getElementById('contactForm') as HTMLFormElement;
-	contactForm?.addEventListener('submit', async (e) => {
-		e.preventDefault();
-		const formData = new FormData(contactForm);
-		try {
-			const response = await fetch('/', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-				body: new URLSearchParams(formData as any).toString(),
-			});
-			if (response.ok) {
-				contactForm.innerHTML = `
-					<div class="form-success">
-						<h3>Message Sent!</h3>
-						<p>Thanks for reaching out! We'll get back to you faster than a cat chasing a glowing pipe.</p>
-					</div>
-				`;
-			} else {
-				throw new Error('Form submission failed');
-			}
-		} catch (error) {
-			alert('Something went wrong. Please try again or email us directly.');
+	const urlParams = new URLSearchParams(window.location.search);
+
+	if (urlParams.get('success') === 'true') {
+		const formWrapper = document.querySelector('.contact-form-wrapper');
+		if (formWrapper) {
+			formWrapper.innerHTML = `
+				<div class="form-success">
+					<h3>Message Sent!</h3>
+					<p>Thanks for reaching out! We'll get back to you faster than a cat chasing a glowing pipe.</p>
+				</div>
+			`;
 		}
-	});
+		window.history.replaceState({}, '', '/contact');
+	}
 </script>
