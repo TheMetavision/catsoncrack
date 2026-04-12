@@ -1,5 +1,6 @@
 ---
 import { organizationSchema, websiteSchema } from '../lib/schema';
+import CartDrawer from '../components/CartDrawer';
 
 interface Props {
 	title: string;
@@ -61,6 +62,7 @@ if (jsonLd) {
 	</head>
 	<body>
 		<slot />
+		<CartDrawer client:load />
 	</body>
 </html>
 
