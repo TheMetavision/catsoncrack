@@ -40,7 +40,7 @@ import SectionDivider from '../components/SectionDivider.astro';
 								<img
 									src="https://cdn.sanity.io/images/8ksun996/production/d96725d0e76a478fea8c4cab6f210bab4367d0f9-896x1344.png"
 									alt="Whiskers McScruff"
-									class="hero-character"
+									class="hero-character hero-character--whiskers"
 									loading="lazy"
 								/>
 								<div class="character-ground-vignette"></div>
@@ -601,6 +601,10 @@ import SectionDivider from '../components/SectionDivider.astro';
 			drop-shadow(0 20px 40px rgba(0, 0, 0, 0.9));
 	}
 
+	.hero-character--whiskers {
+		max-width: 380px;
+	}
+
 	.hero-character-svg {
 		width: 100%;
 		max-width: 460px;
@@ -1125,6 +1129,10 @@ import SectionDivider from '../components/SectionDivider.astro';
 		.hero-character {
 			max-width: 320px;
 			margin: 0 auto;
+		}
+
+		.hero-character--whiskers {
+			max-width: 270px;
 		}
 
 		.hero-character-svg {
