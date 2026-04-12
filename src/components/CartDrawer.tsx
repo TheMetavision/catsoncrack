@@ -1,77 +1,191 @@
+/**
+ * src/components/CartDrawer.tsx
+ * Cats On Crack — Cart drawer component
+ *
+ * Brand palette: bg #181B22, accent #FF00FF (magenta), amber #FF8C00, text #F0EDE8
+ */
+
 import { useStore } from '@nanostores/react';
-import { cartItems, cartOpen, cartTotal, cartCount, removeFromCart, updateQuantity, toggleCart } from '../lib/cart';
+import { useEffect } from 'react';
+import { $cartItems, $cartOpen, $cartTotal, $cartCount, removeFromCart, toggleCart, addToCart } from '../lib/cart';
 
 export default function CartDrawer() {
-  const items = useStore(cartItems);
-  const isOpen = useStore(cartOpen);
-  const total = useStore(cartTotal);
-  const count = useStore(cartCount);
+  const items = useStore($cartItems);
+  const isOpen = useStore($cartOpen);
+  const total = useStore($cartTotal);
+  const count = useStore($cartCount);
+
+  useEffect(() => {
+    function handleAdd(e: any) { addToCart(e.detail); }
+    window.addEventListener('add-to-cart', handleAdd);
+    return () => window.removeEventListener('add-to-cart', handleAdd);
+  }, []);
+
+  useEffect(() => {
+    document.body.style.overflow = isOpen ? 'hidden' : '';
+    return () => { document.body.style.overflow = ''; };
+  }, [isOpen]);
 
   async function handleCheckout() {
     if (items.length === 0) return;
     try {
       const res = await fetch('/.netlify/functions/create-checkout', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ items: items.map((item) => ({
-          stripePriceId: item.stripePriceId, printfulVariantId: item.printfulVariantId,
-          quantity: item.quantity, name: item.name, size: item.size, colour: item.colour,
-        })) }),
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          items: items.map((item) => ({
+            id: item.id,
+            title: item.title,
+            price: item.price,
+            size: item.size,
+            colour: item.colour || '',
+            image: item.image,
+            productType: item.productType || '',
+            quantity: item.quantity,
+          })),
+        }),
       });
       const data = await res.json();
-      if (data.url) window.location.href = data.url;
-      else alert('Checkout failed. Please try again.');
-    } catch (err) { console.error('Checkout error:', err); alert('Something went wrong.'); }
+      if (data.url) {
+        window.location.href = data.url;
+      } else if (data.error) {
+        alert(`Checkout failed: ${data.error}`);
+      }
+    } catch (err) {
+      console.error('Checkout error:', err);
+      alert('Something went wrong. Please try again.');
+    }
   }
 
-  const neon = '#ff00ff';
-  const bg = '#1f232e';
-  const bgCard = '#252a38';
+  const accent = '#FF00FF';
+  const accentDim = '#cc00cc';
+  const bg = '#181B22';
+  const bgLight = '#1f2330';
+  const text = '#F0EDE8';
+  const textMuted = '#8a8880';
+
+  const styles: Record<string, React.CSSProperties> = {
+    overlay: {
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
+      zIndex: 2000, opacity: isOpen ? 1 : 0,
+      pointerEvents: isOpen ? 'all' : 'none',
+      transition: 'opacity 0.3s',
+    },
+    drawer: {
+      position: 'fixed', top: 0, right: 0, bottom: 0,
+      width: '400px', maxWidth: '90vw', background: bg,
+      borderLeft: `2px solid ${accent}33`,
+      zIndex: 2001,
+      transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
+      transition: 'transform 0.3s ease',
+      display: 'flex', flexDirection: 'column',
+    },
+    header: {
+      display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+      padding: '20px 24px', borderBottom: `1px solid ${accent}22`,
+    },
+    title: {
+      color: accent, fontSize: '18px', fontWeight: 700,
+      letterSpacing: '2px', textTransform: 'uppercase' as const, margin: 0,
+    },
+    closeBtn: {
+      background: 'none', border: 'none', color: text,
+      fontSize: '28px', cursor: 'pointer', padding: '0 4px',
+      lineHeight: 1,
+    },
+    body: {
+      flex: 1, overflowY: 'auto' as const, padding: '16px 24px',
+    },
+    empty: {
+      color: textMuted, textAlign: 'center' as const,
+      padding: '48px 0', fontSize: '14px',
+    },
+    item: {
+      display: 'flex', gap: '14px', padding: '14px 0',
+      borderBottom: `1px solid ${accent}11`,
+    },
+    itemImg: {
+      width: '72px', height: '72px', objectFit: 'cover' as const,
+      borderRadius: '6px', border: `1px solid ${accent}22`,
+    },
+    itemName: {
+      color: text, fontSize: '14px', fontWeight: 600, margin: '0 0 4px',
+    },
+    itemVariant: {
+      color: textMuted, fontSize: '12px', margin: '0 0 4px',
+    },
+    itemPrice: {
+      color: accent, fontSize: '14px', fontWeight: 700, margin: '0 0 6px',
+    },
+    removeBtn: {
+      background: 'none', border: 'none', color: '#ff4466',
+      fontSize: '12px', cursor: 'pointer', padding: 0,
+      textDecoration: 'underline',
+    },
+    footer: {
+      padding: '20px 24px', borderTop: `1px solid ${accent}22`,
+    },
+    totalRow: {
+      display: 'flex', justifyContent: 'space-between',
+      marginBottom: '16px',
+    },
+    totalLabel: {
+      color: text, fontSize: '16px', fontWeight: 600,
+      textTransform: 'uppercase' as const, letterSpacing: '1px',
+    },
+    totalValue: {
+      color: accent, fontSize: '20px', fontWeight: 700,
+    },
+    checkoutBtn: {
+      width: '100%', padding: '14px', background: accent, color: '#000',
+      border: 'none', fontSize: '16px', fontWeight: 700,
+      textTransform: 'uppercase' as const, letterSpacing: '2px',
+      cursor: 'pointer', borderRadius: '4px',
+      transition: 'background 0.2s',
+    },
+  };
 
   return (
     <>
-      <button onClick={toggleCart} aria-label={`Cart (${count} items)`}
-        style={{ position:'fixed', top:'24px', right:'24px', zIndex:200, background:neon, border:'none', borderRadius:'2px', padding:'10px 14px', cursor:'pointer', display:'flex', alignItems:'center', gap:'6px', color:'#fff', fontFamily:"'Bebas Neue', sans-serif", fontSize:'0.95rem', letterSpacing:'0.1em', boxShadow:`0 0 18px rgba(255,0,255,0.4)`, transition:'all 0.2s ease' }}>
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.68 13.39a2 2 0 0 0 2 1.61h9.72a2 2 0 0 0 2-1.61L23 6H6"/></svg>
-        {count > 0 && <span>{count}</span>}
-      </button>
-
-      {isOpen && <div onClick={toggleCart} style={{ position:'fixed', inset:0, background:'rgba(0,0,0,0.7)', zIndex:998 }} />}
-
-      <div style={{ position:'fixed', top:0, right:0, bottom:0, width:'400px', maxWidth:'90vw', background:bg, zIndex:999, transform:isOpen?'translateX(0)':'translateX(100%)', transition:'transform 0.3s ease', display:'flex', flexDirection:'column', borderLeft:`2px solid rgba(255,0,255,0.3)` }}>
-        <div style={{ padding:'24px', borderBottom:'1px solid rgba(255,255,255,0.08)', display:'flex', justifyContent:'space-between', alignItems:'center' }}>
-          <h2 style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:'1.6rem', letterSpacing:'2px', color:'#fff', margin:0 }}>Your Cart</h2>
-          <button onClick={toggleCart} aria-label="Close cart" style={{ background:'none', border:'none', color:'rgba(255,255,255,0.5)', cursor:'pointer', fontSize:'1.5rem' }}>✕</button>
+      <div style={styles.overlay} onClick={toggleCart} />
+      <div style={styles.drawer}>
+        <div style={styles.header}>
+          <h2 style={styles.title}>Cart ({count})</h2>
+          <button style={styles.closeBtn} onClick={toggleCart}>&times;</button>
         </div>
-
-        <div style={{ flex:1, overflowY:'auto', padding:'16px 24px' }}>
+        <div style={styles.body}>
           {items.length === 0 ? (
-            <p style={{ color:'rgba(255,255,255,0.4)', textAlign:'center', padding:'48px 0' }}>Your cart is empty. Time to rep the alley.</p>
-          ) : items.map((item) => (
-            <div key={`${item.productId}-${item.size}-${item.colour}`} style={{ display:'flex', gap:'16px', padding:'16px 0', borderBottom:'1px solid rgba(255,255,255,0.06)' }}>
-              {item.image && <img src={item.image} alt={item.name} style={{ width:'64px', height:'64px', objectFit:'cover', borderRadius:'2px' }} />}
-              <div style={{ flex:1 }}>
-                <div style={{ fontFamily:"'Bebas Neue', sans-serif", fontSize:'1rem', color:'#fff', letterSpacing:'1px' }}>{item.name}</div>
-                <div style={{ fontSize:'0.78rem', color:'rgba(255,255,255,0.4)', marginTop:'2px' }}>{item.size}{item.colour ? ` / ${item.colour}` : ''}</div>
-                <div style={{ display:'flex', alignItems:'center', gap:'8px', marginTop:'8px' }}>
-                  <button onClick={() => updateQuantity(item.productId, item.size, item.colour, item.quantity - 1)} style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', color:'#fff', width:'28px', height:'28px', cursor:'pointer', borderRadius:'2px' }}>−</button>
-                  <span style={{ color:'#fff', fontSize:'0.9rem', minWidth:'20px', textAlign:'center' }}>{item.quantity}</span>
-                  <button onClick={() => updateQuantity(item.productId, item.size, item.colour, item.quantity + 1)} style={{ background:'rgba(255,255,255,0.08)', border:'1px solid rgba(255,255,255,0.15)', color:'#fff', width:'28px', height:'28px', cursor:'pointer', borderRadius:'2px' }}>+</button>
-                  <span style={{ marginLeft:'auto', color:'#fff', fontWeight:600 }}>£{(item.price * item.quantity).toFixed(2)}</span>
+            <p style={styles.empty}>Your cart is empty. Hit the streets and grab some gear.</p>
+          ) : (
+            items.map((item) => (
+              <div style={styles.item} key={item.id + '-' + item.size}>
+                <img style={styles.itemImg} src={item.image} alt={item.title} />
+                <div>
+                  <p style={styles.itemName}>{item.title}</p>
+                  <p style={styles.itemVariant}>
+                    {item.colour ? `${item.colour} · ` : ''}Size: {item.size} · Qty: {item.quantity}
+                  </p>
+                  <p style={styles.itemPrice}>&pound;{(item.price * item.quantity).toFixed(2)}</p>
+                  <button style={styles.removeBtn} onClick={() => removeFromCart(item.id, item.size)}>
+                    Remove
+                  </button>
                 </div>
               </div>
-              <button onClick={() => removeFromCart(item.productId, item.size, item.colour)} aria-label={`Remove ${item.name}`} style={{ background:'none', border:'none', color:'rgba(255,255,255,0.25)', cursor:'pointer', fontSize:'1rem', alignSelf:'flex-start' }}>✕</button>
-            </div>
-          ))}
+            ))
+          )}
         </div>
-
         {items.length > 0 && (
-          <div style={{ padding:'24px', borderTop:'1px solid rgba(255,255,255,0.08)' }}>
-            <div style={{ display:'flex', justifyContent:'space-between', marginBottom:'16px', fontFamily:"'Bebas Neue', sans-serif", fontSize:'1.2rem', letterSpacing:'1px', color:'#fff' }}>
-              <span>Total</span><span>£{total.toFixed(2)}</span>
+          <div style={styles.footer}>
+            <div style={styles.totalRow}>
+              <span style={styles.totalLabel}>Total</span>
+              <span style={styles.totalValue}>&pound;{total.toFixed(2)}</span>
             </div>
-            <button onClick={handleCheckout} style={{ width:'100%', background:neon, color:'#fff', border:'none', padding:'16px', fontFamily:"'Bebas Neue', sans-serif", fontSize:'1rem', letterSpacing:'2px', cursor:'pointer', borderRadius:'2px', boxShadow:`0 0 18px rgba(255,0,255,0.4)`, transition:'all 0.2s ease' }}
-              onMouseEnter={(e) => (e.currentTarget.style.boxShadow = '0 0 30px rgba(255,0,255,0.6)')}
-              onMouseLeave={(e) => (e.currentTarget.style.boxShadow = '0 0 18px rgba(255,0,255,0.4)')}>
+            <button
+              style={styles.checkoutBtn}
+              onClick={handleCheckout}
+              onMouseEnter={(e) => (e.currentTarget.style.background = accentDim)}
+              onMouseLeave={(e) => (e.currentTarget.style.background = accent)}
+            >
               Checkout
             </button>
           </div>
