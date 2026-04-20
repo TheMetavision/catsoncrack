@@ -632,4 +632,12 @@ import Footer from '../components/Footer.astro';
 		}
 		window.history.replaceState({}, '', '/contact');
 	}
+
+	contactForm?.addEventListener('submit', () => {
+		const topic = (contactForm.querySelector('#topic') as HTMLSelectElement)?.value || 'General';
+		const subjectField = contactForm.querySelector('input[name="subject"]') as HTMLInputElement;
+		if (subjectField) {
+			subjectField.value = `Cats On Crack - ${topic}`;
+		}
+	});
 </script>
