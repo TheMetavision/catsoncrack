@@ -177,20 +177,168 @@ import Footer from '../components/Footer.astro';
 	}
 
 	.form-success {
-		text-align: center;
-		padding: 40px 20px;
+		text-align: left;
+		padding: 0;
 	}
 
-	.form-success h3 {
-		color: var(--primary);
-		font-size: 2rem;
-		margin-bottom: 15px;
+	/* Alley signal confirmation */
+	.alley-signal {
+		position: relative;
+		overflow: hidden;
+		background: var(--bg-darker, #0d0f14);
+		border: 2px solid rgba(255, 0, 255, 0.2);
+		border-left: 4px solid var(--primary, #ff00ff);
+		border-radius: 12px;
+		padding: 2.5rem 2rem;
+		animation: signalFadeIn 0.4s ease-out;
 	}
 
-	.form-success p {
-		color: var(--text-secondary);
-		font-size: 1.1rem;
-		line-height: 1.7;
+	@keyframes signalFadeIn {
+		from { opacity: 0; transform: translateY(12px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.alley-signal__tag {
+		position: absolute;
+		top: 16px;
+		right: 20px;
+		font-family: 'Inter', sans-serif;
+		font-size: 0.6rem;
+		color: rgba(255, 255, 255, 0.25);
+		letter-spacing: 3px;
+		text-transform: uppercase;
+		font-weight: 600;
+	}
+
+	.alley-signal__body {
+		display: flex;
+		align-items: flex-start;
+		gap: 18px;
+	}
+
+	.alley-signal__badge {
+		flex-shrink: 0;
+		width: 52px;
+		height: 52px;
+		border-radius: 50%;
+		background: var(--primary, #ff00ff);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
+	}
+
+	.alley-signal__label {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.688rem;
+		color: var(--primary, #ff00ff);
+		letter-spacing: 3px;
+		margin-bottom: 8px;
+		text-transform: uppercase;
+		text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
+	}
+
+	.alley-signal__headline {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: clamp(1.75rem, 4vw, 2.25rem);
+		color: #fff;
+		margin: 0 0 10px;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		line-height: 1;
+		text-shadow: 2px 2px 0 rgba(255, 0, 255, 0.2);
+	}
+
+	.alley-signal__sub {
+		font-family: 'Inter', sans-serif;
+		color: var(--text-secondary, rgba(255,255,255,0.5));
+		font-size: 0.938rem;
+		margin: 0;
+		line-height: 1.5;
+	}
+
+	.alley-signal__footer {
+		margin-top: 1.75rem;
+		padding-top: 1.25rem;
+		border-top: 1px solid rgba(255, 0, 255, 0.15);
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: 12px;
+		flex-wrap: wrap;
+	}
+
+	.alley-signal__quote {
+		font-family: 'Inter', sans-serif;
+		font-style: italic;
+		font-size: 0.85rem;
+		color: rgba(255, 255, 255, 0.3);
+		line-height: 1.4;
+		max-width: 55%;
+	}
+
+	.alley-signal__actions {
+		display: flex;
+		gap: 10px;
+	}
+
+	.alley-signal__btn {
+		padding: 10px 16px;
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.95rem;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		cursor: pointer;
+		border-radius: 8px;
+		text-decoration: none;
+		display: inline-block;
+		transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.2s ease;
+	}
+
+	.alley-signal__btn--ghost {
+		background: transparent;
+		color: #fff;
+		border: 2px solid rgba(255, 0, 255, 0.4);
+	}
+
+	.alley-signal__btn--ghost:hover {
+		background: rgba(255, 0, 255, 0.15);
+		border-color: var(--primary, #ff00ff);
+		transform: translateY(-2px);
+		box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);
+	}
+
+	.alley-signal__btn--solid {
+		background: var(--accent-gradient, linear-gradient(135deg, #ff00ff, #cc00cc));
+		color: #fff;
+		border: none;
+		box-shadow: 0 4px 20px rgba(255, 0, 255, 0.4);
+		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
+	}
+
+	.alley-signal__btn--solid:hover {
+		transform: translateY(-2px);
+		box-shadow: 0 8px 30px rgba(255, 0, 255, 0.5);
+	}
+
+	@media (max-width: 520px) {
+		.alley-signal {
+			padding: 2rem 1.25rem;
+		}
+		.alley-signal__tag {
+			display: none;
+		}
+		.alley-signal__footer {
+			flex-direction: column;
+			align-items: stretch;
+		}
+		.alley-signal__quote {
+			max-width: 100%;
+			text-align: center;
+		}
+		.alley-signal__actions {
+			justify-content: center;
+		}
 	}
 
 	.hero-banner {
@@ -625,8 +773,26 @@ import Footer from '../components/Footer.astro';
 		if (formWrapper) {
 			formWrapper.innerHTML = `
 				<div class="form-success">
-					<h3>Message Sent!</h3>
-					<p>Thanks for reaching out! We'll get back to you faster than a cat chasing a glowing pipe.</p>
+					<div class="alley-signal">
+						<span class="alley-signal__tag">// Alley dispatch</span>
+						<div class="alley-signal__body">
+							<div class="alley-signal__badge" aria-hidden="true">
+								<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+							</div>
+							<div>
+								<div class="alley-signal__label">Signal received</div>
+								<h3 class="alley-signal__headline">Message landed.</h3>
+								<p class="alley-signal__sub">The crew got your note. We'll get back to you faster than a cat chasing a glowing pipe.</p>
+							</div>
+						</div>
+						<div class="alley-signal__footer">
+							<div class="alley-signal__quote">"Whiskers says check back soon. Or don't. We know where you are."</div>
+							<div class="alley-signal__actions">
+								<a class="alley-signal__btn alley-signal__btn--ghost" href="/the-alley-squad">Meet the Squad</a>
+								<a class="alley-signal__btn alley-signal__btn--solid" href="https://www.youtube.com/@CatsOnCrackMedia" target="_blank" rel="noopener">Watch the Chaos</a>
+							</div>
+						</div>
+					</div>
 				</div>
 			`;
 		}

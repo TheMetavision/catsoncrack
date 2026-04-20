@@ -292,6 +292,18 @@ import SectionDivider from '../components/SectionDivider.astro';
 							/>
 							<button type="submit" class="cta-button">Subscribe</button>
 						</form>
+						<div class="nl-confirm" id="nl-confirm" style="display:none;" role="status" aria-live="polite">
+							<div class="nl-signal">
+								<div class="nl-signal__badge" aria-hidden="true">
+									<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+								</div>
+								<div>
+									<div class="nl-signal__label">You're in the alley</div>
+									<div class="nl-signal__headline">Welcome to the crew, stray.</div>
+									<div class="nl-signal__sub">Alley secrets, sneaky schemes, and feline mayhem — heading to your inbox.</div>
+								</div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -1099,6 +1111,64 @@ import SectionDivider from '../components/SectionDivider.astro';
 
 	/* newsletter-image styles defined above with newsletter-content */
 
+	/* Newsletter confirmation card */
+	.nl-signal {
+		display: flex;
+		align-items: center;
+		gap: 14px;
+		background: var(--bg-darker, #0d0f14);
+		border: 2px solid rgba(255, 0, 255, 0.2);
+		border-left: 4px solid var(--primary, #ff00ff);
+		border-radius: 12px;
+		padding: 1.25rem 1.5rem;
+		text-align: left;
+		animation: nlSignalIn 0.4s ease-out;
+	}
+
+	@keyframes nlSignalIn {
+		from { opacity: 0; transform: translateY(8px); }
+		to { opacity: 1; transform: translateY(0); }
+	}
+
+	.nl-signal__badge {
+		flex-shrink: 0;
+		width: 38px;
+		height: 38px;
+		border-radius: 50%;
+		background: var(--primary, #ff00ff);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		box-shadow: 0 0 15px rgba(255, 0, 255, 0.4);
+	}
+
+	.nl-signal__label {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.625rem;
+		color: var(--primary, #ff00ff);
+		letter-spacing: 2.5px;
+		margin-bottom: 3px;
+		text-transform: uppercase;
+		text-shadow: 0 0 8px rgba(255, 0, 255, 0.3);
+	}
+
+	.nl-signal__headline {
+		font-family: 'Bebas Neue', sans-serif;
+		color: #fff;
+		font-size: 1.2rem;
+		letter-spacing: 1.5px;
+		line-height: 1.3;
+		text-transform: uppercase;
+		text-shadow: 2px 2px 0 rgba(255, 0, 255, 0.15);
+	}
+
+	.nl-signal__sub {
+		font-family: 'Inter', sans-serif;
+		color: var(--text-secondary, rgba(255,255,255,0.5));
+		font-size: 0.8rem;
+		margin-top: 3px;
+	}
+
 	@media (max-width: 1100px) {
 		.hero-split {
 			gap: 36px;
@@ -1204,6 +1274,7 @@ import SectionDivider from '../components/SectionDivider.astro';
 <script>
 	const form = document.getElementById('newsletterForm');
 	const btn = form?.querySelector('button[type="submit"]') as HTMLButtonElement;
+	const nlConfirm = document.getElementById('nl-confirm');
 
 	form?.addEventListener('submit', async (e) => {
 		e.preventDefault();
@@ -1229,24 +1300,21 @@ import SectionDivider from '../components/SectionDivider.astro';
 			});
 
 			if (res.ok || res.status === 200 || res.status === 201) {
-				btn.textContent = "You're in! Welcome to the alley crew.";
-				email.value = '';
-				setTimeout(() => {
-					btn.textContent = originalText;
-					btn.disabled = false;
-				}, 4000);
-			} else {
-				const data = await res.json();
-				if (data?.message?.includes('already') || res.status === 422) {
-					btn.textContent = "You're already part of the crew!";
-					email.value = '';
-					setTimeout(() => {
-						btn.textContent = originalText;
-						btn.disabled = false;
-					}, 3000);
-				} else {
-					throw new Error('Subscription failed');
+				form.style.display = 'none';
+				if (nlConfirm) nlConfirm.style.display = 'block';
+			} else if (res.status === 422) {
+				form.style.display = 'none';
+				if (nlConfirm) {
+					const signal = nlConfirm.querySelector('.nl-signal');
+					if (signal) {
+						signal.querySelector('.nl-signal__label')!.textContent = 'Already in the alley';
+						signal.querySelector('.nl-signal__headline')!.textContent = 'We know you, stray.';
+						signal.querySelector('.nl-signal__sub')!.textContent = "You signed up before. The crew's already got you covered.";
+					}
+					nlConfirm.style.display = 'block';
 				}
+			} else {
+				throw new Error('Subscription failed');
 			}
 		} catch (err) {
 			btn.textContent = 'Something went wrong — try again';
