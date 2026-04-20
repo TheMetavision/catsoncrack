@@ -1203,12 +1203,55 @@ import SectionDivider from '../components/SectionDivider.astro';
 
 <script>
 	const form = document.getElementById('newsletterForm');
-	form?.addEventListener('submit', (e) => {
+	const btn = form?.querySelector('button[type="submit"]') as HTMLButtonElement;
+
+	form?.addEventListener('submit', async (e) => {
 		e.preventDefault();
 		const email = form.querySelector('input[type="email"]') as HTMLInputElement;
-		if (email?.value) {
-			alert('Thank you for subscribing! Stay tuned for exclusive alley secrets!');
-			email.value = '';
+		if (!email?.value) return;
+
+		const originalText = btn.textContent;
+		btn.textContent = 'Subscribing...';
+		btn.disabled = true;
+
+		try {
+			const res = await fetch('https://connect.mailerlite.com/api/subscribers', {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					'Authorization': 'Bearer eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJhdWQiOiI0IiwianRpIjoiMTY2ZGZiYWEzYmFhMzQ2NGE2ZTY4YzgyZTYwNDFjNGZlMjM2MTZkN2YwMmVlNGVlNmQzYmJlY2YxNmMxOWE0N2ZlN2VjZTAwYTEwYzA0OTUiLCJpYXQiOjE3NzU4MjAyNzUuNzQxMTQ1LCJuYmYiOjE3NzU4MjAyNzUuNzQxMTQ3LCJleHAiOjQ5MzE0OTM4NzUuNzM0NDc1LCJzdWIiOiIyMjc4Mzk3Iiwic2NvcGVzIjpbXX0.D_zKiP5yLqx0XKrNeOt146s6arBj9oorzQFkOsmNHAjcpACKTlkEcckUDnaAlPbTZMJKJ2zJKacOmrjKUJURql5F6xako4CYgbLo5EqaMoDH5fznm_GtVDaWDcbm9QCBxgeeqYcamOfPnsvwPHUJThgKz2IZ4Y4Hc8H7IudylESYoktYoz91nBk4osPApnI5G0-PiTXaNvH0EdHdWl_0aNfnq7aLcg0bNjmL4a-xxxON6-t-ApS6EA6Wb87bVU568XlMk7AATxW800qHCEfU47YmoQ2jBLuLXWaFUYmzKgP4hhgzd8ku2GCERPUiJj90ZBevup-WSSgKCpIeRW0AZFmTW7bWRQlxuYzbw03Xw_l9MD__aK47JGLtSf7jZWTKBwrAv-gfe6brflahxjDmfNot0NfK8gYDnZkLOCHyDp8Ky7kNLZK8YCEl-jhQQOVBY_zVz3tu-omxMqHSE7PLX5_mDNt-Lslc6lkdk---Jg6hnLMTSfKnQRrC-awJ4ZYCgjtWUG2g1kQXpEQ8VXg6sdGwYKsf-64nMFQ05laakp-QOWr9vC52ZC1fr9Ctlykl2jUKJui2HY_akqSxjXgCY14apcGzmmMWEtNljC_A6qARuu6U5qcRDEmhCTew3yGrML8JMos4cbxbTTO5fndMbcYktjZ006PZasHlv4zyKX4'
+				},
+				body: JSON.stringify({
+					email: email.value,
+					groups: ['184360844895716414'],
+					fields: { source: 'catsoncrack-homepage' }
+				})
+			});
+
+			if (res.ok || res.status === 200 || res.status === 201) {
+				btn.textContent = "You're in! Welcome to the alley crew.";
+				email.value = '';
+				setTimeout(() => {
+					btn.textContent = originalText;
+					btn.disabled = false;
+				}, 4000);
+			} else {
+				const data = await res.json();
+				if (data?.message?.includes('already') || res.status === 422) {
+					btn.textContent = "You're already part of the crew!";
+					email.value = '';
+					setTimeout(() => {
+						btn.textContent = originalText;
+						btn.disabled = false;
+					}, 3000);
+				} else {
+					throw new Error('Subscription failed');
+				}
+			}
+		} catch (err) {
+			btn.textContent = 'Something went wrong — try again';
+			btn.disabled = false;
+			setTimeout(() => { btn.textContent = originalText; }, 3000);
 		}
 	});
 
