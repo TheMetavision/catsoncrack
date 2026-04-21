@@ -1,11 +1,12 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { tvSeriesSchema } from '../lib/schema';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionDivider from '../components/SectionDivider.astro';
 ---
 
-<Layout title="Cats On Crack - The Wildest Alley Cats You'll Ever Meet">
+<Layout title="Cats On Crack - The Wildest Alley Cats You'll Ever Meet" jsonLd={tvSeriesSchema()}>
 	<Navigation />
 
 	<main>
