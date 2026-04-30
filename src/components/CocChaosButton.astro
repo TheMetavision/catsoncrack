@@ -1,43 +1,24 @@
 ---
-// src/components/CocChaosButton.astro — v2 PROMINENCE RETROFIT (2026-04-30)
+// src/components/CocChaosButton.astro — v3 (2026-04-30)
 //
-// Retrofit pass against the cross-brand prominence + discoverability standard
-// (filed 2026-04-29 as a constraint document for all four brand builds).
-// V1 shipped with three prominence-floor failures (always-visible label,
-// solid fill, tap target); v2 corrects them while preserving all chaos
-// identity from Arc's content spec arc-spec-coc-theme-tune-content-2026-04-30.md.
+// v3 adds two user-facing features on top of the v2 prominence retrofit:
+//   1. CLOSE button (top-right of container) — visitor can dismiss the
+//      player for the current browser session. sessionStorage flag
+//      `coc_theme_dismissed=1` controls render. Cleared when browser closes
+//      (or new tab) — restores on next visit per Alan's spec.
+//   2. PROGRESS METER below the button — appears once audio is loaded
+//      (after first click), persists through paused/playing/ended states.
+//      Click anywhere on the bar to seek to that position. ARIA slider with
+//      keyboard scrubbing (left/right ±5s, Home → 0, End → duration).
 //
-// CHANGES VS V1
-// -------------
-// 1. Solid `#ff00ff` magenta fill at IDLE inside the misshapen wonky border
-//    (was: transparent + 60%-opacity outline only).
-// 2. Permanent `"PLAY?"` label below the button at IDLE (was: glyph-only).
-//    Brief-literal string. Gizmo-voice question register. Bebas Neue all-caps.
-// 3. Tap target grown — desktop 48 → 64px, mobile 44 → 52px (was: under floor).
-// 4. NEW bounded attention pulse on first arrival — 2-cycle outer-glow over
-//    ~3s, then stops. animation-iteration-count: 2 (no `infinite`). Disabled
-//    under prefers-reduced-motion.
-// 5. Hover-flicker PLAY?/DON'T migrates from GLYPH to LABEL. Label flickers
-//    while glyph stays ▶. Cleaner separation of decorative vs. structural.
-// 6. Logo-aberration cosmetic fix — text-shadow path swapped to
-//    filter: drop-shadow() so the chromatic split renders on <img> children
-//    of <a class="logo"> (live site uses image-based logo).
+// v2 changes (preserved): solid magenta fill, permanent PLAY? label,
+// 64px desktop / 52px mobile tap target, bounded attention pulse, hover
+// flicker on label, logo aberration uses filter:drop-shadow.
 //
-// PRESERVED FROM V1 (chaos identity intact)
-// -----------------------------------------
-// - Misshapen wonky border path (10 control points, static across loads — Arc B.3)
-// - Idle in-place chromatic jitter every 8–12s (now applied to glyph + label)
-// - Click-impulse chromatic flash on activation
-// - PLAYING wobble pulse (700ms scale + rotate)
-// - PLAYING border morph between IDLE-irregular and extra-irregular variants
-// - Whole-page brand logo chromatic aberration during PLAYING (every 4–6s)
-// - ENDED droop posture (skewY -2deg + translateY 2px)
-// - ENDED "AGAIN?" label + "ONE MORE." sub-label
-// - Reduced-motion gating across all decorative animations
-// - Mobile bottom-right override (desktop is bottom-LEFT)
-// - Suppression on /cart, /checkout/*, /order/*
-// - Multi-selector logo resolution (graceful no-op fallback)
-// - Script tag UNWRAPPED from any conditional (Astro hoists + Vite bundles correctly)
+// All v1 chaos signals preserved: misshapen wonky border (static across
+// loads), idle chromatic jitter every 8–12s, click-impulse flash, PLAYING
+// wobble + border morph + logo aberration, ENDED droop + AGAIN? + ONE MORE.,
+// reduced-motion gating, mobile bottom-right override, suppression paths.
 
 export interface Props {
   audioUrl?: string | null;
@@ -66,6 +47,18 @@ const shouldRender = enabled !== false && !!audioUrl;
     data-track-title={trackTitle}
     data-track-artist={trackArtist}
   >
+    {/* v3 — Close button. Top-right of container. sessionStorage-backed. */}
+    <button
+      type="button"
+      class="coc-chaos__close"
+      aria-label="Hide theme audio control for this session"
+      title="Hide for this session"
+    >
+      <svg viewBox="0 0 12 12" focusable="false" aria-hidden="true">
+        <path d="M 2.5 2.5 L 9.5 9.5 M 9.5 2.5 L 2.5 9.5" stroke="#FFFFFF" stroke-width="1.6" stroke-linecap="round" />
+      </svg>
+    </button>
+
     <button
       type="button"
       class="coc-chaos__button"
@@ -76,16 +69,11 @@ const shouldRender = enabled !== false && !!audioUrl;
       title={trackTitle}
     >
       <svg class="coc-chaos__svg" viewBox="0 0 60 60" preserveAspectRatio="xMidYMid meet" focusable="false" aria-hidden="true">
-        {/* SOLID MAGENTA FILL on the misshapen wonky path. v2 — was outline-only.
-            Same 10-control-point path as v1 (Arc B.3 — static across page loads). */}
         <path
           class="coc-chaos__surface"
           d="M 30 6 L 43.22 11.80 L 53.78 22.27 L 51.88 37.11 L 45.28 51.03 L 30 54 L 16.19 49.02 L 5.74 37.88 L 8.60 23.05 L 15.61 10.19 Z"
           fill="#ff00ff"
         />
-
-        {/* Border stroke on top of the surface — keeps the wonky outline visible
-            and gives the chromatic-aberration / hover-glow surface to push around. */}
         <path
           class="coc-chaos__border"
           d="M 30 6 L 43.22 11.80 L 53.78 22.27 L 51.88 37.11 L 45.28 51.03 L 30 54 L 16.19 49.02 L 5.74 37.88 L 8.60 23.05 L 15.61 10.19 Z"
@@ -95,46 +83,47 @@ const shouldRender = enabled !== false && !!audioUrl;
           stroke-width="2"
           stroke-linejoin="miter"
         />
-
-        {/* IDLE glyph — slightly misshapen play arrow, now WHITE for contrast on magenta fill.
-            Triangle apex shifted ~1px to break perfect symmetry. */}
         <path
           class="coc-chaos__glyph coc-chaos__glyph--play"
           d="M 24 21 L 39 30 L 24 39 Z"
           fill="#FFFFFF"
         />
-
-        {/* PLAYING glyph — pause icon, white, slight skew. */}
         <g class="coc-chaos__glyph coc-chaos__glyph--pause" aria-hidden="true">
           <rect x="22" y="20" width="4.5" height="20" rx="0.5" fill="#FFFFFF" transform="rotate(-2 24.25 30)" />
           <rect x="33.5" y="20" width="4.5" height="20" rx="0.5" fill="#FFFFFF" transform="rotate(2 35.75 30)" />
         </g>
-
-        {/* Loading-glyph (rare path) — three dots if first-play takes >250ms. */}
         <g class="coc-chaos__glyph coc-chaos__glyph--loading" aria-hidden="true">
           <circle cx="22" cy="30" r="2" fill="#FFFFFF" />
           <circle cx="30" cy="30" r="2" fill="#FFFFFF" />
           <circle cx="38" cy="30" r="2" fill="#FFFFFF" />
         </g>
       </svg>
-
-      {/* ENDED text overlay — "AGAIN?" replaces glyph. Brief-literal string. */}
       <span class="coc-chaos__ended-text" aria-hidden="true">AGAIN?</span>
     </button>
 
-    {/* PERMANENT IDLE LABEL (v2 retrofit). Brief-literal "PLAY?" string, Gizmo
-        voice. Always visible at IDLE. Hover flickers it between PLAY? / DON'T.
-        Hidden during PLAYING / ENDED states (pause icon + droop carry the
-        state visually). */}
     <span class="coc-chaos__label" aria-hidden="true">PLAY?</span>
 
-    {/* Optional ENDED sub-label — "ONE MORE." in Gizmo voice (H.3 default). */}
+    {/* v3 — Progress bar. role="slider" for a11y. tabindex=0 for keyboard.
+        Hidden by default; JS adds .coc-chaos__progress--visible once howl
+        is loaded (after first click). */}
+    <div
+      class="coc-chaos__progress"
+      role="slider"
+      tabindex="0"
+      aria-label="Theme audio playback position"
+      aria-valuemin="0"
+      aria-valuemax="100"
+      aria-valuenow="0"
+      aria-valuetext="0 percent"
+    >
+      <div class="coc-chaos__progress-track" aria-hidden="true"></div>
+      <div class="coc-chaos__progress-fill" aria-hidden="true"></div>
+    </div>
+
     <span class="coc-chaos__sublabel" aria-hidden="true">ONE MORE.</span>
   </div>
 )}
 
-{/* SVG filter primitive for chromatic-aberration on logo (used when logo is
-    SVG rather than text). Defined once globally; activated per-element by JS. */}
 {shouldRender && (
   <svg width="0" height="0" style="position: absolute; width: 0; height: 0; overflow: hidden;" aria-hidden="true" focusable="false">
     <defs>
@@ -161,13 +150,9 @@ const shouldRender = enabled !== false && !!audioUrl;
   </svg>
 )}
 
-{/* Script tag UNWRAPPED — Astro hoists + Vite bundles. */}
 <script>
   import { createThemeAudio, prefersReducedMotion } from '../lib/themeAudio.js';
 
-  // Brand selectors for whole-page logo chromatic aberration. Multi-fallback
-  // — COC live site uses <a href="/" class="logo"> with an inner <img>, so
-  // the last selector matches.
   const LOGO_SELECTORS = [
     'header a[href="/"] img',
     'header a[href="/"] svg',
@@ -176,10 +161,11 @@ const shouldRender = enabled !== false && !!audioUrl;
     'header [class*="logo"]',
     'header h1',
     'a[href="/"][class*="brand"]',
-    'a[href="/"][class*="logo"]',  // ← matches COC live site
+    'a[href="/"][class*="logo"]',
     'a.logo',
   ];
 
+  const DISMISS_KEY = 'coc_theme_dismissed';
   const IDLE_JITTER_MIN_MS = 8000;
   const IDLE_JITTER_MAX_MS = 12000;
   const HOVER_JITTER_MIN_MS = 2000;
@@ -191,15 +177,33 @@ const shouldRender = enabled !== false && !!audioUrl;
   const HOVER_FLICKER_MAX_MS = 250;
   const HOVER_FLICKER_STRINGS = ['PLAY?', "DON'T"];
   const LOAD_GLYPH_THRESHOLD_MS = 250;
-  const ATTENTION_PULSE_MS = 3000; // bounded — explicit duration
+  const ATTENTION_PULSE_MS = 3000;
+  const KEYBOARD_SCRUB_S = 5;
+
+  function safeSessionGet(key) {
+    try { return sessionStorage.getItem(key); } catch { return null; }
+  }
+  function safeSessionSet(key, val) {
+    try { sessionStorage.setItem(key, val); } catch { /* no-op */ }
+  }
 
   function init() {
     const root = document.getElementById('coc-chaos-button');
     if (!root) return;
 
+    // v3 — honour session-dismissed flag. Hide entirely; do not even start
+    // any animation loops or audio prep. Restored on next browser session.
+    if (safeSessionGet(DISMISS_KEY) === '1') {
+      root.style.display = 'none';
+      return;
+    }
+
     const button = root.querySelector('.coc-chaos__button');
+    const closeBtn = root.querySelector('.coc-chaos__close');
     const labelEl = root.querySelector('.coc-chaos__label');
-    if (!button || !labelEl) return;
+    const progressEl = root.querySelector('.coc-chaos__progress');
+    const progressFill = root.querySelector('.coc-chaos__progress-fill');
+    if (!button || !closeBtn || !labelEl || !progressEl || !progressFill) return;
 
     const audioSrc = root.dataset.audioSrc;
     if (!audioSrc) return;
@@ -213,8 +217,6 @@ const shouldRender = enabled !== false && !!audioUrl;
     const reducedMotion = prefersReducedMotion();
     const isMobile = window.matchMedia('(max-width: 640px)').matches;
 
-    // Bounded attention pulse — remove the .coc-attention class after ~3s so
-    // the CSS animation stops cleanly. Reduced-motion: never apply.
     if (reducedMotion) {
       root.classList.remove('coc-attention');
     } else {
@@ -246,18 +248,40 @@ const shouldRender = enabled !== false && !!audioUrl;
       else if (state === 'playing' || state === 'replaying') button.setAttribute('aria-label', ariaPlaying);
       else if (state === 'ended') button.setAttribute('aria-label', ariaEnded);
 
+      // v3 — show progress bar once audio is loaded (any non-pre-engage state).
+      if (controller.isLoaded()) {
+        progressEl.classList.add('coc-chaos__progress--visible');
+      }
+
       if (state === 'playing' || state === 'replaying') {
         startLogoAberration();
         stopIdleJitter();
+        startProgressLoop();
       } else if (state === 'ended') {
         stopLogoAberration();
         stopIdleJitter();
+        stopProgressLoop(true /* one final tick */);
       } else {
         stopLogoAberration();
         startIdleJitter();
+        stopProgressLoop(true);
       }
     }
 
+    // ── v3 — Close button ──────────────────────────────────────────────
+    closeBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      safeSessionSet(DISMISS_KEY, '1');
+      // If audio is currently playing, pause it before hiding.
+      if (controller.state === 'playing' || controller.state === 'replaying') {
+        controller.pause();
+      }
+      root.classList.add('coc-dismissed');
+      // Wait for fade-out CSS, then fully remove from layout.
+      window.setTimeout(() => { root.style.display = 'none'; }, 350);
+    });
+
+    // ── Main play button click ──────────────────────────────────────────
     button.addEventListener('click', () => {
       const wasIdle = controller.state === 'idle' || controller.state === 'ended';
       let loadingTimeout = null;
@@ -281,7 +305,7 @@ const shouldRender = enabled !== false && !!audioUrl;
       window.setTimeout(clearLoading, 5000);
     });
 
-    // Hover state — flicker label between PLAY? / DON'T (not glyph in v2).
+    // ── Hover state — flicker label between PLAY? / DON'T ──────────────
     let hoverFlickerTimeout = null;
     function scheduleHoverFlicker() {
       const interval = HOVER_FLICKER_MIN_MS + Math.random() * (HOVER_FLICKER_MAX_MS - HOVER_FLICKER_MIN_MS);
@@ -302,7 +326,7 @@ const shouldRender = enabled !== false && !!audioUrl;
     }
 
     button.addEventListener('mouseenter', () => {
-      if (controller.state !== 'idle') return; // ENDED state has its own AGAIN? text — no flicker
+      if (controller.state !== 'idle') return;
       root.classList.add('coc-hover');
       scheduleHoverFlicker();
       stopIdleJitter();
@@ -323,8 +347,7 @@ const shouldRender = enabled !== false && !!audioUrl;
       });
     }
 
-    // Idle in-place chromatic jitter — applied via class to the root so CSS
-    // can target both glyph and label.
+    // ── Idle in-place chromatic jitter ─────────────────────────────────
     let idleJitterTimeout = null;
     function scheduleIdleJitter(hoverMode) {
       if (reducedMotion || document.hidden || isMobile) return;
@@ -348,8 +371,7 @@ const shouldRender = enabled !== false && !!audioUrl;
       }
     }
 
-    // Whole-page logo chromatic aberration — uses filter: drop-shadow()
-    // (v2 fix — text-shadow path didn't render on <img> children).
+    // ── Whole-page logo chromatic aberration ──────────────────────────
     let logoAberrTimeout = null;
     let logoEl = null;
 
@@ -360,9 +382,6 @@ const shouldRender = enabled !== false && !!audioUrl;
         if (el) {
           logoEl = el;
           logoEl.classList.add('coc-logo-target');
-          // v2: always use the filter-based path — works on text, SVG, AND <img> children.
-          // The class differentiation kept for backwards compatibility and future SVG-only
-          // optimisation; both classes use the filter approach in v2 CSS.
           if (logoEl.tagName.toLowerCase() === 'svg' || logoEl.querySelector('svg')) {
             logoEl.classList.add('coc-logo-target--svg');
           } else {
@@ -373,7 +392,7 @@ const shouldRender = enabled !== false && !!audioUrl;
       }
       if (!window.__cocLogoWarned) {
         window.__cocLogoWarned = true;
-        console.info('[coc-theme] Brand logo not located via known selectors — chromatic aberration on logo will be skipped. Audio plays normally.');
+        console.info('[coc-theme] Brand logo not located — chromatic aberration on logo will be skipped. Audio plays normally.');
       }
       return null;
     }
@@ -408,13 +427,94 @@ const shouldRender = enabled !== false && !!audioUrl;
       if (logoEl) logoEl.classList.remove('coc-aberrate');
     }
 
+    // ── v3 — Progress bar updates + click-to-seek + keyboard ─────────────
+    let progressRaf = null;
+
+    function updateProgressVisual() {
+      const dur = controller.getDuration();
+      if (dur <= 0) return;
+      const pos = controller.getPosition();
+      const pct = Math.max(0, Math.min(1, pos / dur));
+      progressFill.style.width = `${pct * 100}%`;
+      const pctRound = Math.round(pct * 100);
+      progressEl.setAttribute('aria-valuenow', String(pctRound));
+      progressEl.setAttribute('aria-valuetext', `${pctRound} percent`);
+    }
+
+    function progressTick() {
+      updateProgressVisual();
+      if (controller.state === 'playing' || controller.state === 'replaying') {
+        progressRaf = window.requestAnimationFrame(progressTick);
+      }
+    }
+
+    function startProgressLoop() {
+      if (progressRaf) window.cancelAnimationFrame(progressRaf);
+      progressRaf = window.requestAnimationFrame(progressTick);
+    }
+
+    function stopProgressLoop(finalTick) {
+      if (progressRaf) {
+        window.cancelAnimationFrame(progressRaf);
+        progressRaf = null;
+      }
+      if (finalTick) updateProgressVisual();
+    }
+
+    // Click anywhere on bar = seek to that ratio of the duration.
+    function seekFromClientX(clientX) {
+      const dur = controller.getDuration();
+      if (dur <= 0) return;
+      const rect = progressEl.getBoundingClientRect();
+      const x = clientX - rect.left;
+      const ratio = Math.max(0, Math.min(1, x / rect.width));
+      const target = ratio * dur;
+      controller.seek(target);
+      // Snap visual immediately (don't wait for next tick).
+      progressFill.style.width = `${ratio * 100}%`;
+      const pctRound = Math.round(ratio * 100);
+      progressEl.setAttribute('aria-valuenow', String(pctRound));
+      progressEl.setAttribute('aria-valuetext', `${pctRound} percent`);
+    }
+
+    progressEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      seekFromClientX(e.clientX);
+    });
+
+    // Keyboard scrubbing — left/right ±5s, Home → 0, End → duration.
+    progressEl.addEventListener('keydown', (e) => {
+      const dur = controller.getDuration();
+      if (dur <= 0) return;
+      let handled = false;
+      if (e.key === 'ArrowLeft') {
+        controller.seek(controller.getPosition() - KEYBOARD_SCRUB_S);
+        handled = true;
+      } else if (e.key === 'ArrowRight') {
+        controller.seek(controller.getPosition() + KEYBOARD_SCRUB_S);
+        handled = true;
+      } else if (e.key === 'Home') {
+        controller.seek(0);
+        handled = true;
+      } else if (e.key === 'End') {
+        controller.seek(dur - 0.5);
+        handled = true;
+      }
+      if (handled) {
+        e.preventDefault();
+        updateProgressVisual();
+      }
+    });
+
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
         stopIdleJitter();
         stopLogoAberration();
+        stopProgressLoop(false);
       } else {
         if (controller.state === 'playing' || controller.state === 'replaying') {
           startLogoAberration();
+          startProgressLoop();
         } else if (controller.state === 'idle') {
           startIdleJitter(false);
         }
@@ -431,14 +531,12 @@ const shouldRender = enabled !== false && !!audioUrl;
 
 <style>
   /* ── Position container ──────────────────────────────────────────────── */
-  /* Desktop: bottom-LEFT (UNIQUE — Arc F).
-     Mobile: bottom-RIGHT per brief Phase 2. */
   .coc-chaos {
     position: fixed;
     bottom: max(24px, env(safe-area-inset-bottom));
     left: max(24px, env(safe-area-inset-left));
     z-index: 9990;
-    width: 96px; /* button + label can spread within this column */
+    width: 96px;
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -457,9 +555,58 @@ const shouldRender = enabled !== false && !!audioUrl;
     }
   }
 
+  /* v3 — dismissed: fade out then JS sets display:none */
+  .coc-chaos.coc-dismissed {
+    opacity: 0;
+    transform: translateY(8px);
+    pointer-events: none;
+  }
+
+  /* ── v3 — Close button ──────────────────────────────────────────────── */
+
+  .coc-chaos__close {
+    position: absolute;
+    top: -10px;
+    right: 4px;
+    width: 22px;
+    height: 22px;
+    padding: 0;
+    border: 1px solid rgba(255, 0, 255, 0.6);
+    border-radius: 50%;
+    background: rgba(15, 17, 22, 0.85);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    z-index: 1;
+  }
+  .coc-chaos__close svg {
+    width: 12px;
+    height: 12px;
+    display: block;
+  }
+  .coc-chaos__close:hover {
+    background: rgba(255, 0, 255, 0.85);
+    border-color: rgba(255, 255, 255, 0.9);
+    transform: rotate(90deg);
+  }
+  .coc-chaos__close:focus-visible {
+    outline: 2px solid #FFFFFF;
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    .coc-chaos__close {
+      top: -8px;
+      right: 2px;
+      width: 24px;  /* easier touch target on mobile */
+      height: 24px;
+    }
+    .coc-chaos__close svg { width: 14px; height: 14px; }
+  }
+
   /* ── Button base ─────────────────────────────────────────────────────── */
-  /* v2 — grown from 48px to 64px desktop, 44px to 52px mobile to clear the
-     prominence-floor tap-target requirement. */
 
   .coc-chaos__button {
     position: relative;
@@ -473,8 +620,6 @@ const shouldRender = enabled !== false && !!audioUrl;
     transform-origin: 50% 50%;
     -webkit-tap-highlight-color: transparent;
     transition: filter 0.2s ease;
-    /* Solid magenta surface gets a soft glow even at IDLE so the button
-       reads from across the room — prominence floor #2. */
     filter: drop-shadow(0 0 6px rgba(255, 0, 255, 0.35));
   }
   @media (max-width: 640px) {
@@ -486,8 +631,6 @@ const shouldRender = enabled !== false && !!audioUrl;
     outline-offset: 4px;
     border-radius: 50%;
   }
-
-  /* ── SVG layer ───────────────────────────────────────────────────────── */
 
   .coc-chaos__svg {
     width: 100%;
@@ -516,10 +659,7 @@ const shouldRender = enabled !== false && !!audioUrl;
   .coc-chaos[data-loading="true"] .coc-chaos__glyph--pause { display: none; }
   .coc-chaos[data-loading="true"] .coc-chaos__glyph--loading { display: block; }
 
-  /* ── Permanent IDLE label (v2) ──────────────────────────────────────── */
-  /* "PLAY?" — brief-literal string, Gizmo-voice question. Always visible at
-     IDLE. Hover swaps text between PLAY? / DON'T via JS. Hidden during
-     PLAYING / ENDED. */
+  /* ── Permanent IDLE label ──────────────────────────────────────────── */
 
   .coc-chaos__label {
     display: none;
@@ -541,14 +681,62 @@ const shouldRender = enabled !== false && !!audioUrl;
     .coc-chaos__label { font-size: 12px; }
   }
 
-  /* Hover state — glow up the label + bump button glow */
   .coc-chaos.coc-hover .coc-chaos__label {
-    color: #FFFFFF;
     text-shadow: 0 1px 2px rgba(0, 0, 0, 0.6),
                  0 0 8px rgba(255, 0, 255, 0.85);
   }
   .coc-chaos.coc-hover .coc-chaos__button {
     filter: drop-shadow(0 0 10px rgba(255, 0, 255, 0.7));
+  }
+
+  /* ── v3 — Progress bar ──────────────────────────────────────────────── */
+
+  .coc-chaos__progress {
+    position: relative;
+    width: 76px;
+    height: 4px;
+    cursor: pointer;
+    margin-top: 2px;
+    display: none;
+    transition: height 0.15s ease;
+  }
+  .coc-chaos__progress.coc-chaos__progress--visible {
+    display: block;
+  }
+  .coc-chaos__progress:hover {
+    height: 6px;
+  }
+  .coc-chaos__progress:focus-visible {
+    outline: 2px solid #FFFFFF;
+    outline-offset: 2px;
+  }
+  .coc-chaos__progress-track {
+    position: absolute;
+    inset: 0;
+    background: rgba(255, 0, 255, 0.18);
+    border: 1px solid rgba(255, 0, 255, 0.35);
+    border-radius: 2px;
+    pointer-events: none;
+  }
+  .coc-chaos__progress-fill {
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 0;
+    background: #ff00ff;
+    box-shadow: 0 0 4px rgba(255, 0, 255, 0.6);
+    border-radius: 2px;
+    pointer-events: none;
+    transition: width 0.1s linear;
+  }
+
+  @media (max-width: 640px) {
+    .coc-chaos__progress {
+      width: 64px;
+      height: 5px; /* a touch chunkier on mobile for tappability */
+    }
+    .coc-chaos__progress:hover { height: 5px; } /* no hover on touch */
   }
 
   /* ── ENDED text overlay (AGAIN?) ──────────────────────────────────── */
@@ -571,7 +759,7 @@ const shouldRender = enabled !== false && !!audioUrl;
   .coc-state-ended .coc-chaos__glyph--play,
   .coc-state-ended .coc-chaos__glyph--pause { display: none; }
 
-  /* ── ENDED sub-label (ONE MORE.) — H.3 default ────────────────────── */
+  /* ── ENDED sub-label (ONE MORE.) ───────────────────────────────────── */
 
   .coc-chaos__sublabel {
     display: none;
@@ -597,7 +785,7 @@ const shouldRender = enabled !== false && !!audioUrl;
     filter: drop-shadow(0 0 4px rgba(255, 0, 255, 0.25));
   }
   .coc-state-ended .coc-chaos__surface {
-    fill: rgba(255, 0, 255, 0.55); /* drooped — surface fades */
+    fill: rgba(255, 0, 255, 0.55);
   }
   .coc-state-ended .coc-chaos__border {
     stroke-opacity: 0.5;
@@ -634,10 +822,7 @@ const shouldRender = enabled !== false && !!audioUrl;
     animation: coc-border-morph 700ms ease-in-out infinite alternate;
   }
 
-  /* ── NEW v2: Bounded attention pulse on first arrival ───────────────── */
-  /* Triggered by the .coc-attention class on root, runs 2 cycles over ~3s,
-     then JS removes the class. animation-iteration-count: 2 — explicitly
-     bounded, no `infinite`. Disabled under prefers-reduced-motion. */
+  /* ── Bounded attention pulse on first arrival ───────────────────────── */
 
   @keyframes coc-attention-pulse {
     0%, 100% { filter: drop-shadow(0 0 6px rgba(255, 0, 255, 0.35)); }
@@ -648,7 +833,7 @@ const shouldRender = enabled !== false && !!audioUrl;
     animation: coc-attention-pulse 1500ms ease-in-out 2;
   }
 
-  /* ── Idle in-place chromatic jitter (now applied to root, affects glyph + label) */
+  /* ── Idle in-place chromatic jitter ───────────────────────────────── */
 
   .coc-chaos.coc-idle-jitter .coc-chaos__glyph--play {
     filter: drop-shadow(-2px 0 0 #00ffff) drop-shadow(2px 0 0 #ff00ff);
@@ -659,15 +844,13 @@ const shouldRender = enabled !== false && !!audioUrl;
                  0 1px 2px rgba(0, 0, 0, 0.6);
   }
 
-  /* ── Click-impulse chromatic flash on glyph ─────────────────────────── */
+  /* ── Click-impulse chromatic flash ─────────────────────────────────── */
 
   .coc-chaos__button.coc-click-impulse .coc-chaos__glyph--play {
     filter: drop-shadow(-3px 0 0 #00ffff) drop-shadow(3px 0 0 #ff00ff);
   }
 
-  /* ── Reduced-motion (Section D.8 + standard #6) ─────────────────────── */
-  /* All animations disabled. Misshapen identity + solid fill + label
-     preserved STATICALLY. */
+  /* ── Reduced-motion ────────────────────────────────────────────────── */
 
   @media (prefers-reduced-motion: reduce) {
     .coc-chaos__button,
@@ -693,6 +876,12 @@ const shouldRender = enabled !== false && !!audioUrl;
     .coc-state-ended .coc-chaos__button {
       transform: skewY(-2deg) translateY(2px) !important;
     }
+    .coc-chaos__close:hover {
+      transform: none !important;
+    }
+    .coc-chaos__progress-fill {
+      transition: none !important;
+    }
   }
 
   /* ── Mobile gating ──────────────────────────────────────────────────── */
@@ -714,11 +903,7 @@ const shouldRender = enabled !== false && !!audioUrl;
   }
 </style>
 
-{/* ── Whole-page logo aberration (v2: filter: drop-shadow path — works on
-     text, SVG, AND <img> children of <a class="logo">) ───────────────── */}
 <style is:global>
-  /* v2 — both text and svg paths now use filter: drop-shadow which renders
-     on image children too. Keeps SVG-filter approach as an additional fallback. */
   .coc-logo-target.coc-aberrate {
     filter: drop-shadow(-2px 0 0 #00ffff) drop-shadow(2px 0 0 #ff00ff);
   }
