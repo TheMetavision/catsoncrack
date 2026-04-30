@@ -152,3 +152,39 @@ export async function getSiteSettings() {
     }
   `);
 }
+
+// ─── Theme audio (added 2026-04-30 for the IP brand theme-tune feature build #4/4 — FINAL) ───
+// Pinned to _id == "siteSettings" so it only ever reads the canonical singleton.
+// Returns null URL if the singleton has no MP3 uploaded yet OR if themeEnabled
+// is explicitly false — both render-blocking states the CocChaosButton
+// component safely handles by rendering nothing.
+//
+// COC-specific notes:
+//   - 5 themeAudio fields only (no engineSfxUrl unlike BB — Cats On Crack
+//     has no SFX prologue per Arc spec I.2)
+//   - `enabled: result?.enabled !== false` — null treated as enabled (kill
+//     switch must be EXPLICIT false to disable). Same fallback pattern as
+//     BB/LR — handles the singleton-initialValue gap (Sanity initialValue
+//     only fires on doc creation, not on schema-added fields to existing
+//     singletons, so themeEnabled lands null on first deploy until Alan
+//     opens Studio and saves explicitly).
+export interface ThemeAudio {
+  audioUrl: string | null;
+  trackTitle: string | null;
+  trackArtist: string | null;
+  enabled: boolean;
+}
+export async function getThemeAudio(): Promise<ThemeAudio> {
+  const result = await client.fetch(`*[_type == "siteSettings" && _id == "siteSettings"][0]{
+    "audioUrl": themeAudioFile.asset->url,
+    "trackTitle": themeTrackTitle,
+    "trackArtist": themeTrackArtist,
+    "enabled": themeEnabled
+  }`);
+  return {
+    audioUrl: result?.audioUrl ?? null,
+    trackTitle: result?.trackTitle ?? 'Cats On Crack Main Theme',
+    trackArtist: result?.trackArtist ?? '',
+    enabled: result?.enabled !== false, // null treated as enabled (kill switch must be explicit false to disable)
+  };
+}

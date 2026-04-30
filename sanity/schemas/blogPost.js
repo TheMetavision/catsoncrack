@@ -1,108 +1,99 @@
-export default {
+import {defineType, defineField} from 'sanity'
+import {DocumentTextIcon} from '@sanity/icons'
+
+export default defineType({
   name: 'blogPost',
   title: 'Blog Post',
   type: 'document',
+  icon: DocumentTextIcon,
   fields: [
-    {
+    defineField({
       name: 'title',
-      title: 'Title',
       type: 'string',
-      validation: (Rule) => Rule.required(),
-    },
-    {
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: 'slug',
-      title: 'Slug',
       type: 'slug',
-      options: { source: 'title', maxLength: 96 },
-      validation: (Rule) => Rule.required(),
-    },
-    {
-      name: 'category',
-      title: 'Category',
-      type: 'string',
-      options: {
-        list: [
-          { title: 'Wasteland Dispatches', value: 'dispatches' },
-          { title: 'Character Lore', value: 'lore' },
-          { title: 'Behind The Scenes', value: 'bts' },
-          { title: 'Merch Drops', value: 'merch' },
-          { title: 'Community', value: 'community' },
-        ],
-      },
-    },
-    {
+      options: {source: 'title', maxLength: 96},
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: 'excerpt',
-      title: 'Excerpt',
       type: 'text',
       rows: 3,
-      description: 'Short summary shown on blog listing page',
-    },
-    {
+      description: 'Short preview text shown on blog listing page',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
       name: 'body',
-      title: 'Body',
       type: 'array',
       of: [
-        { type: 'block' },
         {
-          type: 'image',
-          options: { hotspot: true },
-          fields: [
-            {
-              name: 'alt',
-              title: 'Alt Text',
-              type: 'string',
-            },
-            {
-              name: 'caption',
-              title: 'Caption',
-              type: 'string',
-            },
+          type: 'block',
+          styles: [
+            {title: 'Normal', value: 'normal'},
+            {title: 'H2', value: 'h2'},
+            {title: 'H3', value: 'h3'},
+            {title: 'Quote', value: 'blockquote'},
           ],
+          lists: [
+            {title: 'Bulleted list', value: 'bullet'},
+            {title: 'Numbered list', value: 'number'},
+          ],
+          marks: {
+            decorators: [
+              {title: 'Bold', value: 'strong'},
+              {title: 'Italic', value: 'em'},
+            ],
+            annotations: [
+              {
+                name: 'link',
+                type: 'object',
+                fields: [
+                  {
+                    name: 'href',
+                    title: 'URL',
+                    type: 'url',
+                    validation: (rule) =>
+                      rule.uri({scheme: ['http', 'https', 'mailto'], allowRelative: true}),
+                  },
+                ],
+              },
+            ],
+          },
         },
+        {type: 'image', options: {hotspot: true}},
       ],
-    },
-    {
+    }),
+    defineField({
       name: 'featuredImage',
-      title: 'Featured Image',
       type: 'image',
-      options: { hotspot: true },
-    },
-    {
-      name: 'relatedCharacters',
-      title: 'Related Characters',
-      type: 'array',
-      of: [{ type: 'reference', to: [{ type: 'character' }] }],
-    },
-    {
+      options: {hotspot: true},
+    }),
+    defineField({
+      name: 'tag',
+      title: 'Tag / Category',
+      type: 'string',
+      description: 'e.g. "Character Spotlight", "Behind the Scenes", "Mission Report"',
+    }),
+    defineField({
       name: 'publishedAt',
       title: 'Published Date',
       type: 'datetime',
-      validation: (Rule) => Rule.required(),
-    },
-    {
-      name: 'seoTitle',
-      title: 'SEO Title',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'readTime',
       type: 'string',
-    },
-    {
-      name: 'seoDescription',
-      title: 'SEO Description',
-      type: 'text',
-      rows: 2,
-    },
-  ],
-  orderings: [
-    {
-      title: 'Published Date (Newest)',
-      name: 'publishedAtDesc',
-      by: [{ field: 'publishedAt', direction: 'desc' }],
-    },
+      description: 'e.g. "2 min read"',
+    }),
   ],
   preview: {
     select: {
       title: 'title',
-      subtitle: 'category',
+      subtitle: 'tag',
       media: 'featuredImage',
     },
   },
-};
+})

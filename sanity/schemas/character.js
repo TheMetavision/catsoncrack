@@ -1,27 +1,112 @@
-export default {
+import {defineType, defineField} from 'sanity'
+import {UserIcon} from '@sanity/icons'
+
+export default defineType({
   name: 'character',
   title: 'Character',
   type: 'document',
+  icon: UserIcon,
   fields: [
-    { name: 'name', title: 'Name', type: 'string', validation: (Rule) => Rule.required() },
-    { name: 'slug', title: 'Slug', type: 'slug', options: { source: 'name', maxLength: 96 }, validation: (Rule) => Rule.required() },
-    { name: 'role', title: 'Role', type: 'string', description: 'e.g. "The Leader", "The Ghost"' },
-    { name: 'badge', title: 'Badge Label', type: 'string', description: 'Short label shown on card' },
-    { name: 'tagline', title: 'Tagline', type: 'string' },
-    { name: 'bio', title: 'Biography', type: 'text', rows: 4, validation: (Rule) => Rule.required() },
-    { name: 'extendedBio', title: 'Extended Bio', type: 'array', of: [{ type: 'block' }] },
-    { name: 'traits', title: 'Key Traits', type: 'array', of: [{ type: 'string' }] },
-    { name: 'quote', title: 'Signature Quote', type: 'string' },
-    { name: 'accent', title: 'Accent Colour (hex)', type: 'string', description: 'e.g. #ff8c00' },
-    { name: 'accentDim', title: 'Accent Dim (rgba)', type: 'string' },
-    { name: 'accentGlow', title: 'Accent Glow (rgba)', type: 'string' },
-    { name: 'initials', title: 'Initials', type: 'string', description: 'e.g. WM, LL' },
-    { name: 'portrait', title: 'Character Portrait', type: 'image', options: { hotspot: true } },
-    { name: 'galleryImages', title: 'Gallery Images', type: 'array', of: [{ type: 'image', options: { hotspot: true } }] },
-    { name: 'sortOrder', title: 'Display Order', type: 'number' },
-    { name: 'seoTitle', title: 'SEO Title', type: 'string' },
-    { name: 'seoDescription', title: 'SEO Description', type: 'text', rows: 2 },
+    defineField({
+      name: 'name',
+      type: 'string',
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'slug',
+      type: 'slug',
+      options: {source: 'name', maxLength: 96},
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'role',
+      title: 'Role / Title',
+      type: 'string',
+      description: 'e.g. "The Chaos Agent", "Team Leader & Tactician"',
+    }),
+    defineField({
+      name: 'age',
+      type: 'string',
+      description: 'e.g. "Age 13" — leave blank if not applicable',
+    }),
+    defineField({
+      name: 'tagline',
+      type: 'string',
+      description: 'Short one-liner description',
+    }),
+    defineField({
+      name: 'bio',
+      title: 'Biography',
+      type: 'text',
+      rows: 4,
+      validation: (rule) => rule.required(),
+    }),
+    defineField({
+      name: 'quote',
+      title: 'Signature Quote',
+      type: 'string',
+    }),
+    defineField({
+      name: 'traits',
+      title: 'Character Traits',
+      type: 'array',
+      of: [{type: 'string'}],
+      description: 'e.g. ["Chaotic", "Magnetic", "Reckless"]',
+    }),
+    defineField({
+      name: 'image',
+      title: 'Character Image',
+      type: 'image',
+      options: {hotspot: true},
+    }),
+    defineField({
+      name: 'characterType',
+      type: 'string',
+      description: 'Used for filtering on characters page',
+      options: {
+        list: [
+          {title: 'Hero', value: 'hero'},
+          {title: 'Villain', value: 'villain'},
+          {title: 'Creature', value: 'creature'},
+          {title: 'Rival', value: 'rival'},
+        ],
+      },
+    }),
+    defineField({
+      name: 'faction',
+      type: 'string',
+      description: 'Biker Babies: separates heroes from rivals',
+      options: {
+        list: [
+          {title: 'Heroes', value: 'heroes'},
+          {title: 'Villains', value: 'villains'},
+        ],
+      },
+    }),
+    defineField({
+      name: 'coreSix',
+      title: 'Core Character',
+      type: 'boolean',
+      description: 'Fuglys/COC: appears in hero carousel and core crew section',
+      initialValue: false,
+    }),
+    defineField({
+      name: 'accentColor',
+      title: 'Accent Colour',
+      type: 'string',
+      description: 'COC: per-character hex colour e.g. "#ff8c00"',
+    }),
+    defineField({
+      name: 'displayOrder',
+      type: 'number',
+      description: 'Controls sort order on characters page and carousels',
+    }),
   ],
-  orderings: [{ title: 'Display Order', name: 'sortOrderAsc', by: [{ field: 'sortOrder', direction: 'asc' }] }],
-  preview: { select: { title: 'name', subtitle: 'role', media: 'portrait' } },
-};
+  preview: {
+    select: {
+      title: 'name',
+      subtitle: 'role',
+      media: 'image',
+    },
+  },
+})

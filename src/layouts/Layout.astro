@@ -1,6 +1,10 @@
 ---
 import { organizationSchema, websiteSchema } from '../lib/schema';
 import CartDrawer from '../components/CartDrawer';
+// ── Theme audio additions (2026-04-30 — IP brand theme-tune feature build #4/4 — FINAL) ──
+import CocChaosButton from '../components/CocChaosButton.astro';
+import { getThemeAudio } from '../lib/sanity';
+// ──────────────────────────────────────────────────────────────────────────────────────────
 
 interface Props {
 	title: string;
@@ -21,6 +25,24 @@ if (jsonLd) {
 	if (Array.isArray(jsonLd)) allSchemas.push(...jsonLd);
 	else allSchemas.push(jsonLd);
 }
+
+// ── Theme audio: fetch + suppression matcher ───────────────────────────────────
+// Single fetch at build time. Result drives both the <link rel="preload"> hint
+// in <head> AND the <CocChaosButton ... /> render at end of <body>.
+// Suppression paths per Arc spec arc-spec-coc-theme-tune-content-2026-04-30.md
+// Section E.2 — control hides on commerce flows ONLY (3 paths — shortest of all
+// four brands; COC has no /media equivalent unlike BB).
+const themeAudio = await getThemeAudio();
+
+const SUPPRESSION_PATTERNS = [
+	/^\/cart(\/.*)?$/,
+	/^\/checkout(\/.*)?$/,
+	/^\/order(\/.*)?$/,
+];
+const isSuppressedRoute = SUPPRESSION_PATTERNS.some((p) => p.test(Astro.url.pathname));
+const renderThemeAudio = themeAudio.enabled && !!themeAudio.audioUrl && !isSuppressedRoute;
+const preloadAudio = renderThemeAudio ? themeAudio.audioUrl : null;
+// ───────────────────────────────────────────────────────────────────────────────
 ---
 
 <!doctype html>
@@ -58,11 +80,31 @@ if (jsonLd) {
 			<script type="application/ld+json" set:html={JSON.stringify(schema)} />
 		))}
 
+		{/* Theme audio preload — low priority, only emitted when audio will render */}
+		{preloadAudio && (
+			<link
+				rel="preload"
+				href={preloadAudio}
+				as="audio"
+				type="audio/mpeg"
+				fetchpriority="low"
+			/>
+		)}
+
 		<title>{title}</title>
 	</head>
 	<body>
 		<slot />
 		<CartDrawer client:load />
+		{/* Theme audio control — Glitchy Chaos Button (Gizmo the Genius invention) */}
+		{renderThemeAudio && (
+			<CocChaosButton
+				audioUrl={themeAudio.audioUrl}
+				trackTitle={themeAudio.trackTitle}
+				trackArtist={themeAudio.trackArtist}
+				enabled={themeAudio.enabled}
+			/>
+		)}
 	</body>
 </html>
 
