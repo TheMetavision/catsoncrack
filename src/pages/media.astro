@@ -1,0 +1,1061 @@
+---
+// src/pages/media.astro
+//
+// Cats On Crack — /media page
+// Three sections: hero trailer + episodes grid + book series.
+// All videos play in a shared lightbox modal (single iframe, swap on open).
+//
+// Author: Axiom, 2026-04-30
+// Brand voice: Alleyway Gazette neutral framing + Cats On Crack chaos register
+// Style inheritance: pulls from Layout.astro :root tokens (--primary, --charcoal,
+// --bg-card, --text-primary, --text-secondary, --neon-glow, --accent-gradient,
+// --glow, --glow-strong) and global utility classes (glow-text, fade-up,
+// fade-left, fade-right, stagger-children, section, container, cta-button).
+//
+// Data:
+//   - Episodes: pulled from Sanity via getAllEpisodes(). Cards gracefully handle
+//     missing youtubeId (shows COMING SOON badge instead of play overlay).
+//   - Trailer hero: uses the featured episode's youtubeId if present, else
+//     falls back to the hardcoded YouTube Shorts ID currently linked from
+//     the homepage hero ("ay215yKvntY"). Either path makes the page useful
+//     today and richer once Alan fills in episode YouTube IDs.
+//   - Books: 3 placeholder volume cards with COMING SOON treatment per Alan's
+//     direction. Auto-replaceable later by introducing a `book` schema in Sanity.
+
+import Layout from '../layouts/Layout.astro';
+import { getAllEpisodes } from '../lib/sanity';
+
+// Hero trailer fallback — current homepage links to this YouTube Shorts ID
+const HERO_TRAILER_FALLBACK_ID = 'ay215yKvntY';
+
+const episodes = (await getAllEpisodes()) || [];
+
+// Find featured episode (canonically the trailer); fall back to first episode
+const featured = episodes.find((e) => e.featured) || episodes[0] || null;
+const heroYoutubeId =
+  (featured && (featured.youtubeId || extractYoutubeId(featured.youtubeUrl))) ||
+  HERO_TRAILER_FALLBACK_ID;
+const heroTitle = (featured && featured.title) || 'Cats On Crack Official Trailer';
+const heroDescription =
+  (featured && featured.description) ||
+  "Meet the wildest alley cats you'll ever encounter. Six cats. Zero rules. One alley.";
+
+function extractYoutubeId(url) {
+  if (!url) return null;
+  const patterns = [
+    /youtu\.be\/([a-zA-Z0-9_-]{6,})/,
+    /youtube\.com\/(?:watch\?v=|embed\/|shorts\/|v\/)([a-zA-Z0-9_-]{6,})/,
+  ];
+  for (const re of patterns) {
+    const m = url.match(re);
+    if (m) return m[1];
+  }
+  return null;
+}
+
+// Episode cards — exclude the featured/trailer episode from the grid (it's the hero)
+const episodeCards = episodes
+  .filter((e) => !featured || e._id !== featured._id)
+  .map((e) => ({
+    ...e,
+    resolvedYoutubeId: e.youtubeId || extractYoutubeId(e.youtubeUrl),
+    thumbUrl: null, // Sanity thumbnail not yet uploaded for any episode; gradient placeholder
+  }));
+
+// Placeholder books — 3 volumes, all COMING SOON
+const PLACEHOLDER_BOOKS = [
+  {
+    volume: 'Vol. 01',
+    title: 'Tales from the Alleyway',
+    teaser:
+      "Whiskers' first big play for the alley. Pipe Heist of '25 in full, with the parts the Gazette couldn't print.",
+  },
+  {
+    volume: 'Vol. 02',
+    title: 'Crack-Pipe Capers',
+    teaser:
+      'Smudge writes a crew handbook. Trixie spray-paints over half of it. Gizmo invents three things, two of them dangerous.',
+  },
+  {
+    volume: 'Vol. 03',
+    title: 'Long Live the King',
+    teaser:
+      'A challenger from the east side. The Dumpster Throne under siege. Six cats, zero rules, one bloody-great showdown.',
+  },
+];
+
+// JSON-LD — page-level CollectionPage + ItemList for episodes (helps GEO)
+const ldEpisodes = episodeCards
+  .filter((e) => e.resolvedYoutubeId)
+  .map((e, idx) => ({
+    '@type': 'VideoObject',
+    position: idx + 1,
+    name: e.title,
+    description: e.description,
+    thumbnailUrl: `https://img.youtube.com/vi/${e.resolvedYoutubeId}/maxresdefault.jpg`,
+    embedUrl: `https://www.youtube.com/embed/${e.resolvedYoutubeId}`,
+    uploadDate: e.publishedAt || undefined,
+  }));
+
+const collectionLd = {
+  '@context': 'https://schema.org',
+  '@type': 'CollectionPage',
+  '@id': 'https://catsoncrack.co.uk/media#page',
+  name: 'Cats On Crack — Media',
+  description:
+    'The animated series, the trailer, and the book series — all the chaos in one place.',
+  url: 'https://catsoncrack.co.uk/media',
+  isPartOf: {
+    '@type': 'WebSite',
+    name: 'Cats On Crack',
+    url: 'https://catsoncrack.co.uk',
+  },
+  mainEntity: {
+    '@type': 'ItemList',
+    itemListElement: ldEpisodes,
+  },
+};
+
+const breadcrumbLd = {
+  '@context': 'https://schema.org',
+  '@type': 'BreadcrumbList',
+  itemListElement: [
+    { '@type': 'ListItem', position: 1, name: 'Home', item: 'https://catsoncrack.co.uk/' },
+    { '@type': 'ListItem', position: 2, name: 'Media', item: 'https://catsoncrack.co.uk/media' },
+  ],
+};
+---
+
+<Layout
+  title="Media — Cats On Crack"
+  description="Watch the animated series, catch the trailer, and explore the Cats On Crack book series. The Wildest Alley Cats You'll Ever Meet."
+  jsonLd={[collectionLd, breadcrumbLd]}
+>
+  <main class="media-page">
+
+    {/* ── HERO ─────────────────────────────────────────────────────────── */}
+    <section class="section media-hero">
+      <div class="container">
+        <div class="media-hero-grid">
+          <div class="media-hero-text fade-right hero-anim-immediate">
+            <div class="eyebrow">Media</div>
+            <h1 class="main-title glow-text">
+              The Stories.<br>The Series.<br>The Mayhem.
+            </h1>
+            <p class="hero-body">
+              Episodes, trailers, and the book series — every scrap of footage
+              the Alleyway Gazette could get its paws on. Pull up a dumpster.
+            </p>
+            <div class="hero-cta-row">
+              <a href="#episodes" class="cta-button primary-cta">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
+                  <path d="M8 5v14l11-7z"/>
+                </svg>
+                Watch the Episodes
+              </a>
+              <a href="#books" class="cta-button secondary-cta">
+                See the Books
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                  <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+                </svg>
+              </a>
+            </div>
+          </div>
+
+          <div class="media-hero-trailer fade-left hero-anim-immediate">
+            <button
+              type="button"
+              class="trailer-card"
+              data-youtube-id={heroYoutubeId}
+              data-trigger="open-video-modal"
+              aria-label={`Play: ${heroTitle}`}
+            >
+              <div class="trailer-thumb-wrap">
+                <img
+                  class="trailer-thumb"
+                  src={`https://img.youtube.com/vi/${heroYoutubeId}/maxresdefault.jpg`}
+                  alt={`${heroTitle} thumbnail`}
+                  loading="eager"
+                  width="640"
+                  height="360"
+                />
+                <div class="trailer-overlay"></div>
+                <div class="trailer-play-glow">
+                  <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                    <path d="M8 5v14l11-7z"/>
+                  </svg>
+                </div>
+                <div class="trailer-badge">Trailer</div>
+              </div>
+              <div class="trailer-meta">
+                <h3 class="trailer-title">{heroTitle}</h3>
+                <p class="trailer-desc">{heroDescription}</p>
+              </div>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    {/* ── EPISODES GRID ────────────────────────────────────────────────── */}
+    <section class="section media-episodes" id="episodes">
+      <div class="container">
+        <div class="section-heading-block fade-up">
+          <div class="eyebrow">Episodes</div>
+          <h2 class="section-title glow-text">From the Alleyways</h2>
+          <p class="section-sub">
+            Field recordings of feline mayhem. New episodes drop on
+            <a
+              href="https://www.youtube.com/@CatsOnCrackMedia"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="inline-link"
+            >@CatsOnCrack on YouTube</a> &mdash; subscribe so you don't miss a thing.
+          </p>
+        </div>
+
+        {episodeCards.length > 0 ? (
+          <div class="episodes-grid stagger-children">
+            {episodeCards.map((ep) => {
+              const hasVideo = !!ep.resolvedYoutubeId;
+              const thumbSrc = hasVideo
+                ? `https://img.youtube.com/vi/${ep.resolvedYoutubeId}/maxresdefault.jpg`
+                : null;
+              return (
+                <article class={`episode-card ${hasVideo ? 'is-playable' : 'is-coming-soon'}`}>
+                  <button
+                    type="button"
+                    class="episode-card-button"
+                    data-youtube-id={ep.resolvedYoutubeId || ''}
+                    data-trigger={hasVideo ? 'open-video-modal' : 'coming-soon'}
+                    aria-label={hasVideo ? `Play: ${ep.title}` : `${ep.title} — coming soon`}
+                  >
+                    <div class="episode-thumb-wrap">
+                      {thumbSrc ? (
+                        <img
+                          class="episode-thumb"
+                          src={thumbSrc}
+                          alt={`${ep.title} thumbnail`}
+                          loading="lazy"
+                          width="480"
+                          height="270"
+                        />
+                      ) : (
+                        <div class="episode-thumb-placeholder" aria-hidden="true">
+                          <svg viewBox="0 0 32 32" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+                            <rect x="3" y="6" width="26" height="20" rx="2"/>
+                            <path d="M14 12 L20 16 L14 20 Z" fill="currentColor"/>
+                          </svg>
+                          <span>Footage Pending</span>
+                        </div>
+                      )}
+                      <div class="episode-overlay"></div>
+                      {hasVideo ? (
+                        <div class="episode-play">
+                          <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                            <path d="M8 5v14l11-7z"/>
+                          </svg>
+                        </div>
+                      ) : (
+                        <div class="episode-coming-badge">Coming Soon</div>
+                      )}
+                    </div>
+                    <div class="episode-meta">
+                      <h3 class="episode-title">{ep.title}</h3>
+                      <p class="episode-desc">{ep.description}</p>
+                    </div>
+                  </button>
+                </article>
+              );
+            })}
+          </div>
+        ) : (
+          <p class="empty-state">No episodes loaded. Check back soon — the Gazette is on it.</p>
+        )}
+      </div>
+    </section>
+
+    {/* ── BOOK SERIES (anchor: #books) ─────────────────────────────────── */}
+    <section class="section media-books" id="books">
+      <div class="container">
+        <div class="section-heading-block fade-up">
+          <div class="eyebrow">Book Series</div>
+          <h2 class="section-title glow-text">Crack Open the Spine</h2>
+          <p class="section-sub">
+            Three volumes. The full Cats On Crack chronicle, written down where
+            the cats can't deny it. <strong>Coming Soon.</strong>
+          </p>
+        </div>
+
+        <div class="books-grid stagger-children">
+          {PLACEHOLDER_BOOKS.map((b) => (
+            <article class="book-card">
+              <div class="book-cover">
+                <div class="book-cover-inner">
+                  <span class="book-cover-volume">{b.volume}</span>
+                  <span class="book-cover-glyph" aria-hidden="true">CoC</span>
+                </div>
+                <div class="book-cover-coming">Coming Soon</div>
+              </div>
+              <div class="book-meta">
+                <h3 class="book-title">{b.title}</h3>
+                <p class="book-teaser">{b.teaser}</p>
+                <p class="book-volume-label">{b.volume}</p>
+              </div>
+            </article>
+          ))}
+        </div>
+
+        <div class="books-cta-row fade-up">
+          <p class="books-cta-text">
+            Want the alert when Volume 01 drops? Slide into the Alleyway Gazette
+            for sneaky schemes and ship dates.
+          </p>
+          <a href="/alleyway-gazette" class="cta-button secondary-cta">
+            Visit The Gazette
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+              <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
+            </svg>
+          </a>
+        </div>
+      </div>
+    </section>
+
+    {/* ── CHANNEL CTA STRIP ─────────────────────────────────────────────── */}
+    <section class="section media-channel-strip">
+      <div class="container">
+        <div class="channel-strip fade-up">
+          <div class="channel-strip-text">
+            <div class="eyebrow eyebrow-light">Subscribe</div>
+            <h2 class="channel-strip-title glow-text">
+              Catch every drop on YouTube
+            </h2>
+            <p>
+              The series lives there. New episodes, behind-the-scenes scraps, the
+              occasional deleted scene Smudge insisted should never see daylight.
+            </p>
+          </div>
+          <a
+            href="https://www.youtube.com/@CatsOnCrackMedia"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="cta-button primary-cta channel-strip-cta"
+            aria-label="Subscribe to Cats On Crack on YouTube"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="20" height="20">
+              <path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>
+            </svg>
+            Subscribe on YouTube
+          </a>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  {/* ── VIDEO LIGHTBOX MODAL ─────────────────────────────────────────────
+      Single shared modal. JS swaps the iframe src on open and clears on
+      close so the video stops playing when dismissed. ───────────────── */}
+  <div
+    id="cocVideoModal"
+    class="video-modal"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="cocVideoModalTitle"
+    aria-hidden="true"
+  >
+    <button type="button" class="video-modal-backdrop" data-close="modal" aria-label="Close video"></button>
+    <div class="video-modal-panel" role="document">
+      <div class="video-modal-header">
+        <span id="cocVideoModalTitle" class="video-modal-title">Now Playing</span>
+        <button type="button" class="video-modal-close" data-close="modal" aria-label="Close video">
+          <svg viewBox="0 0 24 24" focusable="false" aria-hidden="true">
+            <path d="M6 6 L18 18 M18 6 L6 18" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>
+        </button>
+      </div>
+      <div class="video-modal-frame">
+        <iframe
+          id="cocVideoModalIframe"
+          title="Cats On Crack video"
+          allow="autoplay; encrypted-media; picture-in-picture"
+          allowfullscreen
+          frameborder="0"
+        ></iframe>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    // Lightbox modal — opened by any element with data-trigger="open-video-modal"
+    // on the page. data-youtube-id holds the YouTube ID. Single shared modal.
+    document.addEventListener('DOMContentLoaded', () => {
+      const modal = document.getElementById('cocVideoModal');
+      const iframe = document.getElementById('cocVideoModalIframe');
+      const titleEl = document.getElementById('cocVideoModalTitle');
+      if (!modal || !iframe || !titleEl) return;
+
+      let lastFocusedTrigger = null;
+
+      function openModal(youtubeId, label) {
+        if (!youtubeId) return;
+        const src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`;
+        iframe.setAttribute('src', src);
+        if (label) titleEl.textContent = label;
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+        // Focus the close button for keyboard a11y
+        const closeBtn = modal.querySelector('.video-modal-close');
+        if (closeBtn) closeBtn.focus();
+      }
+
+      function closeModal() {
+        iframe.setAttribute('src', ''); // stops playback
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
+        if (lastFocusedTrigger && typeof lastFocusedTrigger.focus === 'function') {
+          lastFocusedTrigger.focus();
+        }
+      }
+
+      // Open triggers — event delegation so dynamically-added cards still work
+      document.addEventListener('click', (e) => {
+        const trigger = e.target instanceof Element ? e.target.closest('[data-trigger="open-video-modal"]') : null;
+        if (trigger) {
+          e.preventDefault();
+          lastFocusedTrigger = trigger;
+          openModal(trigger.dataset.youtubeId, trigger.getAttribute('aria-label'));
+          return;
+        }
+        // "Coming Soon" trigger — give a tiny acknowledgement, no modal
+        const csTrigger = e.target instanceof Element ? e.target.closest('[data-trigger="coming-soon"]') : null;
+        if (csTrigger) {
+          e.preventDefault();
+          csTrigger.classList.add('coming-soon-shake');
+          window.setTimeout(() => csTrigger.classList.remove('coming-soon-shake'), 450);
+        }
+      });
+
+      // Close triggers
+      modal.addEventListener('click', (e) => {
+        const closer = e.target instanceof Element ? e.target.closest('[data-close="modal"]') : null;
+        if (closer) closeModal();
+      });
+
+      // ESC to close
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && modal.classList.contains('is-open')) {
+          closeModal();
+        }
+      });
+    });
+  </script>
+
+  <style>
+    .media-page {
+      padding-top: 80px; /* clears Nav */
+    }
+
+    /* ── Section spacing tweaks ────────────────────────────────────── */
+    .media-page .section {
+      padding: 80px 0;
+    }
+    @media (max-width: 768px) {
+      .media-page .section { padding: 50px 0; }
+    }
+
+    /* ── Eyebrow / section heading patterns ─────────────────────────── */
+    .eyebrow {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 14px;
+      letter-spacing: 0.18em;
+      color: var(--primary);
+      text-transform: uppercase;
+      margin-bottom: 16px;
+    }
+    .eyebrow-light { color: var(--text-primary); }
+
+    .section-heading-block {
+      max-width: 720px;
+      margin: 0 auto 48px;
+      text-align: center;
+    }
+    .section-heading-block .eyebrow { display: block; }
+    .section-title {
+      font-size: clamp(32px, 4vw, 48px);
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      letter-spacing: 0.04em;
+      line-height: 1.05;
+      color: var(--text-primary);
+      margin-bottom: 18px;
+      text-transform: uppercase;
+    }
+    .section-sub {
+      color: var(--text-secondary);
+      font-size: 16px;
+      line-height: 1.7;
+    }
+    .inline-link {
+      color: var(--primary);
+      text-decoration: underline;
+      text-decoration-thickness: 1px;
+      text-underline-offset: 3px;
+    }
+    .inline-link:hover { color: var(--primary-light); }
+
+    /* ── HERO ──────────────────────────────────────────────────────── */
+    .media-hero {
+      padding-top: 100px;
+      background:
+        radial-gradient(circle at 20% 0%, rgba(255, 0, 255, 0.18), transparent 55%),
+        radial-gradient(circle at 80% 50%, rgba(255, 0, 255, 0.10), transparent 60%),
+        linear-gradient(160deg, #141620, #181b22 40%, #141620);
+    }
+    .media-hero-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+    }
+    @media (max-width: 980px) {
+      .media-hero-grid { grid-template-columns: 1fr; gap: 40px; }
+    }
+
+    .media-hero-text .main-title {
+      font-size: clamp(42px, 5.5vw, 72px);
+      letter-spacing: 0.02em;
+      line-height: 1;
+      color: var(--text-primary);
+      margin-bottom: 24px;
+      text-transform: uppercase;
+    }
+    .media-hero-text .hero-body {
+      color: var(--text-secondary);
+      font-size: 17px;
+      line-height: 1.7;
+      margin-bottom: 32px;
+      max-width: 540px;
+    }
+
+    .hero-cta-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
+    }
+    .cta-button {
+      display: inline-flex;
+      align-items: center;
+      gap: 10px;
+      padding: 14px 28px;
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      border-radius: 4px;
+      cursor: pointer;
+      transition: transform 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+    }
+    .primary-cta {
+      background: var(--primary);
+      color: #fff;
+      box-shadow: var(--glow);
+    }
+    .primary-cta:hover {
+      transform: translateY(-2px);
+      background: var(--primary-light);
+      box-shadow: var(--glow-strong);
+      color: #fff;
+    }
+    .secondary-cta {
+      background: rgba(255, 0, 255, 0.10);
+      color: var(--text-primary);
+      border: 1px solid rgba(255, 0, 255, 0.45);
+    }
+    .secondary-cta:hover {
+      background: rgba(255, 0, 255, 0.20);
+      border-color: rgba(255, 0, 255, 0.85);
+      color: var(--text-primary);
+      transform: translateY(-2px);
+    }
+
+    /* ── Trailer card (hero) ───────────────────────────────────────── */
+    .trailer-card {
+      display: block;
+      width: 100%;
+      background: var(--bg-card);
+      border: 1px solid rgba(255, 0, 255, 0.30);
+      border-radius: 8px;
+      overflow: hidden;
+      cursor: pointer;
+      padding: 0;
+      text-align: left;
+      color: inherit;
+      font: inherit;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .trailer-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 0, 255, 0.70);
+      box-shadow: 0 12px 40px rgba(255, 0, 255, 0.25), 0 0 28px rgba(255, 0, 255, 0.18);
+    }
+    .trailer-card:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 4px;
+    }
+    .trailer-thumb-wrap {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #0d0f14;
+      overflow: hidden;
+    }
+    .trailer-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      transition: transform 0.3s ease;
+    }
+    .trailer-card:hover .trailer-thumb { transform: scale(1.04); }
+    .trailer-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 30%, rgba(0,0,0,0.55) 100%);
+      pointer-events: none;
+    }
+    .trailer-play-glow {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 84px; height: 84px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      box-shadow: 0 0 24px rgba(255, 0, 255, 0.65), 0 0 48px rgba(255, 0, 255, 0.35);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+      pointer-events: none;
+    }
+    .trailer-play-glow svg { width: 36px; height: 36px; margin-left: 4px; }
+    .trailer-card:hover .trailer-play-glow {
+      transform: translate(-50%, -50%) scale(1.08);
+      box-shadow: 0 0 30px rgba(255, 0, 255, 0.85), 0 0 60px rgba(255, 0, 255, 0.45);
+    }
+    .trailer-badge {
+      position: absolute;
+      top: 14px; left: 14px;
+      background: rgba(15, 17, 22, 0.85);
+      color: var(--primary);
+      padding: 4px 10px;
+      border: 1px solid rgba(255, 0, 255, 0.55);
+      border-radius: 3px;
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 12px;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+    }
+    .trailer-meta {
+      padding: 18px 20px 22px;
+    }
+    .trailer-title {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .trailer-desc {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    /* ── Episodes grid ─────────────────────────────────────────────── */
+    .media-episodes {
+      background: linear-gradient(180deg, #181b22 0%, #141620 100%);
+    }
+    .episodes-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+      gap: 28px;
+    }
+    .episode-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(255, 0, 255, 0.25);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .episode-card.is-playable:hover {
+      transform: translateY(-4px);
+      border-color: rgba(255, 0, 255, 0.65);
+      box-shadow: 0 8px 28px rgba(255, 0, 255, 0.20);
+    }
+    .episode-card.is-coming-soon {
+      opacity: 0.92;
+    }
+    .episode-card.is-coming-soon:hover {
+      border-color: rgba(255, 0, 255, 0.42);
+    }
+    .episode-card-button {
+      display: block;
+      width: 100%;
+      padding: 0;
+      background: transparent;
+      border: none;
+      cursor: pointer;
+      color: inherit;
+      font: inherit;
+      text-align: left;
+    }
+    .episode-card.is-coming-soon .episode-card-button {
+      cursor: not-allowed;
+    }
+    .episode-card-button:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 2px;
+    }
+    .coming-soon-shake {
+      animation: coc-shake 420ms ease-in-out;
+    }
+    @keyframes coc-shake {
+      0%, 100% { transform: translateX(0); }
+      20% { transform: translateX(-4px); }
+      40% { transform: translateX(4px); }
+      60% { transform: translateX(-3px); }
+      80% { transform: translateX(3px); }
+    }
+    .episode-thumb-wrap {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #0d0f14;
+      overflow: hidden;
+    }
+    .episode-thumb {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+    .episode-thumb-placeholder {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px;
+      color: rgba(255, 0, 255, 0.6);
+      background:
+        radial-gradient(circle at 30% 30%, rgba(255, 0, 255, 0.18), transparent 60%),
+        radial-gradient(circle at 70% 70%, rgba(0, 255, 255, 0.10), transparent 60%),
+        #141620;
+    }
+    .episode-thumb-placeholder svg { width: 56px; height: 56px; }
+    .episode-thumb-placeholder span {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      letter-spacing: 0.16em;
+      font-size: 12px;
+      color: var(--text-secondary);
+    }
+    .episode-overlay {
+      position: absolute; inset: 0;
+      background: linear-gradient(180deg, rgba(0,0,0,0) 50%, rgba(0,0,0,0.55) 100%);
+      pointer-events: none;
+    }
+    .episode-play {
+      position: absolute;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      width: 56px; height: 56px;
+      border-radius: 50%;
+      background: var(--primary);
+      display: flex; align-items: center; justify-content: center;
+      color: #fff;
+      box-shadow: 0 0 18px rgba(255, 0, 255, 0.6);
+      transition: transform 0.2s ease;
+      pointer-events: none;
+    }
+    .episode-play svg { width: 24px; height: 24px; margin-left: 3px; }
+    .episode-card.is-playable:hover .episode-play { transform: translate(-50%, -50%) scale(1.1); }
+    .episode-coming-badge {
+      position: absolute;
+      top: 12px; right: 12px;
+      background: rgba(15, 17, 22, 0.92);
+      color: var(--primary-light);
+      padding: 5px 10px;
+      border: 1px solid rgba(255, 0, 255, 0.55);
+      border-radius: 3px;
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+    .episode-meta {
+      padding: 18px 20px 22px;
+    }
+    .episode-title {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 20px;
+      letter-spacing: 0.04em;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .episode-desc {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+    .empty-state {
+      text-align: center;
+      color: var(--text-secondary);
+      font-style: italic;
+      padding: 40px 0;
+    }
+
+    /* ── Books grid ───────────────────────────────────────────────── */
+    .media-books {
+      background:
+        radial-gradient(circle at 80% 0%, rgba(255, 0, 255, 0.10), transparent 50%),
+        #181b22;
+    }
+    .books-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      gap: 28px;
+      margin-bottom: 48px;
+    }
+    .book-card {
+      background: var(--bg-card);
+      border: 1px solid rgba(255, 0, 255, 0.25);
+      border-radius: 6px;
+      overflow: hidden;
+      transition: transform 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+    }
+    .book-card:hover {
+      transform: translateY(-3px);
+      border-color: rgba(255, 0, 255, 0.55);
+      box-shadow: 0 8px 24px rgba(255, 0, 255, 0.18);
+    }
+    .book-cover {
+      position: relative;
+      aspect-ratio: 2 / 3;
+      background:
+        radial-gradient(circle at 40% 30%, rgba(255, 0, 255, 0.30), transparent 65%),
+        radial-gradient(circle at 70% 80%, rgba(0, 255, 255, 0.12), transparent 60%),
+        linear-gradient(160deg, #181b22, #0d0f14);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+    }
+    .book-cover-inner {
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 12px;
+      transform: rotate(-3deg);
+    }
+    .book-cover-volume {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 14px;
+      letter-spacing: 0.20em;
+      color: rgba(255, 255, 255, 0.6);
+      text-transform: uppercase;
+    }
+    .book-cover-glyph {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 64px;
+      letter-spacing: 0.04em;
+      color: var(--primary);
+      text-shadow: 0 0 20px rgba(255, 0, 255, 0.7), 0 0 40px rgba(255, 0, 255, 0.35);
+    }
+    .book-cover-coming {
+      position: absolute;
+      bottom: 12px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(15, 17, 22, 0.92);
+      color: var(--primary-light);
+      padding: 5px 12px;
+      border: 1px solid rgba(255, 0, 255, 0.55);
+      border-radius: 3px;
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      white-space: nowrap;
+    }
+    .book-meta {
+      padding: 20px 22px 24px;
+    }
+    .book-title {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      color: var(--text-primary);
+      margin-bottom: 8px;
+      text-transform: uppercase;
+    }
+    .book-teaser {
+      color: var(--text-secondary);
+      font-size: 14px;
+      line-height: 1.55;
+      margin-bottom: 12px;
+    }
+    .book-volume-label {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 11px;
+      letter-spacing: 0.2em;
+      color: var(--primary);
+      text-transform: uppercase;
+    }
+    .books-cta-row {
+      text-align: center;
+      max-width: 720px;
+      margin: 0 auto;
+    }
+    .books-cta-text {
+      color: var(--text-secondary);
+      font-size: 16px;
+      margin-bottom: 18px;
+    }
+
+    /* ── Channel CTA strip ────────────────────────────────────────── */
+    .media-channel-strip {
+      background: linear-gradient(160deg, #141620, #181b22 40%, #141620);
+    }
+    .channel-strip {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 40px;
+      align-items: center;
+      padding: 40px;
+      background: var(--bg-card);
+      border: 1px solid rgba(255, 0, 255, 0.25);
+      border-radius: 8px;
+      box-shadow: 0 6px 24px rgba(255, 0, 255, 0.10);
+    }
+    @media (max-width: 768px) {
+      .channel-strip { grid-template-columns: 1fr; gap: 24px; padding: 28px; text-align: center; }
+    }
+    .channel-strip-title {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: clamp(26px, 3vw, 36px);
+      letter-spacing: 0.04em;
+      color: var(--text-primary);
+      margin-bottom: 12px;
+      text-transform: uppercase;
+    }
+    .channel-strip p {
+      color: var(--text-secondary);
+      font-size: 15px;
+      line-height: 1.6;
+      max-width: 540px;
+    }
+    .channel-strip-cta { white-space: nowrap; }
+
+    /* ── Hero anim immediate fix (applies to fade-left/right on hero) ─ */
+    .hero-anim-immediate.fade-left,
+    .hero-anim-immediate.fade-right {
+      opacity: 1;
+      transform: none;
+    }
+
+    /* ── Video lightbox modal ─────────────────────────────────────── */
+    .video-modal {
+      position: fixed; inset: 0;
+      z-index: 9999;
+      display: none;
+      align-items: center; justify-content: center;
+      padding: 24px;
+    }
+    .video-modal.is-open { display: flex; }
+    .video-modal-backdrop {
+      position: absolute; inset: 0;
+      background: rgba(13, 15, 20, 0.92);
+      backdrop-filter: blur(4px);
+      border: none;
+      cursor: pointer;
+      animation: coc-modal-fade 0.2s ease-out;
+    }
+    .video-modal-panel {
+      position: relative;
+      width: 100%;
+      max-width: 1100px;
+      background: #0d0f14;
+      border: 1px solid rgba(255, 0, 255, 0.5);
+      border-radius: 8px;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.7), 0 0 40px rgba(255, 0, 255, 0.25);
+      animation: coc-modal-rise 0.25s cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    @keyframes coc-modal-fade {
+      from { opacity: 0; }
+      to   { opacity: 1; }
+    }
+    @keyframes coc-modal-rise {
+      from { opacity: 0; transform: translateY(20px) scale(0.97); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+    .video-modal-header {
+      display: flex; justify-content: space-between; align-items: center;
+      padding: 14px 20px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .video-modal-title {
+      font-family: 'Bebas Neue', 'Impact', sans-serif;
+      font-size: 16px;
+      letter-spacing: 0.10em;
+      color: var(--text-primary);
+      text-transform: uppercase;
+    }
+    .video-modal-close {
+      width: 36px; height: 36px;
+      background: rgba(255, 0, 255, 0.10);
+      border: 1px solid rgba(255, 0, 255, 0.4);
+      border-radius: 50%;
+      color: #fff;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
+    }
+    .video-modal-close:hover {
+      background: rgba(255, 0, 255, 0.85);
+      border-color: rgba(255, 255, 255, 0.9);
+      transform: rotate(90deg);
+    }
+    .video-modal-close:focus-visible {
+      outline: 2px solid #fff;
+      outline-offset: 2px;
+    }
+    .video-modal-close svg { width: 16px; height: 16px; }
+    .video-modal-frame {
+      position: relative;
+      aspect-ratio: 16 / 9;
+      background: #000;
+      border-radius: 0 0 8px 8px;
+      overflow: hidden;
+    }
+    .video-modal-frame iframe {
+      position: absolute; inset: 0;
+      width: 100%; height: 100%;
+      border: 0;
+    }
+
+    @media (max-width: 768px) {
+      .video-modal { padding: 12px; }
+      .video-modal-panel { max-width: 100%; }
+    }
+
+    /* Reduced motion — calm the modal animations */
+    @media (prefers-reduced-motion: reduce) {
+      .video-modal-backdrop,
+      .video-modal-panel {
+        animation: none;
+      }
+      .video-modal-close:hover { transform: none; }
+      .coming-soon-shake { animation: none; }
+      .trailer-card:hover, .episode-card.is-playable:hover, .book-card:hover {
+        transform: none;
+      }
+    }
+  </style>
+</Layout>

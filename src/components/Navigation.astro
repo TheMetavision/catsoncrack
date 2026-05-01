@@ -16,6 +16,7 @@ const currentPath = Astro.url.pathname;
 			<div class="nav-links">
 				<a href="/" class={currentPath === '/' ? 'active' : ''}>Home</a>
 				<a href="/the-alley-squad" class={currentPath === '/the-alley-squad' || currentPath.startsWith('/the-alley-squad/') ? 'active' : ''}>The Alley Squad</a>
+				<a href="/media" class={currentPath === '/media' || currentPath.startsWith('/media/') ? 'active' : ''}>Media</a>
 				<a href="/merch" class={currentPath === '/merch' || currentPath.startsWith('/merch/') ? 'active' : ''}>Merch</a>
 				<a href="/alleyway-gazette" class={currentPath === '/alleyway-gazette' || currentPath.startsWith('/alleyway-gazette/') ? 'active' : ''}>The Alleyway Gazette</a>
 				<a href="/contact" class={currentPath === '/contact' || currentPath.startsWith('/contact/') ? 'active' : ''}>Get In Touch</a>
@@ -62,6 +63,7 @@ const currentPath = Astro.url.pathname;
 	<div class="mobile-menu" id="mobileMenu">
 		<a href="/" class={currentPath === '/' ? 'active' : ''}>Home</a>
 		<a href="/the-alley-squad" class={currentPath === '/the-alley-squad' || currentPath.startsWith('/the-alley-squad/') ? 'active' : ''}>The Alley Squad</a>
+		<a href="/media" class={currentPath === '/media' || currentPath.startsWith('/media/') ? 'active' : ''}>Media</a>
 		<a href="/merch" class={currentPath === '/merch' || currentPath.startsWith('/merch/') ? 'active' : ''}>Merch</a>
 		<a href="/alleyway-gazette" class={currentPath === '/alleyway-gazette' || currentPath.startsWith('/alleyway-gazette/') ? 'active' : ''}>The Alleyway Gazette</a>
 		<a href="/contact" class={currentPath === '/contact' || currentPath.startsWith('/contact/') ? 'active' : ''}>Get In Touch</a>
