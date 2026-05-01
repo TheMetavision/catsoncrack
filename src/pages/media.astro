@@ -2,35 +2,25 @@
 // src/pages/media.astro
 //
 // Cats On Crack — /media page
+// v2 — 2026-05-01 — added missing <Navigation /> + <Footer /> renders
+//                   (Layout.astro body is just <slot /> + <CartDrawer />,
+//                    so each page must render Nav + Footer itself)
+//
 // Three sections: hero trailer + episodes grid + book series.
 // All videos play in a shared lightbox modal (single iframe, swap on open).
 //
 // Author: Axiom, 2026-04-30
 // Brand voice: Alleyway Gazette neutral framing + Cats On Crack chaos register
-// Style inheritance: pulls from Layout.astro :root tokens (--primary, --charcoal,
-// --bg-card, --text-primary, --text-secondary, --neon-glow, --accent-gradient,
-// --glow, --glow-strong) and global utility classes (glow-text, fade-up,
-// fade-left, fade-right, stagger-children, section, container, cta-button).
-//
-// Data:
-//   - Episodes: pulled from Sanity via getAllEpisodes(). Cards gracefully handle
-//     missing youtubeId (shows COMING SOON badge instead of play overlay).
-//   - Trailer hero: uses the featured episode's youtubeId if present, else
-//     falls back to the hardcoded YouTube Shorts ID currently linked from
-//     the homepage hero ("ay215yKvntY"). Either path makes the page useful
-//     today and richer once Alan fills in episode YouTube IDs.
-//   - Books: 3 placeholder volume cards with COMING SOON treatment per Alan's
-//     direction. Auto-replaceable later by introducing a `book` schema in Sanity.
 
 import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
 import { getAllEpisodes } from '../lib/sanity';
 
-// Hero trailer fallback — current homepage links to this YouTube Shorts ID
 const HERO_TRAILER_FALLBACK_ID = 'ay215yKvntY';
 
 const episodes = (await getAllEpisodes()) || [];
 
-// Find featured episode (canonically the trailer); fall back to first episode
 const featured = episodes.find((e) => e.featured) || episodes[0] || null;
 const heroYoutubeId =
   (featured && (featured.youtubeId || extractYoutubeId(featured.youtubeUrl))) ||
@@ -53,16 +43,14 @@ function extractYoutubeId(url) {
   return null;
 }
 
-// Episode cards — exclude the featured/trailer episode from the grid (it's the hero)
 const episodeCards = episodes
   .filter((e) => !featured || e._id !== featured._id)
   .map((e) => ({
     ...e,
     resolvedYoutubeId: e.youtubeId || extractYoutubeId(e.youtubeUrl),
-    thumbUrl: null, // Sanity thumbnail not yet uploaded for any episode; gradient placeholder
+    thumbUrl: null,
   }));
 
-// Placeholder books — 3 volumes, all COMING SOON
 const PLACEHOLDER_BOOKS = [
   {
     volume: 'Vol. 01',
@@ -84,7 +72,6 @@ const PLACEHOLDER_BOOKS = [
   },
 ];
 
-// JSON-LD — page-level CollectionPage + ItemList for episodes (helps GEO)
 const ldEpisodes = episodeCards
   .filter((e) => e.resolvedYoutubeId)
   .map((e, idx) => ({
@@ -131,6 +118,8 @@ const breadcrumbLd = {
   description="Watch the animated series, catch the trailer, and explore the Cats On Crack book series. The Wildest Alley Cats You'll Ever Meet."
   jsonLd={[collectionLd, breadcrumbLd]}
 >
+  <Navigation />
+
   <main class="media-page">
 
     {/* ── HERO ─────────────────────────────────────────────────────────── */}
@@ -353,9 +342,9 @@ const breadcrumbLd = {
 
   </main>
 
-  {/* ── VIDEO LIGHTBOX MODAL ─────────────────────────────────────────────
-      Single shared modal. JS swaps the iframe src on open and clears on
-      close so the video stops playing when dismissed. ───────────────── */}
+  <Footer />
+
+  {/* ── VIDEO LIGHTBOX MODAL ─────────────────────────────────────────── */}
   <div
     id="cocVideoModal"
     class="video-modal"
@@ -387,8 +376,6 @@ const breadcrumbLd = {
   </div>
 
   <script>
-    // Lightbox modal — opened by any element with data-trigger="open-video-modal"
-    // on the page. data-youtube-id holds the YouTube ID. Single shared modal.
     document.addEventListener('DOMContentLoaded', () => {
       const modal = document.getElementById('cocVideoModal');
       const iframe = document.getElementById('cocVideoModalIframe');
@@ -405,13 +392,12 @@ const breadcrumbLd = {
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
-        // Focus the close button for keyboard a11y
         const closeBtn = modal.querySelector('.video-modal-close');
         if (closeBtn) closeBtn.focus();
       }
 
       function closeModal() {
-        iframe.setAttribute('src', ''); // stops playback
+        iframe.setAttribute('src', '');
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
@@ -420,7 +406,6 @@ const breadcrumbLd = {
         }
       }
 
-      // Open triggers — event delegation so dynamically-added cards still work
       document.addEventListener('click', (e) => {
         const trigger = e.target instanceof Element ? e.target.closest('[data-trigger="open-video-modal"]') : null;
         if (trigger) {
@@ -429,7 +414,6 @@ const breadcrumbLd = {
           openModal(trigger.dataset.youtubeId, trigger.getAttribute('aria-label'));
           return;
         }
-        // "Coming Soon" trigger — give a tiny acknowledgement, no modal
         const csTrigger = e.target instanceof Element ? e.target.closest('[data-trigger="coming-soon"]') : null;
         if (csTrigger) {
           e.preventDefault();
@@ -438,13 +422,11 @@ const breadcrumbLd = {
         }
       });
 
-      // Close triggers
       modal.addEventListener('click', (e) => {
         const closer = e.target instanceof Element ? e.target.closest('[data-close="modal"]') : null;
         if (closer) closeModal();
       });
 
-      // ESC to close
       document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape' && modal.classList.contains('is-open')) {
           closeModal();
@@ -455,10 +437,9 @@ const breadcrumbLd = {
 
   <style>
     .media-page {
-      padding-top: 80px; /* clears Nav */
+      padding-top: 80px;
     }
 
-    /* ── Section spacing tweaks ────────────────────────────────────── */
     .media-page .section {
       padding: 80px 0;
     }
@@ -466,7 +447,6 @@ const breadcrumbLd = {
       .media-page .section { padding: 50px 0; }
     }
 
-    /* ── Eyebrow / section heading patterns ─────────────────────────── */
     .eyebrow {
       font-family: 'Bebas Neue', 'Impact', sans-serif;
       font-size: 14px;
@@ -505,7 +485,6 @@ const breadcrumbLd = {
     }
     .inline-link:hover { color: var(--primary-light); }
 
-    /* ── HERO ──────────────────────────────────────────────────────── */
     .media-hero {
       padding-top: 100px;
       background:
@@ -580,7 +559,6 @@ const breadcrumbLd = {
       transform: translateY(-2px);
     }
 
-    /* ── Trailer card (hero) ───────────────────────────────────────── */
     .trailer-card {
       display: block;
       width: 100%;
@@ -671,7 +649,6 @@ const breadcrumbLd = {
       line-height: 1.55;
     }
 
-    /* ── Episodes grid ─────────────────────────────────────────────── */
     .media-episodes {
       background: linear-gradient(180deg, #181b22 0%, #141620 100%);
     }
@@ -692,9 +669,7 @@ const breadcrumbLd = {
       border-color: rgba(255, 0, 255, 0.65);
       box-shadow: 0 8px 28px rgba(255, 0, 255, 0.20);
     }
-    .episode-card.is-coming-soon {
-      opacity: 0.92;
-    }
+    .episode-card.is-coming-soon { opacity: 0.92; }
     .episode-card.is-coming-soon:hover {
       border-color: rgba(255, 0, 255, 0.42);
     }
@@ -709,16 +684,12 @@ const breadcrumbLd = {
       font: inherit;
       text-align: left;
     }
-    .episode-card.is-coming-soon .episode-card-button {
-      cursor: not-allowed;
-    }
+    .episode-card.is-coming-soon .episode-card-button { cursor: not-allowed; }
     .episode-card-button:focus-visible {
       outline: 2px solid var(--primary);
       outline-offset: 2px;
     }
-    .coming-soon-shake {
-      animation: coc-shake 420ms ease-in-out;
-    }
+    .coming-soon-shake { animation: coc-shake 420ms ease-in-out; }
     @keyframes coc-shake {
       0%, 100% { transform: translateX(0); }
       20% { transform: translateX(-4px); }
@@ -733,10 +704,8 @@ const breadcrumbLd = {
       overflow: hidden;
     }
     .episode-thumb {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      display: block;
+      width: 100%; height: 100%;
+      object-fit: cover; display: block;
     }
     .episode-thumb-placeholder {
       position: absolute; inset: 0;
@@ -789,9 +758,7 @@ const breadcrumbLd = {
       letter-spacing: 0.14em;
       text-transform: uppercase;
     }
-    .episode-meta {
-      padding: 18px 20px 22px;
-    }
+    .episode-meta { padding: 18px 20px 22px; }
     .episode-title {
       font-family: 'Bebas Neue', 'Impact', sans-serif;
       font-size: 20px;
@@ -812,7 +779,6 @@ const breadcrumbLd = {
       padding: 40px 0;
     }
 
-    /* ── Books grid ───────────────────────────────────────────────── */
     .media-books {
       background:
         radial-gradient(circle at 80% 0%, rgba(255, 0, 255, 0.10), transparent 50%),
@@ -884,9 +850,7 @@ const breadcrumbLd = {
       text-transform: uppercase;
       white-space: nowrap;
     }
-    .book-meta {
-      padding: 20px 22px 24px;
-    }
+    .book-meta { padding: 20px 22px 24px; }
     .book-title {
       font-family: 'Bebas Neue', 'Impact', sans-serif;
       font-size: 22px;
@@ -919,7 +883,6 @@ const breadcrumbLd = {
       margin-bottom: 18px;
     }
 
-    /* ── Channel CTA strip ────────────────────────────────────────── */
     .media-channel-strip {
       background: linear-gradient(160deg, #141620, #181b22 40%, #141620);
     }
@@ -953,14 +916,12 @@ const breadcrumbLd = {
     }
     .channel-strip-cta { white-space: nowrap; }
 
-    /* ── Hero anim immediate fix (applies to fade-left/right on hero) ─ */
     .hero-anim-immediate.fade-left,
     .hero-anim-immediate.fade-right {
       opacity: 1;
       transform: none;
     }
 
-    /* ── Video lightbox modal ─────────────────────────────────────── */
     .video-modal {
       position: fixed; inset: 0;
       z-index: 9999;
@@ -1045,12 +1006,9 @@ const breadcrumbLd = {
       .video-modal-panel { max-width: 100%; }
     }
 
-    /* Reduced motion — calm the modal animations */
     @media (prefers-reduced-motion: reduce) {
       .video-modal-backdrop,
-      .video-modal-panel {
-        animation: none;
-      }
+      .video-modal-panel { animation: none; }
       .video-modal-close:hover { transform: none; }
       .coming-soon-shake { animation: none; }
       .trailer-card:hover, .episode-card.is-playable:hover, .book-card:hover {
