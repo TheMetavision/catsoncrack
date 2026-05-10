@@ -6,6 +6,7 @@ import book from './book';
 import merchCategory from './merchCategory';
 import page from './page';
 import siteSettings from './siteSettings';
+import legalPage from './legalPage';
 import worldLocation from './worldLocation';
 
 export const schemaTypes = [
@@ -18,4 +19,6 @@ export const schemaTypes = [
   merchCategory,
   book,
   page,
+  legalPage,
 ];
+

@@ -1,0 +1,120 @@
+---
+import { client as sanityClient } from '../../lib/sanity'
+import Layout from '../../layouts/Layout.astro'
+import Navigation from '../../components/Navigation.astro'
+import Footer from '../../components/Footer.astro'
+
+const pages = await sanityClient.fetch(`*[_type == "legalPage"] | order(order asc){ title, slug, summary, lastUpdated }`)
+
+const fmt = (iso: string) => new Date(iso).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })
+---
+
+<Layout title="Legal · Cats On Crack" description="Privacy, cookies, terms, returns, shipping and acceptable use — everything legal in one place.">
+  <Navigation />
+  <main class="legal-index-main">
+    <section class="legal-index">
+      <header class="legal-index__header">
+        <p class="legal-index__eyebrow">Legal</p>
+        <h1>The boring (but important) bit</h1>
+        <p class="legal-index__lede">Everything you need to know about how the site works, how we handle your data, and what to do if something goes sideways.</p>
+      </header>
+      <ul class="legal-index__list">
+        {pages.map((p: any) => (
+          <li>
+            <a href={`/legal/${p.slug.current}`} class="legal-index__card">
+              <h2>{p.title}</h2>
+              {p.summary && <p>{p.summary}</p>}
+              <span class="legal-index__updated">Updated {fmt(p.lastUpdated)}</span>
+            </a>
+          </li>
+        ))}
+      </ul>
+    </section>
+  </main>
+  <Footer />
+</Layout>
+
+<style>
+  .legal-index-main {
+    background: var(--charcoal);
+    min-height: 60vh;
+  }
+  .legal-index {
+    max-width: 880px;
+    margin: 0 auto;
+    padding: 8rem 1.25rem 6rem;
+    color: #e5e5e5;
+  }
+  .legal-index__header {
+    margin-bottom: 3rem;
+  }
+  .legal-index__eyebrow {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 0.82rem;
+    text-transform: uppercase;
+    letter-spacing: 5px;
+    color: #ff00ff;
+    margin: 0 0 0.75rem;
+    text-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+  }
+  .legal-index__header h1 {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: clamp(2.2rem, 5vw, 3.5rem);
+    line-height: 1.05;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin: 0 0 1rem;
+    color: #ffffff;
+  }
+  .legal-index__lede {
+    font-size: 1.05rem;
+    color: #b0b0b0;
+    max-width: 60ch;
+    margin: 0;
+    line-height: 1.6;
+  }
+  .legal-index__list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .legal-index__card {
+    display: block;
+    padding: 1.5rem;
+    background: rgba(255, 0, 255, 0.04);
+    border: 1px solid rgba(255, 0, 255, 0.18);
+    border-radius: 8px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.15s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease;
+  }
+  .legal-index__card:hover {
+    transform: translateY(-2px);
+    border-color: rgba(255, 0, 255, 0.6);
+    background: rgba(255, 0, 255, 0.08);
+    box-shadow: 0 0 20px rgba(255, 0, 255, 0.15);
+  }
+  .legal-index__card h2 {
+    font-family: "Bebas Neue", sans-serif;
+    margin: 0 0 0.5rem;
+    font-size: 1.3rem;
+    letter-spacing: 0.05em;
+    color: #ffffff;
+  }
+  .legal-index__card p {
+    margin: 0 0 0.75rem;
+    color: #b0b0b0;
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+  .legal-index__updated {
+    font-family: "Bebas Neue", sans-serif;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.15em;
+    color: rgba(255, 0, 255, 0.55);
+  }
+</style>

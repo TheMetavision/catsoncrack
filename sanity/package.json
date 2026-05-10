@@ -1,0 +1,19 @@
+{
+  "name": "sanity",
+  "version": "1.0.0",
+  "description": "",
+  "main": "sanity.cli.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "dependencies": {
+    "@sanity/icons": "^3.4.0",
+    "@sanity/vision": "^5.20.0",
+    "sanity": "^5.20.0",
+    "styled-components": "^6.4.0"
+  }
+}

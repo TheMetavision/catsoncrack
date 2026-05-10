@@ -5,3 +5,13 @@ dist/
 .astro/
 *.log
 .DS_Store
+
+# Local-only agent artifacts
+CLAUDE.md
+
+# Local archives / backups not needed in repo
+_archive/
+*.bak
+
+# Sanity Studio runtime cache
+sanity/.sanity/

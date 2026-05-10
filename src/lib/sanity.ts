@@ -6,6 +6,7 @@ export const client = createClient({
   dataset: import.meta.env.SANITY_DATASET || 'production',
   apiVersion: '2024-01-01',
   useCdn: true,
+  token: import.meta.env.SANITY_API_TOKEN,
 });
 
 const builder = imageUrlBuilder(client);
@@ -188,3 +189,4 @@ export async function getThemeAudio(): Promise<ThemeAudio> {
     enabled: result?.enabled !== false, // null treated as enabled (kill switch must be explicit false to disable)
   };
 }
+
