@@ -5,7 +5,8 @@ export const client = createClient({
   projectId: import.meta.env.SANITY_PROJECT_ID || '8ksun996',
   dataset: import.meta.env.SANITY_DATASET || 'production',
   apiVersion: '2024-01-01',
-  useCdn: true,
+  useCdn: false, // SSG builds at build-time — CDN adds staleness without benefit
+  perspective: 'published', // forces API to return only published docs, never drafts
   token: import.meta.env.SANITY_API_TOKEN,
 });
 
@@ -15,10 +16,14 @@ export function urlFor(source: any) {
   return builder.image(source);
 }
 
+// Draft filter applied to every list/single fetch as a belt-and-braces guard
+// in addition to the `perspective: 'published'` flag on the client itself.
+const NOT_DRAFT = `!(_id in path('drafts.**'))`;
+
 // ─── Characters ───────────────────────────────────────────────
 export async function getAllCharacters() {
   return client.fetch(`
-    *[_type == "character"] | order(sortOrder asc) {
+    *[_type == "character" && ${NOT_DRAFT}] | order(sortOrder asc) {
       _id, name, "slug": slug.current, role, badge, tagline, bio, extendedBio,
       traits, quote, "accent": coalesce(accentColor, accent), accentDim, accentGlow, initials,
       portrait, galleryImages, sortOrder, seoTitle, seoDescription
@@ -28,7 +33,7 @@ export async function getAllCharacters() {
 
 export async function getCharacterBySlug(slug: string) {
   return client.fetch(`
-    *[_type == "character" && slug.current == $slug][0] {
+    *[_type == "character" && slug.current == $slug && ${NOT_DRAFT}][0] {
       _id, name, "slug": slug.current, role, badge, tagline, bio, extendedBio,
       traits, quote, "accent": coalesce(accentColor, accent), accentDim, accentGlow, initials,
       portrait, galleryImages, seoTitle, seoDescription
@@ -39,7 +44,7 @@ export async function getCharacterBySlug(slug: string) {
 // ─── Episodes / Media ─────────────────────────────────────────
 export async function getAllEpisodes() {
   return client.fetch(`
-    *[_type == "episode"] | order(publishedAt desc) {
+    *[_type == "episode" && ${NOT_DRAFT}] | order(publishedAt desc) {
       _id, title, "slug": slug.current, videoType, season, episodeNumber,
       youtubeUrl, youtubeId, thumbnail, description,
       "featuredCharacters": featuredCharacters[]->{ name, "slug": slug.current, portrait },
@@ -50,7 +55,7 @@ export async function getAllEpisodes() {
 
 export async function getFeaturedEpisodes() {
   return client.fetch(`
-    *[_type == "episode" && featured == true] | order(publishedAt desc)[0...4] {
+    *[_type == "episode" && featured == true && ${NOT_DRAFT}] | order(publishedAt desc)[0...4] {
       _id, title, "slug": slug.current, videoType, youtubeUrl, youtubeId,
       thumbnail, description, publishedAt, duration
     }
@@ -60,7 +65,7 @@ export async function getFeaturedEpisodes() {
 // ─── Blog Posts (Alleyway Gazette) ────────────────────────────
 export async function getAllBlogPosts() {
   return client.fetch(`
-    *[_type == "blogPost"] | order(publishedAt desc) {
+    *[_type == "blogPost" && ${NOT_DRAFT}] | order(publishedAt desc) {
       _id, title, "slug": slug.current, category, excerpt, body, featuredImage,
       "relatedCharacters": relatedCharacters[]->{ name, "slug": slug.current },
       publishedAt, seoTitle, seoDescription
@@ -70,7 +75,7 @@ export async function getAllBlogPosts() {
 
 export async function getBlogPostBySlug(slug: string) {
   return client.fetch(`
-    *[_type == "blogPost" && slug.current == $slug][0] {
+    *[_type == "blogPost" && slug.current == $slug && ${NOT_DRAFT}][0] {
       _id, title, "slug": slug.current, category, excerpt, body, featuredImage,
       "relatedCharacters": relatedCharacters[]->{ name, "slug": slug.current, portrait },
       publishedAt, seoTitle, seoDescription
@@ -81,7 +86,7 @@ export async function getBlogPostBySlug(slug: string) {
 // ─── Products ─────────────────────────────────────────────────
 export async function getAllProducts() {
   return client.fetch(`
-    *[_type == "product"] | order(name asc) {
+    *[_type == "product" && ${NOT_DRAFT}] | order(name asc) {
       _id, name, "slug": slug.current,
       "category": category->{ title, "slug": slug.current },
       "featuredCharacter": featuredCharacter->{ name, "slug": slug.current },
@@ -93,7 +98,7 @@ export async function getAllProducts() {
 
 export async function getProductBySlug(slug: string) {
   return client.fetch(`
-    *[_type == "product" && slug.current == $slug][0] {
+    *[_type == "product" && slug.current == $slug && ${NOT_DRAFT}][0] {
       _id, name, "slug": slug.current,
       "category": category->{ title, "slug": slug.current },
       "featuredCharacter": featuredCharacter->{ name, "slug": slug.current, portrait },
@@ -105,7 +110,7 @@ export async function getProductBySlug(slug: string) {
 
 export async function getFeaturedProducts() {
   return client.fetch(`
-    *[_type == "product" && featured == true] | order(name asc)[0...6] {
+    *[_type == "product" && featured == true && ${NOT_DRAFT}] | order(name asc)[0...6] {
       _id, name, "slug": slug.current, price, images,
       "category": category->{ title, "slug": slug.current }
     }
@@ -115,7 +120,7 @@ export async function getFeaturedProducts() {
 // ─── Categories ───────────────────────────────────────────────
 export async function getAllCategories() {
   return client.fetch(`
-    *[_type == "category"] | order(sortOrder asc) {
+    *[_type == "category" && ${NOT_DRAFT}] | order(sortOrder asc) {
       _id, title, "slug": slug.current, description, image, sortOrder
     }
   `);
@@ -123,7 +128,7 @@ export async function getAllCategories() {
 
 export async function getProductsByCategory(categorySlug: string) {
   return client.fetch(`
-    *[_type == "product" && category->slug.current == $categorySlug] | order(name asc) {
+    *[_type == "product" && category->slug.current == $categorySlug && ${NOT_DRAFT}] | order(name asc) {
       _id, name, "slug": slug.current, price, compareAtPrice, images, featured
     }
   `, { categorySlug });
@@ -131,13 +136,13 @@ export async function getProductsByCategory(categorySlug: string) {
 
 // ─── FAQs ─────────────────────────────────────────────────────
 export async function getAllFaqs() {
-  return client.fetch(`*[_type == "faq"] | order(order asc) { _id, question, answer, category, order }`);
+  return client.fetch(`*[_type == "faq" && ${NOT_DRAFT}] | order(order asc) { _id, question, answer, category, order }`);
 }
 
 // ─── Pages ────────────────────────────────────────────────────
 export async function getPageBySlug(slug: string) {
   return client.fetch(`
-    *[_type == "page" && slug.current == $slug][0] {
+    *[_type == "page" && slug.current == $slug && ${NOT_DRAFT}][0] {
       _id, title, "slug": slug.current, body, noIndex, seoTitle, seoDescription
     }
   `, { slug });
@@ -146,7 +151,7 @@ export async function getPageBySlug(slug: string) {
 // ─── Site Settings ────────────────────────────────────────────
 export async function getSiteSettings() {
   return client.fetch(`
-    *[_type == "siteSettings"][0] {
+    *[_type == "siteSettings" && ${NOT_DRAFT}][0] {
       siteName, tagline, siteDescription, contactEmail, youtubeChannel,
       socialLinks, announcementBar, logo, footerLogo, footerText,
       newsletterHeadline, newsletterSubtext
@@ -189,4 +194,3 @@ export async function getThemeAudio(): Promise<ThemeAudio> {
     enabled: result?.enabled !== false, // null treated as enabled (kill switch must be explicit false to disable)
   };
 }
-
