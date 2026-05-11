@@ -63,12 +63,26 @@ export async function getFeaturedEpisodes() {
 }
 
 // ─── Blog Posts (Alleyway Gazette) ────────────────────────────
+// NOTE: The schema field is `tag`, not `category`. The frontend reads
+// `post.category`. We coalesce both into a unified `category` field so
+// the frontend stays stable regardless of which field the doc was authored
+// with — same pattern as the character `accent`/`accentColor` migration.
+//
+// `featuredImageUrl` is projected directly via `.asset->url` so the
+// frontend can drop the string straight into an <img src>. We also
+// surface the asset alt + dimensions for proper CLS-safe rendering.
 export async function getAllBlogPosts() {
   return client.fetch(`
     *[_type == "blogPost" && ${NOT_DRAFT}] | order(publishedAt desc) {
-      _id, title, "slug": slug.current, category, excerpt, body, featuredImage,
+      _id, title, "slug": slug.current,
+      "category": coalesce(category, tag),
+      excerpt, body, featuredImage,
+      "featuredImageUrl": featuredImage.asset->url,
+      "featuredImageAlt": coalesce(featuredImage.alt, title),
+      "featuredImageWidth": featuredImage.asset->metadata.dimensions.width,
+      "featuredImageHeight": featuredImage.asset->metadata.dimensions.height,
       "relatedCharacters": relatedCharacters[]->{ name, "slug": slug.current },
-      publishedAt, seoTitle, seoDescription
+      publishedAt, readTime, seoTitle, seoDescription
     }
   `);
 }
@@ -76,9 +90,15 @@ export async function getAllBlogPosts() {
 export async function getBlogPostBySlug(slug: string) {
   return client.fetch(`
     *[_type == "blogPost" && slug.current == $slug && ${NOT_DRAFT}][0] {
-      _id, title, "slug": slug.current, category, excerpt, body, featuredImage,
+      _id, title, "slug": slug.current,
+      "category": coalesce(category, tag),
+      excerpt, body, featuredImage,
+      "featuredImageUrl": featuredImage.asset->url,
+      "featuredImageAlt": coalesce(featuredImage.alt, title),
+      "featuredImageWidth": featuredImage.asset->metadata.dimensions.width,
+      "featuredImageHeight": featuredImage.asset->metadata.dimensions.height,
       "relatedCharacters": relatedCharacters[]->{ name, "slug": slug.current, portrait },
-      publishedAt, seoTitle, seoDescription
+      publishedAt, readTime, seoTitle, seoDescription
     }
   `, { slug });
 }
