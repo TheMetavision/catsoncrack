@@ -62,6 +62,21 @@ export async function getFeaturedEpisodes() {
   `);
 }
 
+// ─── Books ────────────────────────────────────────────────────
+// Sort by seriesOrder asc, with _createdAt asc as tiebreaker so two books
+// sharing the same seriesOrder fall back to creation order. coverImage is
+// projected as the full image object (hotspot + crop intact) so urlFor()
+// can do responsive image transforms on the frontend.
+export async function getAllBooks() {
+  return client.fetch(`
+    *[_type == "book" && ${NOT_DRAFT}] | order(seriesOrder asc, _createdAt asc) {
+      _id, title, "slug": slug.current,
+      description, coverImage,
+      seriesOrder, format, status, orderUrl, publishedAt
+    }
+  `);
+}
+
 // ─── Blog Posts (Alleyway Gazette) ────────────────────────────
 // NOTE: The schema field is `tag`, not `category`. The frontend reads
 // `post.category`. We coalesce both into a unified `category` field so

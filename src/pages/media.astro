@@ -15,7 +15,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
-import { getAllEpisodes } from '../lib/sanity';
+import { getAllEpisodes, getAllBooks, urlFor } from '../lib/sanity';
 
 const HERO_TRAILER_FALLBACK_ID = 'ay215yKvntY';
 
@@ -71,6 +71,32 @@ const PLACEHOLDER_BOOKS = [
       'A challenger from the east side. The Dumpster Throne under siege. Six cats, zero rules, one bloody-great showdown.',
   },
 ];
+
+// Pull books from Sanity (project 8ksun996, schema includes coverImage with
+// hotspot + status enum). When the dataset is empty we fall back to the
+// PLACEHOLDER_BOOKS above so the page still looks correct pre-launch.
+const sanityBooks = (await getAllBooks()) || [];
+const books = sanityBooks.length > 0
+  ? sanityBooks.map((b, i) => ({
+      volume: `Vol. 0${b.seriesOrder ?? i + 1}`,
+      title: b.title,
+      teaser: b.description || '',
+      coverImage: b.coverImage || null,
+      status: b.status || 'coming-soon',
+      orderUrl: b.orderUrl || null,
+    }))
+  : PLACEHOLDER_BOOKS.map((b) => ({
+      ...b,
+      coverImage: null,
+      status: 'coming-soon',
+      orderUrl: null,
+    }));
+
+const STATUS_LABEL = {
+  'available': 'Order Now',
+  'pre-order': 'Pre-Order',
+  'coming-soon': 'Coming Soon',
+};
 
 const ldEpisodes = episodeCards
   .filter((e) => e.resolvedYoutubeId)
@@ -277,22 +303,48 @@ const breadcrumbLd = {
         </div>
 
         <div class="books-grid stagger-children">
-          {PLACEHOLDER_BOOKS.map((b) => (
-            <article class="book-card">
-              <div class="book-cover">
-                <div class="book-cover-inner">
-                  <span class="book-cover-volume">{b.volume}</span>
-                  <span class="book-cover-glyph" aria-hidden="true">CoC</span>
+          {books.map((b) => {
+            const statusLabel = STATUS_LABEL[b.status] || 'Coming Soon';
+            const isOrderable = b.status === 'available' && b.orderUrl;
+            return (
+              <article class="book-card">
+                <div class="book-cover">
+                  {b.coverImage ? (
+                    <img
+                      class="book-cover-img"
+                      src={urlFor(b.coverImage).width(600).height(900).format('webp').url()}
+                      alt={`${b.title} — ${b.volume} cover`}
+                      width="600"
+                      height="900"
+                      loading="lazy"
+                    />
+                  ) : (
+                    <div class="book-cover-inner">
+                      <span class="book-cover-volume">{b.volume}</span>
+                      <span class="book-cover-glyph" aria-hidden="true">CoC</span>
+                    </div>
+                  )}
+                  <div class="book-cover-coming">{statusLabel}</div>
                 </div>
-                <div class="book-cover-coming">Coming Soon</div>
-              </div>
-              <div class="book-meta">
-                <h3 class="book-title">{b.title}</h3>
-                <p class="book-teaser">{b.teaser}</p>
-                <p class="book-volume-label">{b.volume}</p>
-              </div>
-            </article>
-          ))}
+                <div class="book-meta">
+                  <h3 class="book-title">{b.title}</h3>
+                  <p class="book-teaser">{b.teaser}</p>
+                  {isOrderable ? (
+                    <a
+                      class="book-volume-label book-order-link"
+                      href={b.orderUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {b.volume} &middot; Order Now &rarr;
+                    </a>
+                  ) : (
+                    <p class="book-volume-label">{b.volume}</p>
+                  )}
+                </div>
+              </article>
+            );
+          })}
         </div>
 
         <div class="books-cta-row fade-up">
@@ -786,9 +838,22 @@ const breadcrumbLd = {
     }
     .books-grid {
       display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+      grid-template-columns: repeat(3, 1fr);
       gap: 28px;
-      margin-bottom: 48px;
+      margin: 0 auto 48px;
+      max-width: 1080px;
+    }
+    @media (max-width: 900px) {
+      .books-grid {
+        grid-template-columns: repeat(2, 1fr);
+        max-width: 720px;
+      }
+    }
+    @media (max-width: 600px) {
+      .books-grid {
+        grid-template-columns: 1fr;
+        max-width: 420px;
+      }
     }
     .book-card {
       background: var(--bg-card);
@@ -813,6 +878,29 @@ const breadcrumbLd = {
       align-items: center;
       justify-content: center;
       overflow: hidden;
+    }
+    .book-cover-img {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+      z-index: 1;
+    }
+    .book-order-link {
+      display: inline-block;
+      text-decoration: none;
+      transition: color 0.2s ease, transform 0.2s ease;
+    }
+    .book-order-link:hover {
+      color: var(--primary-light);
+      transform: translateX(2px);
+    }
+    .book-order-link:focus-visible {
+      outline: 2px solid var(--primary);
+      outline-offset: 3px;
+      border-radius: 2px;
     }
     .book-cover-inner {
       display: flex; flex-direction: column;
@@ -839,7 +927,8 @@ const breadcrumbLd = {
       bottom: 12px;
       left: 50%;
       transform: translateX(-50%);
-      background: rgba(15, 17, 22, 0.92);
+      z-index: 2;
+      background: rgba(15, 17, 22, 0.95);
       color: var(--primary-light);
       padding: 5px 12px;
       border: 1px solid rgba(255, 0, 255, 0.55);
@@ -849,6 +938,7 @@ const breadcrumbLd = {
       letter-spacing: 0.18em;
       text-transform: uppercase;
       white-space: nowrap;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
     }
     .book-meta { padding: 20px 22px 24px; }
     .book-title {
