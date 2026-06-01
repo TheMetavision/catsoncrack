@@ -77,11 +77,7 @@ import Footer from '../components/Footer.astro';
 					</div>
 
 					<div class="contact-form-wrapper fade-in">
-						<form class="contact-form" id="contactForm" action="https://api.web3forms.com/submit" method="POST">
-							<input type="hidden" name="access_key" value="ae5f8d86-af04-457f-bca3-73d9041cc56c" />
-							<input type="hidden" name="subject" value="New Contact Form Submission - Cats On Crack" />
-							<input type="hidden" name="from_name" value="Cats On Crack Website" />
-							<input type="hidden" name="redirect" value="https://catsoncrack.co.uk/contact?success=true" />
+						<form class="contact-form" id="contactForm" novalidate>
 							<input type="checkbox" name="botcheck" class="hidden-field" style="display:none" />
 							<h3>Send Us a Message</h3>
 
@@ -102,7 +98,7 @@ import Footer from '../components/Footer.astro';
 									<option value="General Inquiry">General Inquiry</option>
 									<option value="Fan Message">Fan Message</option>
 									<option value="Collaboration">Collaboration</option>
-									<option value="Press & Media">Press & Media</option>
+									<option value="Press & Media">Press &amp; Media</option>
 									<option value="Merch Question">Merch Question</option>
 									<option value="Other">Other</option>
 								</select>
@@ -113,7 +109,10 @@ import Footer from '../components/Footer.astro';
 								<textarea id="message" name="message" required placeholder="Tell us what's on your mind..." rows="6"></textarea>
 							</div>
 
-							<button type="submit" class="submit-button">Send Message</button>
+							<button type="submit" class="submit-button" id="submitButton">
+								<span class="submit-text">Send Message</span>
+								<span class="submit-sending" style="display:none;">Sending...</span>
+							</button>
 						</form>
 					</div>
 				</div>
@@ -765,44 +764,103 @@ import Footer from '../components/Footer.astro';
 </style>
 
 <script>
-	const contactForm = document.getElementById('contactForm') as HTMLFormElement;
-	const urlParams = new URLSearchParams(window.location.search);
+	const contactForm = document.getElementById('contactForm') as HTMLFormElement | null;
+	const formWrapper = document.querySelector('.contact-form-wrapper') as HTMLElement | null;
+	const submitBtn = document.getElementById('submitButton') as HTMLButtonElement | null;
 
-	if (urlParams.get('success') === 'true') {
-		const formWrapper = document.querySelector('.contact-form-wrapper');
-		if (formWrapper) {
-			formWrapper.innerHTML = `
-				<div style="position:relative;overflow:hidden;background:var(--bg-darker,#0d0f14);border:2px solid rgba(255,0,255,0.2);border-left:4px solid var(--primary,#ff00ff);border-radius:12px;padding:2.5rem 2rem;animation:alleyFadeIn 0.4s ease-out;">
-					<style>@keyframes alleyFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}</style>
-					<span style="position:absolute;top:16px;right:20px;font-family:'Inter',sans-serif;font-size:0.6rem;color:rgba(255,255,255,0.25);letter-spacing:3px;text-transform:uppercase;font-weight:600;">// Alley dispatch</span>
-					<div style="display:flex;align-items:flex-start;gap:18px;">
-						<div style="flex-shrink:0;width:52px;height:52px;border-radius:50%;background:var(--primary,#ff00ff);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(255,0,255,0.4);">
-							<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-						</div>
-						<div>
-							<div style="font-family:'Bebas Neue',sans-serif;font-size:0.688rem;color:var(--primary,#ff00ff);letter-spacing:3px;margin-bottom:8px;text-transform:uppercase;text-shadow:0 0 10px rgba(255,0,255,0.3);">Signal received</div>
-							<h3 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(1.75rem,4vw,2.25rem);color:#fff;margin:0 0 10px;letter-spacing:2px;text-transform:uppercase;line-height:1;text-shadow:2px 2px 0 rgba(255,0,255,0.2);">Message landed.</h3>
-							<p style="font-family:'Inter',sans-serif;color:var(--text-secondary,rgba(255,255,255,0.5));font-size:0.938rem;margin:0;line-height:1.5;">The crew got your note. We'll get back to you faster than a cat chasing a glowing pipe.</p>
-						</div>
-					</div>
-					<div style="margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid rgba(255,0,255,0.15);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-						<div style="font-family:'Inter',sans-serif;font-style:italic;font-size:0.85rem;color:rgba(255,255,255,0.3);line-height:1.4;max-width:55%;">"Whiskers says check back soon. Or don't. We know where you are."</div>
-						<div style="display:flex;gap:10px;">
-							<a href="/the-alley-squad" style="padding:10px 16px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:8px;background:transparent;color:#fff;border:2px solid rgba(255,0,255,0.4);display:inline-block;">Meet the Squad</a>
-							<a href="https://www.youtube.com/@CatsOnCrackMedia" target="_blank" rel="noopener" style="padding:10px 16px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:8px;background:var(--primary,#ff00ff);color:#fff;border:none;display:inline-block;box-shadow:0 4px 20px rgba(255,0,255,0.4);text-shadow:1px 1px 2px rgba(0,0,0,0.3);">Watch the Chaos</a>
-						</div>
-					</div>
-				</div>
-			`;
-		}
-		window.history.replaceState({}, '', '/contact');
+	function setSending(on: boolean) {
+		if (!contactForm) return;
+		if (submitBtn) submitBtn.disabled = on;
+		const sendText = contactForm.querySelector('.submit-text') as HTMLElement | null;
+		const sending = contactForm.querySelector('.submit-sending') as HTMLElement | null;
+		if (sendText) sendText.style.display = on ? 'none' : '';
+		if (sending) sending.style.display = on ? 'inline' : 'none';
 	}
 
-	contactForm?.addEventListener('submit', () => {
-		const topic = (contactForm.querySelector('#topic') as HTMLSelectElement)?.value || 'General';
-		const subjectField = contactForm.querySelector('input[name="subject"]') as HTMLInputElement;
-		if (subjectField) {
-			subjectField.value = `Cats On Crack - ${topic}`;
+	function showSuccess() {
+		if (!formWrapper) return;
+		formWrapper.innerHTML = `
+			<div style="position:relative;overflow:hidden;background:var(--bg-darker,#0d0f14);border:2px solid rgba(255,0,255,0.2);border-left:4px solid var(--primary,#ff00ff);border-radius:12px;padding:2.5rem 2rem;animation:alleyFadeIn 0.4s ease-out;">
+				<style>@keyframes alleyFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}</style>
+				<span style="position:absolute;top:16px;right:20px;font-family:'Inter',sans-serif;font-size:0.6rem;color:rgba(255,255,255,0.25);letter-spacing:3px;text-transform:uppercase;font-weight:600;">// Alley dispatch</span>
+				<div style="display:flex;align-items:flex-start;gap:18px;">
+					<div style="flex-shrink:0;width:52px;height:52px;border-radius:50%;background:var(--primary,#ff00ff);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(255,0,255,0.4);">
+						<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
+					</div>
+					<div>
+						<div style="font-family:'Bebas Neue',sans-serif;font-size:0.688rem;color:var(--primary,#ff00ff);letter-spacing:3px;margin-bottom:8px;text-transform:uppercase;text-shadow:0 0 10px rgba(255,0,255,0.3);">Signal received</div>
+						<h3 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(1.75rem,4vw,2.25rem);color:#fff;margin:0 0 10px;letter-spacing:2px;text-transform:uppercase;line-height:1;text-shadow:2px 2px 0 rgba(255,0,255,0.2);">Message landed.</h3>
+						<p style="font-family:'Inter',sans-serif;color:var(--text-secondary,rgba(255,255,255,0.5));font-size:0.938rem;margin:0;line-height:1.5;">The crew got your note. We'll get back to you faster than a cat chasing a glowing pipe.</p>
+					</div>
+				</div>
+				<div style="margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid rgba(255,0,255,0.15);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+					<div style="font-family:'Inter',sans-serif;font-style:italic;font-size:0.85rem;color:rgba(255,255,255,0.3);line-height:1.4;max-width:55%;">"Whiskers says check back soon. Or don't. We know where you are."</div>
+					<div style="display:flex;gap:10px;">
+						<a href="/the-alley-squad" style="padding:10px 16px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:8px;background:transparent;color:#fff;border:2px solid rgba(255,0,255,0.4);display:inline-block;">Meet the Squad</a>
+						<a href="https://www.youtube.com/@CatsOnCrackMedia" target="_blank" rel="noopener" style="padding:10px 16px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:8px;background:var(--primary,#ff00ff);color:#fff;border:none;display:inline-block;box-shadow:0 4px 20px rgba(255,0,255,0.4);text-shadow:1px 1px 2px rgba(0,0,0,0.3);">Watch the Chaos</a>
+					</div>
+				</div>
+			</div>
+		`;
+	}
+
+	function showError() {
+		// Inline error card — same visual language as the success state, but in a warning red.
+		// Provides a retry by reloading the page (re-renders the original form via Astro static output).
+		if (!formWrapper) return;
+		formWrapper.innerHTML = `
+			<div style="position:relative;overflow:hidden;background:var(--bg-darker,#0d0f14);border:2px solid rgba(255,68,68,0.25);border-left:4px solid #ff4d6d;border-radius:12px;padding:2rem;animation:alleyFadeIn 0.4s ease-out;">
+				<style>@keyframes alleyFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}</style>
+				<span style="position:absolute;top:16px;right:20px;font-family:'Inter',sans-serif;font-size:0.6rem;color:rgba(255,255,255,0.25);letter-spacing:3px;text-transform:uppercase;font-weight:600;">// Signal lost</span>
+				<div style="display:flex;align-items:flex-start;gap:18px;">
+					<div style="flex-shrink:0;width:52px;height:52px;border-radius:50%;background:#ff4d6d;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(255,77,109,0.4);">
+						<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+					</div>
+					<div>
+						<div style="font-family:'Bebas Neue',sans-serif;font-size:0.688rem;color:#ff4d6d;letter-spacing:3px;margin-bottom:8px;text-transform:uppercase;">Couldn't send</div>
+						<h3 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(1.5rem,4vw,2rem);color:#fff;margin:0 0 10px;letter-spacing:2px;text-transform:uppercase;line-height:1;">Something jammed the signal.</h3>
+						<p style="font-family:'Inter',sans-serif;color:var(--text-secondary,rgba(255,255,255,0.55));font-size:0.938rem;margin:0 0 18px;line-height:1.5;">Try again, or email <a href="mailto:meow@catsoncrack.co.uk" style="color:#ff4d6d;text-decoration:underline;">meow@catsoncrack.co.uk</a> directly.</p>
+						<button type="button" id="retryBtn" style="padding:10px 18px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;border-radius:8px;background:transparent;color:#fff;border:2px solid rgba(255,77,109,0.5);cursor:pointer;">Try Again</button>
+					</div>
+				</div>
+			</div>
+		`;
+		document.getElementById('retryBtn')?.addEventListener('click', () => window.location.reload());
+	}
+
+	contactForm?.addEventListener('submit', async (e) => {
+		e.preventDefault();
+		setSending(true);
+
+		const fd = new FormData(contactForm);
+		const topic = String(fd.get('topic') || '').trim();
+		const payload = {
+			name: String(fd.get('name') || '').trim(),
+			email: String(fd.get('email') || '').trim(),
+			// Topic dropdown selection drives the brand-prefixed subject.
+			subject: topic ? `Cats On Crack - ${topic}` : 'Cats On Crack - General',
+			message: String(fd.get('message') || '').trim(),
+			// Honeypot is a checkbox — only present in FormData when ticked.
+			botcheck: fd.get('botcheck') ? 'on' : '',
+			pageUri: window.location.href,
+		};
+
+		try {
+			const res = await fetch('/api/contact', {
+				method: 'POST',
+				headers: { 'Content-Type': 'application/json' },
+				body: JSON.stringify(payload),
+			});
+			const data = await res.json().catch(() => ({}));
+			if (res.ok && data?.success) {
+				showSuccess();
+			} else {
+				throw new Error(data?.error || 'Submission failed');
+			}
+		} catch {
+			showError();
+		} finally {
+			setSending(false);
 		}
 	});
 </script>

@@ -8,6 +8,7 @@ import page from './page';
 import siteSettings from './siteSettings';
 import legalPage from './legalPage';
 import worldLocation from './worldLocation';
+import contactSubmission from './contactSubmission';
 
 export const schemaTypes = [
   siteSettings,
@@ -20,5 +21,5 @@ export const schemaTypes = [
   book,
   page,
   legalPage,
+  contactSubmission,
 ];
-
