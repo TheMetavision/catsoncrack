@@ -1,5 +1,6 @@
 import character from './character';
 import product from './product';
+import printfulVariant from './printfulVariant';
 import blogPost from './blogPost';
 import episode from './episode';
 import book from './book';
@@ -17,6 +18,7 @@ export const schemaTypes = [
   episode,
   blogPost,
   product,
+  printfulVariant,
   merchCategory,
   book,
   page,
