@@ -118,38 +118,91 @@ export async function getBlogPostBySlug(slug: string) {
   `, { slug });
 }
 
-// ─── Products ─────────────────────────────────────────────────
-export async function getAllProducts() {
+// ─── Products (NESTED model) ──────────────────────────────────
+// One product = one DESIGN holding a variants[] array of garment types, each
+// with its own basePrice + per-size sizePrices ladder, colours, colourImages,
+// and the printfulVariants matrix that drives fulfilment. `fromPrice` is the
+// cheapest basePrice across variants — handy for "from £X" on shop cards.
+//
+// CONSUMER NOTE: shop/home/category cards previously read `images` and `price`.
+// They now get `heroImage` (a Sanity image — use urlFor()) and `fromPrice`.
+// Update those card components accordingly.
+
+export interface SizePrice { size: string; price: number; }
+export interface ColourImage { colour: string; imageUrl: string; backImageUrl?: string; }
+export interface PrintfulVariant { size: string; colour: string; syncVariantId: string; }
+export interface ProductVariant {
+  _key: string;
+  productType: string;
+  label: string;
+  printfulImageUrl: string;
+  basePrice: number;
+  sizes: string[];
+  sizePrices: SizePrice[];
+  colours: string[];
+  colourImages: ColourImage[];
+  printfulVariantId: string;
+  printfulVariants: PrintfulVariant[];
+  stripePriceId: string;
+}
+export interface Product {
+  _id: string;
+  name: string;
+  slug: string;
+  heroImage: any;
+  accent: string;
+  tagline: string;
+  backstory: string;
+  care: string;
+  designStory?: string;
+  active: boolean;
+  sortOrder: number;
+  fromPrice: number;
+  category?: { title: string; slug: string } | null;
+  featuredCharacter?: { name: string; slug: string; portrait?: any } | null;
+  seoTitle?: string;
+  seoDescription?: string;
+  variants: ProductVariant[];
+}
+
+const PRODUCT_FIELDS = `
+  _id, name, "slug": slug.current,
+  heroImage, accent, tagline, backstory, care, designStory,
+  active, sortOrder, seoTitle, seoDescription,
+  "fromPrice": math::min(variants[].basePrice),
+  "category": category->{ title, "slug": slug.current },
+  "featuredCharacter": featuredCharacter->{ name, "slug": slug.current, portrait },
+  variants[] {
+    _key, productType, label, printfulImageUrl, basePrice,
+    sizes,
+    sizePrices[]{ size, price },
+    colours,
+    colourImages[]{ colour, imageUrl, backImageUrl },
+    printfulVariantId,
+    printfulVariants[]{ size, colour, syncVariantId },
+    stripePriceId
+  }
+`;
+
+export async function getAllProducts(): Promise<Product[]> {
   return client.fetch(`
-    *[_type == "product" && ${NOT_DRAFT}] | order(name asc) {
-      _id, name, "slug": slug.current,
-      "category": category->{ title, "slug": slug.current },
-      "featuredCharacter": featuredCharacter->{ name, "slug": slug.current },
-      description, designStory, price, compareAtPrice, images,
-      printfulVariants, material, featured, seoTitle, seoDescription
-    }
+    *[_type == "product" && active == true && ${NOT_DRAFT}]
+      | order(sortOrder asc, name asc) { ${PRODUCT_FIELDS} }
   `);
 }
 
-export async function getProductBySlug(slug: string) {
-  return client.fetch(`
-    *[_type == "product" && slug.current == $slug && ${NOT_DRAFT}][0] {
-      _id, name, "slug": slug.current,
-      "category": category->{ title, "slug": slug.current },
-      "featuredCharacter": featuredCharacter->{ name, "slug": slug.current, portrait },
-      description, designStory, price, compareAtPrice, images,
-      printfulVariants, material, featured, seoTitle, seoDescription
-    }
-  `, { slug });
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  return client.fetch(
+    `*[_type == "product" && slug.current == $slug && ${NOT_DRAFT}][0] { ${PRODUCT_FIELDS} }`,
+    { slug }
+  );
 }
 
-export async function getFeaturedProducts() {
-  return client.fetch(`
-    *[_type == "product" && featured == true && ${NOT_DRAFT}] | order(name asc)[0...6] {
-      _id, name, "slug": slug.current, price, images,
-      "category": category->{ title, "slug": slug.current }
-    }
-  `);
+export async function getFeaturedProducts(limit = 6): Promise<Product[]> {
+  return client.fetch(
+    `*[_type == "product" && active == true && ${NOT_DRAFT}] | order(sortOrder asc, name asc)[0...$limit] { ${PRODUCT_FIELDS} }`,
+    { limit }
+  );
 }
 
 // ─── Categories ───────────────────────────────────────────────
@@ -161,12 +214,12 @@ export async function getAllCategories() {
   `);
 }
 
-export async function getProductsByCategory(categorySlug: string) {
-  return client.fetch(`
-    *[_type == "product" && category->slug.current == $categorySlug && ${NOT_DRAFT}] | order(name asc) {
-      _id, name, "slug": slug.current, price, compareAtPrice, images, featured
-    }
-  `, { categorySlug });
+export async function getProductsByCategory(categorySlug: string): Promise<Product[]> {
+  return client.fetch(
+    `*[_type == "product" && category->slug.current == $categorySlug && active == true && ${NOT_DRAFT}]
+       | order(sortOrder asc, name asc) { ${PRODUCT_FIELDS} }`,
+    { categorySlug }
+  );
 }
 
 // ─── FAQs ─────────────────────────────────────────────────────

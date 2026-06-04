@@ -10,6 +10,7 @@ import siteSettings from './siteSettings';
 import legalPage from './legalPage';
 import worldLocation from './worldLocation';
 import contactSubmission from './contactSubmission';
+import order from './order';
 
 export const schemaTypes = [
   siteSettings,
@@ -24,4 +25,5 @@ export const schemaTypes = [
   page,
   legalPage,
   contactSubmission,
+  order,
 ];

@@ -6,14 +6,15 @@
  */
 
 import { useStore } from '@nanostores/react';
-import { useEffect } from 'react';
-import { $cartItems, $cartOpen, $cartTotal, $cartCount, removeFromCart, toggleCart, addToCart } from '../lib/cart';
+import { useEffect, useState } from 'react';
+import { $cartItems, $cartOpen, $cartTotal, $cartCount, removeFromCart, toggleCart, addToCart, clearCart } from '../lib/cart';
 
 export default function CartDrawer() {
   const items = useStore($cartItems);
   const isOpen = useStore($cartOpen);
   const total = useStore($cartTotal);
   const count = useStore($cartCount);
+  const [confirmClear, setConfirmClear] = useState(false);
 
   useEffect(() => {
     function handleAdd(e: any) { addToCart(e.detail); }
@@ -25,6 +26,16 @@ export default function CartDrawer() {
     document.body.style.overflow = isOpen ? 'hidden' : '';
     return () => { document.body.style.overflow = ''; };
   }, [isOpen]);
+
+  // Close the confirm modal if the drawer closes or the cart empties
+  useEffect(() => {
+    if (!isOpen || items.length === 0) setConfirmClear(false);
+  }, [isOpen, items.length]);
+
+  function handleClear() {
+    clearCart();
+    setConfirmClear(false);
+  }
 
   async function handleCheckout() {
     if (items.length === 0) return;
@@ -63,6 +74,7 @@ export default function CartDrawer() {
   const bgLight = '#1f2330';
   const text = '#F0EDE8';
   const textMuted = '#8a8880';
+  const bebas = "'Bebas Neue', sans-serif";
 
   const styles: Record<string, React.CSSProperties> = {
     overlay: {
@@ -143,6 +155,52 @@ export default function CartDrawer() {
       cursor: 'pointer', borderRadius: '4px',
       transition: 'background 0.2s',
     },
+    clearBtn: {
+      width: '100%', marginTop: '12px', padding: '8px',
+      background: 'none', border: 'none', color: textMuted,
+      fontSize: '12px', letterSpacing: '1.5px', textTransform: 'uppercase' as const,
+      cursor: 'pointer', transition: 'color 0.2s',
+    },
+    // ── Branded confirm modal ──
+    modalOverlay: {
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)',
+      zIndex: 2100, display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '24px',
+    },
+    modalPanel: {
+      position: 'relative', width: '360px', maxWidth: '90vw',
+      background: bg, border: `1px solid ${accent}`,
+      padding: '34px 30px 30px', textAlign: 'center' as const,
+      boxShadow: `0 24px 60px rgba(0,0,0,0.6), 0 0 30px ${accent}26`,
+    },
+    modalStamp: {
+      position: 'absolute', top: 0, right: 0, background: accent, color: '#fff',
+      fontFamily: bebas, fontSize: '0.7rem', letterSpacing: '3px',
+      padding: '6px 14px', textTransform: 'uppercase' as const,
+    },
+    modalTitle: {
+      fontFamily: bebas, fontSize: '2rem', letterSpacing: '2px',
+      color: text, margin: '0 0 10px', textTransform: 'uppercase' as const,
+    },
+    modalDivider: {
+      width: '48px', height: '3px', background: accent, margin: '0 auto 16px',
+    },
+    modalText: {
+      color: textMuted, fontSize: '14px', lineHeight: 1.6, margin: '0 0 26px',
+    },
+    modalBtns: { display: 'flex', gap: '12px' },
+    modalCancel: {
+      flex: 1, padding: '12px', background: 'transparent', color: text,
+      border: `1px solid ${accent}55`, borderRadius: '4px',
+      fontFamily: bebas, fontSize: '1.05rem', letterSpacing: '2px',
+      textTransform: 'uppercase' as const, cursor: 'pointer',
+    },
+    modalConfirm: {
+      flex: 1, padding: '12px', background: accent, color: '#000',
+      border: 'none', borderRadius: '4px',
+      fontFamily: bebas, fontSize: '1.05rem', letterSpacing: '2px',
+      textTransform: 'uppercase' as const, cursor: 'pointer',
+    },
   };
 
   return (
@@ -188,9 +246,48 @@ export default function CartDrawer() {
             >
               Checkout
             </button>
+            <button
+              style={styles.clearBtn}
+              onClick={() => setConfirmClear(true)}
+              onMouseEnter={(e) => (e.currentTarget.style.color = '#ff4466')}
+              onMouseLeave={(e) => (e.currentTarget.style.color = textMuted)}
+            >
+              Clear cart
+            </button>
           </div>
         )}
       </div>
+
+      {confirmClear && (
+        <div style={styles.modalOverlay} onClick={() => setConfirmClear(false)}>
+          <div style={styles.modalPanel} onClick={(e) => e.stopPropagation()}>
+            <span style={styles.modalStamp}>Hold up</span>
+            <h3 style={styles.modalTitle}>Empty the cart?</h3>
+            <div style={styles.modalDivider} />
+            <p style={styles.modalText}>
+              This clears all {count} {count === 1 ? 'item' : 'items'} out of your cart. No takebacks.
+            </p>
+            <div style={styles.modalBtns}>
+              <button
+                style={styles.modalCancel}
+                onClick={() => setConfirmClear(false)}
+                onMouseEnter={(e) => (e.currentTarget.style.borderColor = accent)}
+                onMouseLeave={(e) => (e.currentTarget.style.borderColor = `${accent}55`)}
+              >
+                Keep it
+              </button>
+              <button
+                style={styles.modalConfirm}
+                onClick={handleClear}
+                onMouseEnter={(e) => (e.currentTarget.style.background = accentDim)}
+                onMouseLeave={(e) => (e.currentTarget.style.background = accent)}
+              >
+                Clear it
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

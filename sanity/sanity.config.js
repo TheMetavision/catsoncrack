@@ -34,6 +34,13 @@ export default defineConfig({
             S.documentTypeListItem('legalPage').title('Legal Pages'),
             S.divider(),
             S.documentTypeListItem('contactSubmission').title('Contact Submissions'),
+            S.listItem()
+              .title('Orders')
+              .child(
+                S.documentTypeList('order')
+                  .title('Orders')
+                  .defaultOrdering([{ field: 'placedAt', direction: 'desc' }])
+              ),
           ]),
     }),
   ],

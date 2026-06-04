@@ -15,6 +15,14 @@ import Layout from '../layouts/Layout.astro';
 ---
 
 <Layout title="Order Confirmed — Cats On Crack">
+  {/* Empty the cart once Stripe redirects back with a session_id.
+      is:inline so it runs during parse, before the CartDrawer island hydrates. */}
+  <script is:inline>
+    if (new URLSearchParams(window.location.search).get('session_id')) {
+      try { localStorage.removeItem('coc-cart-v1'); } catch (e) {}
+    }
+  </script>
+
   <section style={`
     min-height: 70vh;
     display: flex;

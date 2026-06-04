@@ -1,101 +1,108 @@
 /**
- * netlify/functions/create-checkout.js
+ * netlify/functions/create-checkout.js  (Cats On Crack)
  *
- * Creates a Stripe Checkout Session from cart items using ad-hoc pricing.
- * No need to pre-create Stripe Products — prices are built on the fly.
+ * Ported verbatim from Wyrmfuel's proven function. The matching/pricing logic
+ * is brand-agnostic; only the marked CONFIG/SHIPPING values change per site.
  *
- * Env vars required in Netlify:
- *   STRIPE_SECRET_KEY  — sk_live_... (your single Stripe account key)
- *   SITE_URL           — e.g. https://catsoncrack.co.uk
- *
- * BRAND_TAG is the only thing that changes per brand — it tags orders
- * in Stripe so you know which brand they came from.
+ * Flow: resolve every cart item to its exact Printful sync_variant_id (by id
+ * prefix product-{slug}- then productType+size+colour against the
+ * printfulVariants matrix), reject the whole checkout (422) if anything is
+ * unresolvable, then build Stripe line items with ad-hoc price_data (NO Stripe
+ * Price objects) and stash printful_variant_id on each line item's product
+ * metadata for the webhook to read.
  */
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
-/* ── Brand identifier (change per brand) ── */
-const BRAND_TAG = 'catsoncrack-web';
+/* ── CONFIG (COC) ───────────────────────────────────────────────────── */
+const SANITY_PROJECT_ID = process.env.SANITY_PROJECT_ID || '8ksun996';
+const SANITY_DATASET    = process.env.SANITY_DATASET || 'production';
+const SANITY_API_VER    = '2024-01-01';
 
-/* ── Allowed shipping countries ── */
+/* ── SHIPPING (Wyrmfuel model) ───────────────────────────────────────────
+   UK £6.95, free over £75; EU £9.95; USA/Canada £10.95;
+   Australia/NZ/Japan/Brazil £11.95; Rest of World £14.95.
+   Keep FREE_THRESHOLD_PENCE in sync with FREE_SHIPPING_THRESHOLD in cart.ts. */
+const FREE_THRESHOLD_PENCE = 7500; // £75.00
+const UK_RATE_PENCE        = 695;  // £6.95
+
 const ALLOWED_COUNTRIES = [
-  'GB',
-  'US', 'CA',
-  'DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'AT', 'PT', 'IE', 'PL', 'SE',
-  'DK', 'FI', 'CZ', 'GR', 'RO', 'HU', 'BG', 'HR', 'SK', 'SI', 'LT',
-  'LV', 'EE', 'CY', 'LU', 'MT', 'MC', 'SM', 'VA', 'AD', 'AZ', 'KZ',
-  'IS', 'LI', 'NO', 'CH',
-  'AU', 'NZ',
-  'JP', 'BR',
+  'GB', 'US', 'CA',
+  'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
+  'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
+  'SI', 'ES', 'SE', 'AL', 'BA', 'GE', 'GI', 'XK', 'MK', 'MD', 'MC', 'ME',
+  'RS', 'SM', 'UA', 'VA', 'AD', 'AZ', 'KZ', 'IS', 'LI', 'NO', 'CH',
+  'AU', 'NZ', 'JP', 'BR',
   'MX', 'SG', 'KR', 'IN', 'ZA', 'AE', 'SA', 'TH', 'MY', 'PH', 'ID',
   'AR', 'CL', 'CO', 'PE', 'HK', 'TW', 'IL', 'TR', 'NG', 'KE', 'GH',
 ];
 
-/* ── Shipping tiers (same as Wyrmfuel) ── */
 function buildShippingOptions(cartTotalPence) {
-  const freeThreshold = 7500; // £75 in pence
-  const ukRate = cartTotalPence >= freeThreshold ? 0 : 695;
-  const ukLabel = cartTotalPence >= freeThreshold
-    ? 'UK Standard (FREE over £75)'
-    : 'UK Standard';
-
+  const ukOption = {
+    shipping_rate_data: {
+      type: 'fixed_amount',
+      fixed_amount: { amount: cartTotalPence >= FREE_THRESHOLD_PENCE ? 0 : UK_RATE_PENCE, currency: 'gbp' },
+      display_name: cartTotalPence >= FREE_THRESHOLD_PENCE ? 'UK Standard (FREE)' : 'UK Standard',
+      delivery_estimate: { minimum: { unit: 'business_day', value: 5 }, maximum: { unit: 'business_day', value: 10 } },
+    },
+  };
   return [
-    {
-      shipping_rate_data: {
-        type: 'fixed_amount',
-        fixed_amount: { amount: ukRate, currency: 'gbp' },
-        display_name: ukLabel,
-        delivery_estimate: {
-          minimum: { unit: 'business_day', value: 3 },
-          maximum: { unit: 'business_day', value: 5 },
-        },
-      },
-    },
-    {
-      shipping_rate_data: {
-        type: 'fixed_amount',
-        fixed_amount: { amount: 1295, currency: 'gbp' },
-        display_name: 'Europe',
-        delivery_estimate: {
-          minimum: { unit: 'business_day', value: 5 },
-          maximum: { unit: 'business_day', value: 10 },
-        },
-      },
-    },
-    {
-      shipping_rate_data: {
-        type: 'fixed_amount',
-        fixed_amount: { amount: 1495, currency: 'gbp' },
-        display_name: 'North America',
-        delivery_estimate: {
-          minimum: { unit: 'business_day', value: 7 },
-          maximum: { unit: 'business_day', value: 14 },
-        },
-      },
-    },
-    {
-      shipping_rate_data: {
-        type: 'fixed_amount',
-        fixed_amount: { amount: 1795, currency: 'gbp' },
-        display_name: 'Australia & New Zealand',
-        delivery_estimate: {
-          minimum: { unit: 'business_day', value: 10 },
-          maximum: { unit: 'business_day', value: 18 },
-        },
-      },
-    },
-    {
-      shipping_rate_data: {
-        type: 'fixed_amount',
-        fixed_amount: { amount: 1995, currency: 'gbp' },
-        display_name: 'Rest of World',
-        delivery_estimate: {
-          minimum: { unit: 'business_day', value: 10 },
-          maximum: { unit: 'business_day', value: 21 },
-        },
-      },
-    },
+    ukOption,
+    { shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: 995, currency: 'gbp' }, display_name: 'Europe',
+      delivery_estimate: { minimum: { unit: 'business_day', value: 10 }, maximum: { unit: 'business_day', value: 20 } } } },
+    { shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: 1095, currency: 'gbp' }, display_name: 'USA / Canada',
+      delivery_estimate: { minimum: { unit: 'business_day', value: 10 }, maximum: { unit: 'business_day', value: 20 } } } },
+    { shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: 1195, currency: 'gbp' }, display_name: 'Australia / NZ / Japan / Brazil',
+      delivery_estimate: { minimum: { unit: 'business_day', value: 10 }, maximum: { unit: 'business_day', value: 25 } } } },
+    { shipping_rate_data: { type: 'fixed_amount', fixed_amount: { amount: 1495, currency: 'gbp' }, display_name: 'Rest of World',
+      delivery_estimate: { minimum: { unit: 'business_day', value: 14 }, maximum: { unit: 'business_day', value: 30 } } } },
   ];
+}
+
+const norm = (s) => String(s == null ? '' : s).trim().toLowerCase();
+
+async function fetchSanityVariantData() {
+  const groq = `*[_type == "product"]{
+    _id, "slug": slug.current, name,
+    variants[]{ label, productType, printfulVariantId, printfulVariants[]{ size, colour, syncVariantId } }
+  }`;
+  const url = `https://${SANITY_PROJECT_ID}.apicdn.sanity.io/v${SANITY_API_VER}/data/query/${SANITY_DATASET}?query=${encodeURIComponent(groq)}`;
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Sanity query failed (${res.status})`);
+  return (await res.json()).result || [];
+}
+
+function findProduct(products, item) {
+  const id = String(item.id || '');
+  let best = null, bestLen = -1;
+  for (const p of products) {
+    if (!p.slug) continue;
+    if (id.startsWith(`product-${p.slug}-`) || id === p._id) {
+      if (p.slug.length > bestLen) { best = p; bestLen = p.slug.length; }
+    }
+  }
+  return best;
+}
+
+function findSyncVariantId(product, item) {
+  const wantType = norm(item.productType), wantSize = norm(item.size), wantColour = norm(item.colour);
+  const narrowed = (product.variants || []).filter((v) =>
+    !wantType ? true : norm(v.productType) === wantType || norm(v.label) === wantType
+  );
+  const searchSet = narrowed.length ? narrowed : (product.variants || []);
+  for (const v of searchSet) {
+    const matrix = v.printfulVariants || [];
+    let hit = matrix.find((pv) => norm(pv.size) === wantSize && norm(pv.colour) === wantColour);
+    if (!hit && !wantColour) hit = matrix.find((pv) => norm(pv.size) === wantSize && !norm(pv.colour));
+    if (!hit && matrix.length === 1) hit = matrix[0];
+    if (hit && hit.syncVariantId) return String(hit.syncVariantId);
+  }
+  return null;
+}
+
+function resolveSyncVariantId(products, item) {
+  const product = findProduct(products, item);
+  return product ? findSyncVariantId(product, item) : null;
 }
 
 exports.handler = async (event) => {
@@ -104,24 +111,40 @@ exports.handler = async (event) => {
     'Access-Control-Allow-Headers': 'Content-Type',
     'Access-Control-Allow-Methods': 'POST, OPTIONS',
   };
-
   if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
   if (event.httpMethod !== 'POST') return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
-
-  if (!process.env.STRIPE_SECRET_KEY) {
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Stripe not configured' }) };
-  }
+  if (!process.env.STRIPE_SECRET_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: 'Stripe not configured' }) };
 
   try {
     const { items } = JSON.parse(event.body || '{}');
+    if (!items || items.length === 0) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Cart is empty' }) };
 
-    if (!items || items.length === 0) {
-      return { statusCode: 400, headers, body: JSON.stringify({ error: 'Cart is empty' }) };
+    const SITE_URL = process.env.SITE_URL || process.env.PUBLIC_SITE_URL || 'https://catsoncrack.co.uk';
+
+    let sanityProducts;
+    try {
+      sanityProducts = await fetchSanityVariantData();
+    } catch (err) {
+      console.error('Sanity lookup failed during checkout:', err.message || err);
+      return { statusCode: 503, headers, body: JSON.stringify({ error: 'Could not verify product availability. Please try again in a moment.' }) };
     }
 
-    const SITE_URL = process.env.SITE_URL || process.env.URL || 'http://localhost:8888';
+    const unresolved = [];
+    const resolved = items.map((item) => {
+      const syncVariantId = resolveSyncVariantId(sanityProducts, item);
+      if (!syncVariantId) unresolved.push(`${item.title || item.id || 'item'} — ${item.colour || ''} ${item.size || ''}`.trim());
+      return { item, syncVariantId };
+    });
 
-    const line_items = items.map((item) => {
+    if (unresolved.length > 0) {
+      console.error('Checkout blocked — unresolved Printful variants:', unresolved);
+      return { statusCode: 422, headers, body: JSON.stringify({
+        error: 'Some items in your cart are temporarily unavailable. Please remove and re-add them, or contact us.',
+        items: unresolved,
+      }) };
+    }
+
+    const line_items = resolved.map(({ item, syncVariantId }) => {
       const colourLabel = item.colour ? ` — ${item.colour}` : '';
       return {
         price_data: {
@@ -129,40 +152,32 @@ exports.handler = async (event) => {
           unit_amount: Math.round(item.price * 100),
           product_data: {
             name: `${item.title}${colourLabel} (${item.size})`,
+            metadata: {
+              printful_variant_id: syncVariantId,
+              coc_size: String(item.size || ''),
+              coc_colour: String(item.colour || ''),
+            },
           },
         },
         quantity: item.quantity || 1,
       };
     });
 
-    /* Calculate cart total in pence for free-shipping threshold */
-    const cartTotalPence = items.reduce((sum, item) => {
-      return sum + Math.round(item.price * 100) * (item.quantity || 1);
-    }, 0);
+    const cartTotalPence = items.reduce((sum, item) => sum + Math.round(item.price * 100) * (item.quantity || 1), 0);
 
     const session = await stripe.checkout.sessions.create({
       mode: 'payment',
       line_items,
-      shipping_address_collection: {
-        allowed_countries: ALLOWED_COUNTRIES,
-      },
+      shipping_address_collection: { allowed_countries: ALLOWED_COUNTRIES },
       shipping_options: buildShippingOptions(cartTotalPence),
       success_url: `${SITE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: `${SITE_URL}/shop`,
-      metadata: { source: BRAND_TAG },
+      cancel_url: `${SITE_URL}/merch`,
+      metadata: { source: 'catsoncrack-web' },
     });
 
-    return {
-      statusCode: 200,
-      headers,
-      body: JSON.stringify({ url: session.url }),
-    };
+    return { statusCode: 200, headers, body: JSON.stringify({ url: session.url }) };
   } catch (err) {
     console.error('Stripe checkout error:', err.message || err);
-    return {
-      statusCode: 500,
-      headers,
-      body: JSON.stringify({ error: err.message || 'Checkout failed' }),
-    };
+    return { statusCode: 500, headers, body: JSON.stringify({ error: err.message || 'Checkout failed' }) };
   }
 };
