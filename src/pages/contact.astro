@@ -2,865 +2,400 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
+
+const infoEmail = 'info@catsoncrack.co.uk';
+const collabEmail = 'collabs@catsoncrack.co.uk';
+
+const socialLinks = [
+  { platform: 'YouTube',   url: 'https://www.youtube.com/@CatsOnCrackMedia' },
+  { platform: 'TikTok',    url: 'https://www.tiktok.com/@catsoncrackmedia' },
+  { platform: 'Instagram', url: 'https://www.instagram.com/catsoncrack2025' },
+  { platform: 'X',         url: 'https://x.com/Cats_on_Crack_' },
+  { platform: 'Facebook',  url: 'https://www.facebook.com/catsoncrack' },
+];
+
+const socialIcons: Record<string, string> = {
+  YouTube: '<path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/>',
+  TikTok: '<path d="M19.59 6.69a4.83 4.83 0 0 1-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 0 1-2.88 2.5 2.89 2.89 0 0 1-2.89-2.89 2.89 2.89 0 0 1 2.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 0 0-.79-.05 6.34 6.34 0 0 0-6.34 6.34 6.34 6.34 0 0 0 6.34 6.34 6.34 6.34 0 0 0 6.33-6.34V8.69a8.18 8.18 0 0 0 4.78 1.52V6.75a4.85 4.85 0 0 1-1.01-.06z"/>',
+  Instagram: '<path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 1 0 0 12.324 6.162 6.162 0 0 0 0-12.324zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.406-11.845a1.44 1.44 0 1 0 0 2.881 1.44 1.44 0 0 0 0-2.881z"/>',
+  X: '<path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/>',
+  Facebook: '<path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/>',
+};
+
+const faqs = [
+  { q: 'When will the next episode be released?', a: "We're currently in production on Season 1. Subscribe to our newsletter to be the first to know about release dates and exclusive previews." },
+  { q: 'Where can I buy the books?', a: 'The Cats On Crack book series will be available soon on major online retailers. Sign up for our newsletter to get notified when they drop.' },
+  { q: 'Is the merch store open?', a: "Yes — the store's open. Browse the full range of tees, hoodies, tanks, long sleeves, tumblers and can glasses over on our Merch page, with new designs added regularly." },
+  { q: 'Can I use your characters in my own content?', a: 'For any licensing or permission requests, email us at collabs@catsoncrack.co.uk with details about your project.' },
+  { q: 'Are you looking for voice actors or animators?', a: 'We love working with talented creatives. Send your portfolio and a short introduction to collabs@catsoncrack.co.uk and we will review every submission.' },
+  { q: 'How can I support the project?', a: 'Follow us on social media, share our content, subscribe to our newsletter, and spread the word. Community support means everything to us.' },
+];
 ---
 
-<Layout title="Get In Touch - Cats On Crack" description="Connect with the Cats On Crack crew. Whether you have questions, feedback, or collaboration ideas, we want to hear from you!">
-	<Navigation />
+<Layout title="Get In Touch - Cats On Crack" description="Get in touch with the Cats On Crack crew. Questions, collaborations, press and merch enquiries — drop us a message.">
+  <Navigation />
 
-	<main>
-		<section class="hero-banner">
-			<div class="hero-noise"></div>
-			<div class="container hero-inner">
-				<p class="hero-eyebrow">Say What's On Your Mind</p>
-				<h1 class="page-title">Get In Touch</h1>
-				<p class="hero-subtitle">Got something to say? We're all ears (and whiskers)</p>
-			</div>
-		</section>
+  <main class="contact-main">
 
-		<section class="section contact-section">
-			<div class="container">
-				<div class="contact-top">
-					<div class="contact-intro fade-in">
-						<h2 class="glow-text">Let's Connect</h2>
-						<p class="intro-text">Whether you're a fan, a potential collaborator, or just curious about the crew, we'd love to hear from you. Drop us a message and let's start a conversation.</p>
-					</div>
-					<div class="contact-feature-image fade-in">
-						<img src="/images/coc-heist.jpg" alt="Cats On Crack - The Heist" />
-					</div>
-				</div>
+    <section class="contact-hero">
+      <div class="hero-noise"></div>
+      <div class="container contact-hero__inner">
+        <p class="contact-eyebrow">Say Hello</p>
+        <h1 class="contact-title">Get In Touch</h1>
+        <p class="contact-sub">Whether you're a fan, a potential collaborator, or just curious about the crew, we'd love to hear from you. Drop us a message and let's start a conversation.</p>
+      </div>
+    </section>
 
-				<div class="contact-bottom">
-					<div class="contact-info fade-in">
-						<div class="contact-methods">
-							<div class="contact-method">
-								<div class="method-icon">📧</div>
-								<h3>Email Us</h3>
-								<p>For general inquiries, fan mail, or business opportunities</p>
-								<a href="mailto:info@catsoncrack.co.uk">info@catsoncrack.co.uk</a>
-							</div>
+    <section class="contact-section">
+      <div class="container contact-grid">
 
-							<div class="contact-method">
-								<div class="method-icon">📱</div>
-								<h3>Social Media</h3>
-								<p>Follow us for daily updates, behind-the-scenes content, and more</p>
-								<div class="social-links">
-									<a href="https://www.youtube.com/@CatsOnCrackMedia" target="_blank" rel="noopener noreferrer" class="social-link social-yt" aria-label="YouTube">
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
-										<span>YouTube</span>
-									</a>
-									<a href="https://www.tiktok.com/@catsoncrackmedia" target="_blank" rel="noopener noreferrer" class="social-link social-tt" aria-label="TikTok">
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M19.59 6.69a4.83 4.83 0 01-3.77-4.25V2h-3.45v13.67a2.89 2.89 0 01-2.88 2.5 2.89 2.89 0 01-2.89-2.89 2.89 2.89 0 012.89-2.89c.28 0 .54.04.79.1V9.01a6.27 6.27 0 00-.79-.05 6.34 6.34 0 00-6.34 6.34 6.34 6.34 0 006.34 6.34 6.34 6.34 0 006.33-6.34V8.69a8.22 8.22 0 004.79 1.53V6.77a4.85 4.85 0 01-1.02-.08z"/></svg>
-										<span>TikTok</span>
-									</a>
-									<a href="https://www.instagram.com/catsoncrack2025" target="_blank" rel="noopener noreferrer" class="social-link social-ig" aria-label="Instagram">
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/></svg>
-										<span>Instagram</span>
-									</a>
-									<a href="https://x.com/Cats_on_Crack_" target="_blank" rel="noopener noreferrer" class="social-link social-x" aria-label="X">
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.746l7.73-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
-										<span>X</span>
-									</a>
-									<a href="https://www.facebook.com/catsoncrack" target="_blank" rel="noopener noreferrer" class="social-link social-fb" aria-label="Facebook">
-										<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
-										<span>Facebook</span>
-									</a>
-								</div>
-							</div>
+        <div class="contact-form-col">
+          <h2 class="col-heading">Send Us a Message</h2>
+          <form class="contact-form" id="contactForm" novalidate>
+            <input type="checkbox" name="botcheck" class="contact-form__honeypot" tabindex="-1" autocomplete="off" style="display:none" />
 
-							<div class="contact-method">
-								<div class="method-icon">💼</div>
-								<h3>Collaborations</h3>
-								<p>Interested in working together? Let's make something legendary</p>
-								<a href="mailto:collabs@catsoncrack.co.uk">collabs@catsoncrack.co.uk</a>
-							</div>
-						</div>
-					</div>
+            <div class="form-group">
+              <label for="name" class="form-label">Your Name</label>
+              <input type="text" id="name" name="name" class="form-input" placeholder="Your name" required />
+            </div>
 
-					<div class="contact-form-wrapper fade-in">
-						<form class="contact-form" id="contactForm" novalidate>
-							<input type="checkbox" name="botcheck" class="hidden-field" style="display:none" />
-							<h3>Send Us a Message</h3>
+            <div class="form-group">
+              <label for="email" class="form-label">Email Address</label>
+              <input type="email" id="email" name="email" class="form-input" placeholder="you@example.com" required />
+            </div>
 
-							<div class="form-group">
-								<label for="name">Your Name</label>
-								<input type="text" id="name" name="name" required placeholder="What should we call you?" />
-							</div>
+            <div class="form-group">
+              <label for="topic" class="form-label">Subject</label>
+              <select id="topic" name="topic" class="form-input form-select">
+                <option value="">Choose a topic...</option>
+                <option value="General Inquiry">General Inquiry</option>
+                <option value="Fan Message">Fan Message</option>
+                <option value="Collaboration">Collaboration</option>
+                <option value="Press & Media">Press &amp; Media</option>
+                <option value="Merch Question">Merch Question</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
 
-							<div class="form-group">
-								<label for="email">Email Address</label>
-								<input type="email" id="email" name="email" required placeholder="your@email.com" />
-							</div>
+            <div class="form-group">
+              <label for="message" class="form-label">Message</label>
+              <textarea id="message" name="message" class="form-input form-textarea" placeholder="Your message..." required></textarea>
+            </div>
 
-							<div class="form-group">
-								<label for="topic">Subject</label>
-								<select id="topic" name="topic" required>
-									<option value="">Choose a topic...</option>
-									<option value="General Inquiry">General Inquiry</option>
-									<option value="Fan Message">Fan Message</option>
-									<option value="Collaboration">Collaboration</option>
-									<option value="Press & Media">Press &amp; Media</option>
-									<option value="Merch Question">Merch Question</option>
-									<option value="Other">Other</option>
-								</select>
-							</div>
+            <button type="submit" class="form-submit" id="formSubmit">
+              <span class="submit-text">Send Message</span>
+              <span class="submit-sending" style="display:none;">Sending...</span>
+            </button>
 
-							<div class="form-group">
-								<label for="message">Message</label>
-								<textarea id="message" name="message" required placeholder="Tell us what's on your mind..." rows="6"></textarea>
-							</div>
+            <div class="form-success" id="formSuccess" aria-live="polite">
+              Message sent. We'll get back to you soon.
+            </div>
+            <div class="form-error" id="formError" aria-live="polite" role="alert">
+              Couldn't send. Try again, or email <a href={`mailto:${infoEmail}`}>{infoEmail}</a> directly.
+              <button type="button" class="form-error__retry" id="formRetry">Try Again</button>
+            </div>
+          </form>
+        </div>
 
-							<button type="submit" class="submit-button" id="submitButton">
-								<span class="submit-text">Send Message</span>
-								<span class="submit-sending" style="display:none;">Sending...</span>
-							</button>
-						</form>
-					</div>
-				</div>
-			</div>
-		</section>
+        <aside class="contact-info-col">
+          <div class="contact-info-card">
 
-		<section class="section faq-section">
-			<div class="container">
-				<h2 class="section-title glow-text">Frequently Asked Questions</h2>
-				<div class="faq-grid">
-					<div class="faq-item fade-in">
-						<h3>When will the next episode be released?</h3>
-						<p>We're currently in production on Season 1. Subscribe to our newsletter to be the first to know about release dates and exclusive previews!</p>
-					</div>
+            <div class="info-block">
+              <div class="info-block__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                  <polyline points="22,6 12,13 2,6"/>
+                </svg>
+              </div>
+              <div class="info-block__content">
+                <h3 class="info-block__heading">Email Us</h3>
+                <p class="info-block__text">General enquiries, fan mail, or business opportunities.</p>
+                <a href={`mailto:${infoEmail}`} class="info-block__email">{infoEmail}</a>
+              </div>
+            </div>
 
-					<div class="faq-item fade-in">
-						<h3>Where can I buy the books?</h3>
-						<p>The Cats On Crack book series will be available soon on major online retailers. Sign up for our newsletter to get notified when they drop!</p>
-					</div>
+            <div class="info-block">
+              <div class="info-block__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
+                </svg>
+              </div>
+              <div class="info-block__content">
+                <h3 class="info-block__heading">Collaborations</h3>
+                <p class="info-block__text">Brand collaborations, licensing, and partnership opportunities — let's make something legendary.</p>
+                <a href={`mailto:${collabEmail}`} class="info-block__email">{collabEmail}</a>
+              </div>
+            </div>
 
-					<div class="faq-item fade-in">
-						<h3>Is the merch store open?</h3>
-						<p>The official merch store is launching soon! Check out our <a href="/merch">Merch page</a> to see what's coming and get on the early access list.</p>
-					</div>
+            <div class="info-block">
+              <div class="info-block__icon">
+                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                  <path d="M6 2 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/>
+                  <line x1="3" y1="6" x2="21" y2="6"/>
+                  <path d="M16 10a4 4 0 0 1-8 0"/>
+                </svg>
+              </div>
+              <div class="info-block__content">
+                <h3 class="info-block__heading">Merch &amp; Orders</h3>
+                <p class="info-block__text">Questions about an order, shipping, or a product? Use the form above and pick "Merch Question".</p>
+              </div>
+            </div>
 
-					<div class="faq-item fade-in">
-						<h3>Can I use your characters in my own content?</h3>
-						<p>Thanks for your interest! For any licensing or permission requests, please email us at collabs@catsoncrack.co.uk with details about your project.</p>
-					</div>
+            <div class="info-divider"></div>
 
-					<div class="faq-item fade-in">
-						<h3>Are you looking for voice actors or animators?</h3>
-						<p>We love working with talented creatives! Send your portfolio and a brief introduction to collabs@catsoncrack.co.uk. We review all submissions.</p>
-					</div>
+            <div class="info-socials">
+              <h4 class="info-socials__heading">Find Us Online</h4>
+              <div class="info-socials__row">
+                {socialLinks.map((link) => (
+                  <a href={link.url} class="info-social-icon" target="_blank" rel="noopener noreferrer" aria-label={link.platform}>
+                    <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+                      <Fragment set:html={socialIcons[link.platform] || ''} />
+                    </svg>
+                  </a>
+                ))}
+              </div>
+            </div>
 
-					<div class="faq-item fade-in">
-						<h3>How can I support the project?</h3>
-						<p>Follow us on social media, share our content, subscribe to our newsletter, and spread the word! Community support means everything to us.</p>
-					</div>
-				</div>
-			</div>
-		</section>
+          </div>
+        </aside>
 
-		<section class="section cta-section">
-			<div class="container">
-				<div class="cta-box fade-in">
-					<h2 class="glow-text">Join the Crew</h2>
-					<p>Don't miss out on exclusive content, early access, and behind-the-scenes updates. Subscribe to our newsletter and become part of the alley gang!</p>
-					<a href="/#newsletter" class="cta-button">Subscribe Now</a>
-				</div>
-			</div>
-		</section>
-	</main>
+      </div>
+    </section>
 
-	<Footer />
+    <section class="faq-section">
+      <div class="container">
+        <div class="section-header">
+          <span class="header-rule"></span>
+          <h2 class="section-title">Frequently Asked Questions</h2>
+          <span class="header-rule"></span>
+        </div>
+        <div class="faq-grid">
+          {faqs.map((item) => (
+            <div class="faq-card">
+              <h3 class="faq-q">{item.q}</h3>
+              <p class="faq-a">{item.a}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+
+    <section class="crew-section">
+      <div class="container crew-inner">
+        <p class="crew-eyebrow">Newsletter</p>
+        <h2 class="crew-heading">Join the Crew</h2>
+        <p class="crew-sub">New episodes, drops, and behind-the-scenes chaos — straight to your inbox. Be first in line.</p>
+        <form class="crew-form" id="crewForm">
+          <input type="email" id="crewEmail" class="crew-input" placeholder="Drop your email" required />
+          <button type="submit" class="crew-submit" id="crewSubmit">
+            <span class="crew-submit-text">Sign Up</span>
+            <span class="crew-submit-sending" style="display:none;">...</span>
+          </button>
+        </form>
+        <p class="crew-note">No spam. Unsubscribe anytime.</p>
+        <p class="crew-msg" id="crewMsg" aria-live="polite"></p>
+      </div>
+    </section>
+
+  </main>
+  <Footer />
 </Layout>
 
-<style>
-	.hidden-field {
-		display: none;
-	}
-
-	.form-success {
-		text-align: left;
-		padding: 0;
-	}
-
-	/* Alley signal confirmation */
-	.alley-signal {
-		position: relative;
-		overflow: hidden;
-		background: var(--bg-darker, #0d0f14);
-		border: 2px solid rgba(255, 0, 255, 0.2);
-		border-left: 4px solid var(--primary, #ff00ff);
-		border-radius: 12px;
-		padding: 2.5rem 2rem;
-		animation: signalFadeIn 0.4s ease-out;
-	}
-
-	@keyframes signalFadeIn {
-		from { opacity: 0; transform: translateY(12px); }
-		to { opacity: 1; transform: translateY(0); }
-	}
-
-	.alley-signal__tag {
-		position: absolute;
-		top: 16px;
-		right: 20px;
-		font-family: 'Inter', sans-serif;
-		font-size: 0.6rem;
-		color: rgba(255, 255, 255, 0.25);
-		letter-spacing: 3px;
-		text-transform: uppercase;
-		font-weight: 600;
-	}
-
-	.alley-signal__body {
-		display: flex;
-		align-items: flex-start;
-		gap: 18px;
-	}
-
-	.alley-signal__badge {
-		flex-shrink: 0;
-		width: 52px;
-		height: 52px;
-		border-radius: 50%;
-		background: var(--primary, #ff00ff);
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		box-shadow: 0 0 20px rgba(255, 0, 255, 0.4);
-	}
-
-	.alley-signal__label {
-		font-family: 'Bebas Neue', sans-serif;
-		font-size: 0.688rem;
-		color: var(--primary, #ff00ff);
-		letter-spacing: 3px;
-		margin-bottom: 8px;
-		text-transform: uppercase;
-		text-shadow: 0 0 10px rgba(255, 0, 255, 0.3);
-	}
-
-	.alley-signal__headline {
-		font-family: 'Bebas Neue', sans-serif;
-		font-size: clamp(1.75rem, 4vw, 2.25rem);
-		color: #fff;
-		margin: 0 0 10px;
-		letter-spacing: 2px;
-		text-transform: uppercase;
-		line-height: 1;
-		text-shadow: 2px 2px 0 rgba(255, 0, 255, 0.2);
-	}
-
-	.alley-signal__sub {
-		font-family: 'Inter', sans-serif;
-		color: var(--text-secondary, rgba(255,255,255,0.5));
-		font-size: 0.938rem;
-		margin: 0;
-		line-height: 1.5;
-	}
-
-	.alley-signal__footer {
-		margin-top: 1.75rem;
-		padding-top: 1.25rem;
-		border-top: 1px solid rgba(255, 0, 255, 0.15);
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-		gap: 12px;
-		flex-wrap: wrap;
-	}
-
-	.alley-signal__quote {
-		font-family: 'Inter', sans-serif;
-		font-style: italic;
-		font-size: 0.85rem;
-		color: rgba(255, 255, 255, 0.3);
-		line-height: 1.4;
-		max-width: 55%;
-	}
-
-	.alley-signal__actions {
-		display: flex;
-		gap: 10px;
-	}
-
-	.alley-signal__btn {
-		padding: 10px 16px;
-		font-family: 'Bebas Neue', sans-serif;
-		font-size: 0.95rem;
-		letter-spacing: 2px;
-		text-transform: uppercase;
-		cursor: pointer;
-		border-radius: 8px;
-		text-decoration: none;
-		display: inline-block;
-		transition: transform 0.15s ease, background 0.15s ease, box-shadow 0.2s ease;
-	}
-
-	.alley-signal__btn--ghost {
-		background: transparent;
-		color: #fff;
-		border: 2px solid rgba(255, 0, 255, 0.4);
-	}
-
-	.alley-signal__btn--ghost:hover {
-		background: rgba(255, 0, 255, 0.15);
-		border-color: var(--primary, #ff00ff);
-		transform: translateY(-2px);
-		box-shadow: 0 0 15px rgba(255, 0, 255, 0.2);
-	}
-
-	.alley-signal__btn--solid {
-		background: var(--accent-gradient, linear-gradient(135deg, #ff00ff, #cc00cc));
-		color: #fff;
-		border: none;
-		box-shadow: 0 4px 20px rgba(255, 0, 255, 0.4);
-		text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.3);
-	}
-
-	.alley-signal__btn--solid:hover {
-		transform: translateY(-2px);
-		box-shadow: 0 8px 30px rgba(255, 0, 255, 0.5);
-	}
-
-	@media (max-width: 520px) {
-		.alley-signal {
-			padding: 2rem 1.25rem;
-		}
-		.alley-signal__tag {
-			display: none;
-		}
-		.alley-signal__footer {
-			flex-direction: column;
-			align-items: stretch;
-		}
-		.alley-signal__quote {
-			max-width: 100%;
-			text-align: center;
-		}
-		.alley-signal__actions {
-			justify-content: center;
-		}
-	}
-
-	.hero-banner {
-		background: #181b22;
-		padding: 150px 0 80px;
-		text-align: center;
-		position: relative;
-		overflow: hidden;
-	}
-
-	.hero-noise {
-		position: absolute;
-		inset: 0;
-		background:
-			radial-gradient(ellipse at 30% 50%, rgba(255,0,255,0.1) 0%, transparent 60%),
-			radial-gradient(ellipse at 70% 30%, rgba(255,0,255,0.05) 0%, transparent 50%);
-		pointer-events: none;
-	}
-
-	.hero-inner {
-		position: relative;
-	}
-
-	.hero-eyebrow {
-		font-family: 'Bebas Neue', sans-serif;
-		font-size: 0.85rem;
-		letter-spacing: 5px;
-		color: #ff00ff;
-		text-transform: uppercase;
-		margin-bottom: 12px;
-		opacity: 0.9;
-	}
-
-	.page-title {
-		font-family: 'Bebas Neue', sans-serif;
-		font-size: clamp(4rem, 10vw, 9rem);
-		margin-bottom: 20px;
-		position: relative;
-		color: #ffffff;
-		line-height: 0.9;
-		letter-spacing: 4px;
-		text-shadow:
-			4px 4px 0 rgba(255,0,255,0.4),
-			8px 8px 0 rgba(255,0,255,0.15),
-			0 0 60px rgba(255,0,255,0.2);
-	}
-
-	.hero-subtitle {
-		font-family: 'Bebas Neue', sans-serif;
-		font-size: 1.1rem;
-		color: rgba(255,255,255,0.5);
-		position: relative;
-		letter-spacing: 2px;
-		text-transform: uppercase;
-	}
-
-	.contact-section {
-		background: var(--bg-navy);
-	}
-
-	.contact-top {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 80px;
-		align-items: center;
-		margin-bottom: 50px;
-	}
-
-	.contact-feature-image {
-		border-radius: 12px;
-		overflow: hidden;
-		border: 2px solid rgba(255, 0, 255, 0.2);
-		transition: all 0.3s ease;
-	}
-
-	.contact-feature-image:hover {
-		border-color: var(--primary);
-		box-shadow: 0 10px 30px rgba(255, 0, 255, 0.2);
-	}
-
-	.contact-feature-image img {
-		width: 100%;
-		display: block;
-	}
-
-	.contact-bottom {
-		display: grid;
-		grid-template-columns: 1fr 1fr;
-		gap: 80px;
-		align-items: stretch;
-	}
-
-	.contact-info h2 {
-		font-size: clamp(2rem, 4vw, 3rem);
-		color: var(--primary);
-		margin-bottom: 20px;
-	}
-
-	.intro-text {
-		font-size: 1.1rem;
-		color: var(--text-secondary);
-		line-height: 1.8;
-		margin-bottom: 40px;
-	}
-
-	.contact-methods {
-		display: flex;
-		flex-direction: column;
-		gap: 35px;
-	}
-
-	.contact-method {
-		padding: 25px;
-		background: var(--bg-card);
-		border-radius: 12px;
-		border: 2px solid rgba(255, 0, 255, 0.2);
-		transition: all 0.3s ease;
-	}
-
-	.contact-method:hover {
-		border-color: var(--primary);
-		box-shadow: 0 10px 30px rgba(255, 0, 255, 0.2);
-		transform: translateX(10px);
-	}
-
-	.method-icon {
-		font-size: 3rem;
-		margin-bottom: 15px;
-	}
-
-	.contact-method h3 {
-		font-size: 1.5rem;
-		color: var(--primary);
-		margin-bottom: 10px;
-	}
-
-	.contact-method p {
-		color: var(--text-secondary);
-		margin-bottom: 15px;
-		line-height: 1.6;
-	}
-
-	.contact-method a {
-		color: var(--primary);
-		font-weight: 700;
-		transition: all 0.3s ease;
-	}
-
-	.contact-method a:hover {
-		color: var(--primary-light);
-		text-shadow: var(--glow);
-	}
-
-	.social-links {
-		display: flex;
-		gap: 10px;
-		flex-wrap: wrap;
-	}
-
-	.social-link {
-		display: inline-flex;
-		align-items: center;
-		gap: 8px;
-		padding: 8px 16px;
-		background: rgba(255, 255, 255, 0.04);
-		border: 1px solid rgba(255, 0, 255, 0.35);
-		border-radius: 999px;
-		color: rgba(255, 255, 255, 0.8);
-		font-family: 'Bebas Neue', sans-serif;
-		font-size: 0.8rem;
-		letter-spacing: 1.5px;
-		text-decoration: none;
-		text-shadow: none;
-		transition: color 0.2s ease, background 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
-	}
-
-	.social-link:hover {
-		transform: translateY(-2px);
-	}
-
-	.social-link.social-yt:hover {
-		color: #FF0000;
-		background: rgba(255, 0, 0, 0.1);
-		border-color: rgba(255, 0, 0, 0.4);
-		box-shadow: 0 0 14px rgba(255, 0, 0, 0.15);
-	}
-
-	.social-link.social-tt:hover {
-		color: #69C9D0;
-		background: rgba(105, 201, 208, 0.1);
-		border-color: rgba(105, 201, 208, 0.4);
-		box-shadow: 0 0 14px rgba(105, 201, 208, 0.15);
-	}
-
-	.social-link.social-ig:hover {
-		color: #E1306C;
-		background: rgba(225, 48, 108, 0.1);
-		border-color: rgba(225, 48, 108, 0.4);
-		box-shadow: 0 0 14px rgba(225, 48, 108, 0.15);
-	}
-
-	.social-link.social-x:hover {
-		color: #1DA1F2;
-		background: rgba(29, 161, 242, 0.1);
-		border-color: rgba(29, 161, 242, 0.4);
-		box-shadow: 0 0 14px rgba(29, 161, 242, 0.15);
-	}
-
-	.social-link.social-fb:hover {
-		color: #1877F2;
-		background: rgba(24, 119, 242, 0.1);
-		border-color: rgba(24, 119, 242, 0.4);
-		box-shadow: 0 0 14px rgba(24, 119, 242, 0.15);
-	}
-
-	.contact-form-wrapper {
-		background: var(--bg-card);
-		padding: 40px;
-		border-radius: 12px;
-		border: 2px solid rgba(255, 0, 255, 0.2);
-		display: flex;
-		flex-direction: column;
-	}
-
-	.contact-form {
-		display: flex;
-		flex-direction: column;
-		flex: 1;
-	}
-
-	.contact-form .form-group:last-of-type {
-		flex: 1;
-		display: flex;
-		flex-direction: column;
-	}
-
-	.contact-form .form-group:last-of-type textarea {
-		flex: 1;
-	}
-
-	.contact-form h3 {
-		font-size: 2rem;
-		color: var(--primary);
-		margin-bottom: 30px;
-	}
-
-	.form-group {
-		margin-bottom: 25px;
-	}
-
-	.form-group label {
-		display: block;
-		color: var(--text-primary);
-		font-weight: 700;
-		margin-bottom: 8px;
-		font-size: 1rem;
-	}
-
-	.form-group input,
-	.form-group select,
-	.form-group textarea {
-		width: 100%;
-		padding: 14px 18px;
-		background: var(--bg-darker);
-		border: 2px solid rgba(255, 0, 255, 0.3);
-		border-radius: 8px;
-		color: var(--text-primary);
-		font-size: 1rem;
-		font-family: 'Inter', sans-serif;
-		transition: all 0.3s ease;
-	}
-
-	.form-group input:focus,
-	.form-group select:focus,
-	.form-group textarea:focus {
-		outline: none;
-		border-color: var(--primary);
-		box-shadow: 0 0 0 3px rgba(255, 0, 255, 0.1);
-	}
-
-	.form-group textarea {
-		resize: vertical;
-		min-height: 150px;
-	}
-
-	.submit-button {
-		width: 100%;
-		padding: 16px;
-		background: var(--accent-gradient);
-		color: white;
-		font-size: 1.2rem;
-		font-weight: 900;
-		letter-spacing: 2px;
-		border-radius: 8px;
-		text-transform: uppercase;
-		box-shadow: 0 4px 20px rgba(255, 0, 255, 0.4);
-		transition: all 0.3s ease;
-		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-	}
-
-	.submit-button:hover {
-		transform: translateY(-3px);
-		box-shadow: var(--glow-strong);
-	}
-
-	.faq-section {
-		background: var(--bg-dark);
-	}
-
-	.section-title {
-		font-size: clamp(2.5rem, 5vw, 4rem);
-		color: var(--primary);
-		text-align: center;
-		margin-bottom: 60px;
-	}
-
-	.faq-grid {
-		display: grid;
-		grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-		gap: 30px;
-	}
-
-	.faq-item {
-		background: var(--bg-card);
-		padding: 30px;
-		border-radius: 12px;
-		border: 2px solid rgba(255, 0, 255, 0.2);
-		transition: all 0.3s ease;
-	}
-
-	.faq-item:hover {
-		border-color: var(--primary);
-		box-shadow: 0 10px 30px rgba(255, 0, 255, 0.2);
-	}
-
-	.faq-item h3 {
-		font-size: 1.4rem;
-		color: var(--primary);
-		margin-bottom: 15px;
-	}
-
-	.faq-item p {
-		color: var(--text-secondary);
-		line-height: 1.7;
-	}
-
-	.faq-item a {
-		color: var(--primary);
-		font-weight: 700;
-	}
-
-	.cta-section {
-		background: var(--bg-navy);
-	}
-
-	.cta-box {
-		background: var(--bg-card);
-		padding: 60px;
-		border-radius: 20px;
-		text-align: center;
-		border: 3px solid var(--primary);
-		box-shadow: 0 0 40px rgba(255, 0, 255, 0.3);
-	}
-
-	.cta-box h2 {
-		font-size: clamp(2rem, 4vw, 3rem);
-		color: var(--primary);
-		margin-bottom: 20px;
-	}
-
-	.cta-box p {
-		font-size: 1.2rem;
-		color: var(--text-secondary);
-		margin-bottom: 30px;
-		line-height: 1.8;
-	}
-
-	.cta-button {
-		display: inline-block;
-		padding: 16px 50px;
-		background: var(--accent-gradient);
-		color: white;
-		font-size: 1.3rem;
-		font-weight: 900;
-		letter-spacing: 2px;
-		border-radius: 8px;
-		text-transform: uppercase;
-		box-shadow: 0 4px 20px rgba(255, 0, 255, 0.4);
-		transition: all 0.3s ease;
-		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
-	}
-
-	.cta-button:hover {
-		transform: translateY(-3px);
-		box-shadow: var(--glow-strong);
-		color: white;
-	}
-
-	@media (max-width: 968px) {
-		.contact-top {
-			grid-template-columns: 1fr;
-			gap: 40px;
-		}
-
-		.contact-bottom {
-			grid-template-columns: 1fr;
-			gap: 40px;
-		}
-
-		.faq-grid {
-			grid-template-columns: 1fr;
-		}
-	}
-
-	@media (max-width: 768px) {
-		.contact-form-wrapper {
-			padding: 30px 25px;
-		}
-
-		.cta-box {
-			padding: 40px 30px;
-		}
-	}
-</style>
-
 <script>
-	const contactForm = document.getElementById('contactForm') as HTMLFormElement | null;
-	const formWrapper = document.querySelector('.contact-form-wrapper') as HTMLElement | null;
-	const submitBtn = document.getElementById('submitButton') as HTMLButtonElement | null;
+  (() => {
+    // ---- Contact form ----
+    const form = document.getElementById('contactForm') as HTMLFormElement | null;
+    if (form) {
+      const successMsg = document.getElementById('formSuccess');
+      const errorMsg = document.getElementById('formError');
+      const sendText = form.querySelector('.submit-text') as HTMLElement | null;
+      const sending = form.querySelector('.submit-sending') as HTMLElement | null;
+      const submitBtn = document.getElementById('formSubmit') as HTMLButtonElement | null;
+      const retryBtn = document.getElementById('formRetry');
 
-	function setSending(on: boolean) {
-		if (!contactForm) return;
-		if (submitBtn) submitBtn.disabled = on;
-		const sendText = contactForm.querySelector('.submit-text') as HTMLElement | null;
-		const sending = contactForm.querySelector('.submit-sending') as HTMLElement | null;
-		if (sendText) sendText.style.display = on ? 'none' : '';
-		if (sending) sending.style.display = on ? 'inline' : 'none';
-	}
+      const setSending = (on: boolean) => {
+        if (sendText) sendText.style.display = on ? 'none' : 'inline';
+        if (sending) sending.style.display = on ? 'inline' : 'none';
+        if (submitBtn) submitBtn.disabled = on;
+      };
+      const reset = () => {
+        successMsg?.classList.remove('form-success--visible');
+        errorMsg?.classList.remove('form-error--visible');
+        setSending(false);
+      };
+      retryBtn?.addEventListener('click', reset);
 
-	function showSuccess() {
-		if (!formWrapper) return;
-		formWrapper.innerHTML = `
-			<div style="position:relative;overflow:hidden;background:var(--bg-darker,#0d0f14);border:2px solid rgba(255,0,255,0.2);border-left:4px solid var(--primary,#ff00ff);border-radius:12px;padding:2.5rem 2rem;animation:alleyFadeIn 0.4s ease-out;">
-				<style>@keyframes alleyFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}</style>
-				<span style="position:absolute;top:16px;right:20px;font-family:'Inter',sans-serif;font-size:0.6rem;color:rgba(255,255,255,0.25);letter-spacing:3px;text-transform:uppercase;font-weight:600;">// Alley dispatch</span>
-				<div style="display:flex;align-items:flex-start;gap:18px;">
-					<div style="flex-shrink:0;width:52px;height:52px;border-radius:50%;background:var(--primary,#ff00ff);display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(255,0,255,0.4);">
-						<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg>
-					</div>
-					<div>
-						<div style="font-family:'Bebas Neue',sans-serif;font-size:0.688rem;color:var(--primary,#ff00ff);letter-spacing:3px;margin-bottom:8px;text-transform:uppercase;text-shadow:0 0 10px rgba(255,0,255,0.3);">Signal received</div>
-						<h3 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(1.75rem,4vw,2.25rem);color:#fff;margin:0 0 10px;letter-spacing:2px;text-transform:uppercase;line-height:1;text-shadow:2px 2px 0 rgba(255,0,255,0.2);">Message landed.</h3>
-						<p style="font-family:'Inter',sans-serif;color:var(--text-secondary,rgba(255,255,255,0.5));font-size:0.938rem;margin:0;line-height:1.5;">The crew got your note. We'll get back to you faster than a cat chasing a glowing pipe.</p>
-					</div>
-				</div>
-				<div style="margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid rgba(255,0,255,0.15);display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
-					<div style="font-family:'Inter',sans-serif;font-style:italic;font-size:0.85rem;color:rgba(255,255,255,0.3);line-height:1.4;max-width:55%;">"Whiskers says check back soon. Or don't. We know where you are."</div>
-					<div style="display:flex;gap:10px;">
-						<a href="/the-alley-squad" style="padding:10px 16px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:8px;background:transparent;color:#fff;border:2px solid rgba(255,0,255,0.4);display:inline-block;">Meet the Squad</a>
-						<a href="https://www.youtube.com/@CatsOnCrackMedia" target="_blank" rel="noopener" style="padding:10px 16px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;text-decoration:none;border-radius:8px;background:var(--primary,#ff00ff);color:#fff;border:none;display:inline-block;box-shadow:0 4px 20px rgba(255,0,255,0.4);text-shadow:1px 1px 2px rgba(0,0,0,0.3);">Watch the Chaos</a>
-					</div>
-				</div>
-			</div>
-		`;
-	}
+      form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        reset();
+        setSending(true);
 
-	function showError() {
-		// Inline error card — same visual language as the success state, but in a warning red.
-		// Provides a retry by reloading the page (re-renders the original form via Astro static output).
-		if (!formWrapper) return;
-		formWrapper.innerHTML = `
-			<div style="position:relative;overflow:hidden;background:var(--bg-darker,#0d0f14);border:2px solid rgba(255,68,68,0.25);border-left:4px solid #ff4d6d;border-radius:12px;padding:2rem;animation:alleyFadeIn 0.4s ease-out;">
-				<style>@keyframes alleyFadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}</style>
-				<span style="position:absolute;top:16px;right:20px;font-family:'Inter',sans-serif;font-size:0.6rem;color:rgba(255,255,255,0.25);letter-spacing:3px;text-transform:uppercase;font-weight:600;">// Signal lost</span>
-				<div style="display:flex;align-items:flex-start;gap:18px;">
-					<div style="flex-shrink:0;width:52px;height:52px;border-radius:50%;background:#ff4d6d;display:flex;align-items:center;justify-content:center;box-shadow:0 0 20px rgba(255,77,109,0.4);">
-						<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-					</div>
-					<div>
-						<div style="font-family:'Bebas Neue',sans-serif;font-size:0.688rem;color:#ff4d6d;letter-spacing:3px;margin-bottom:8px;text-transform:uppercase;">Couldn't send</div>
-						<h3 style="font-family:'Bebas Neue',sans-serif;font-size:clamp(1.5rem,4vw,2rem);color:#fff;margin:0 0 10px;letter-spacing:2px;text-transform:uppercase;line-height:1;">Something jammed the signal.</h3>
-						<p style="font-family:'Inter',sans-serif;color:var(--text-secondary,rgba(255,255,255,0.55));font-size:0.938rem;margin:0 0 18px;line-height:1.5;">Try again, or email <a href="mailto:meow@catsoncrack.co.uk" style="color:#ff4d6d;text-decoration:underline;">meow@catsoncrack.co.uk</a> directly.</p>
-						<button type="button" id="retryBtn" style="padding:10px 18px;font-family:'Bebas Neue',sans-serif;font-size:0.95rem;letter-spacing:2px;text-transform:uppercase;border-radius:8px;background:transparent;color:#fff;border:2px solid rgba(255,77,109,0.5);cursor:pointer;">Try Again</button>
-					</div>
-				</div>
-			</div>
-		`;
-		document.getElementById('retryBtn')?.addEventListener('click', () => window.location.reload());
-	}
+        const fd = new FormData(form);
+        const topic = String(fd.get('topic') || '').trim();
+        const payload = {
+          name: String(fd.get('name') || '').trim(),
+          email: String(fd.get('email') || '').trim(),
+          subject: topic ? `Cats On Crack - ${topic}` : 'Cats On Crack - General',
+          message: String(fd.get('message') || '').trim(),
+          botcheck: fd.get('botcheck') ? 'on' : '',
+          pageUri: window.location.href,
+        };
 
-	contactForm?.addEventListener('submit', async (e) => {
-		e.preventDefault();
-		setSending(true);
+        try {
+          const res = await fetch('/api/contact', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload),
+          });
+          const data = await res.json().catch(() => ({}));
+          if (res.ok && data?.success) {
+            form.reset();
+            successMsg?.classList.add('form-success--visible');
+          } else {
+            throw new Error(data?.error || 'Submission failed');
+          }
+        } catch {
+          errorMsg?.classList.add('form-error--visible');
+        } finally {
+          setSending(false);
+        }
+      });
+    }
 
-		const fd = new FormData(contactForm);
-		const topic = String(fd.get('topic') || '').trim();
-		const payload = {
-			name: String(fd.get('name') || '').trim(),
-			email: String(fd.get('email') || '').trim(),
-			// Topic dropdown selection drives the brand-prefixed subject.
-			subject: topic ? `Cats On Crack - ${topic}` : 'Cats On Crack - General',
-			message: String(fd.get('message') || '').trim(),
-			// Honeypot is a checkbox — only present in FormData when ticked.
-			botcheck: fd.get('botcheck') ? 'on' : '',
-			pageUri: window.location.href,
-		};
+    // ---- Newsletter ----
+    const crew = document.getElementById('crewForm') as HTMLFormElement | null;
+    if (crew) {
+      const msg = document.getElementById('crewMsg');
+      const txt = crew.querySelector('.crew-submit-text') as HTMLElement | null;
+      const snd = crew.querySelector('.crew-submit-sending') as HTMLElement | null;
+      const btn = document.getElementById('crewSubmit') as HTMLButtonElement | null;
 
-		try {
-			const res = await fetch('/api/contact', {
-				method: 'POST',
-				headers: { 'Content-Type': 'application/json' },
-				body: JSON.stringify(payload),
-			});
-			const data = await res.json().catch(() => ({}));
-			if (res.ok && data?.success) {
-				showSuccess();
-			} else {
-				throw new Error(data?.error || 'Submission failed');
-			}
-		} catch {
-			showError();
-		} finally {
-			setSending(false);
-		}
-	});
+      crew.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const input = document.getElementById('crewEmail') as HTMLInputElement | null;
+        const email = (input?.value || '').trim();
+        if (!email) return;
+        if (msg) { msg.textContent = ''; msg.classList.remove('crew-msg--err', 'crew-msg--ok'); }
+        if (txt) txt.style.display = 'none';
+        if (snd) snd.style.display = 'inline';
+        if (btn) btn.disabled = true;
+
+        try {
+          const res = await fetch('/.netlify/functions/subscribe', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email }),
+          });
+          if (!res.ok) throw new Error('failed');
+          crew.reset();
+          if (msg) { msg.textContent = "You're on the list. Welcome to the crew."; msg.classList.add('crew-msg--ok'); }
+        } catch {
+          if (msg) { msg.textContent = 'Something went wrong — try again in a moment.'; msg.classList.add('crew-msg--err'); }
+        } finally {
+          if (txt) txt.style.display = 'inline';
+          if (snd) snd.style.display = 'none';
+          if (btn) btn.disabled = false;
+        }
+      });
+    }
+  })();
 </script>
+
+<style>
+  .contact-main { background: #181b22; color: #fff; }
+  .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
+
+  /* -- HERO -- */
+  .contact-hero { position: relative; padding: 150px 0 70px; background: #181b22; text-align: center; overflow: hidden; }
+  .hero-noise { position: absolute; inset: 0; pointer-events: none; background:
+      radial-gradient(ellipse at 30% 40%, rgba(255,0,255,0.12) 0%, transparent 60%),
+      radial-gradient(ellipse at 70% 30%, rgba(255,0,255,0.06) 0%, transparent 50%); }
+  .contact-hero__inner { position: relative; max-width: 720px; margin: 0 auto; }
+  .contact-eyebrow { font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 5px; color: #ff00ff; text-transform: uppercase; margin-bottom: 12px; opacity: 0.9; }
+  .contact-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.5rem, 9vw, 7rem); color: #fff; line-height: 0.9; letter-spacing: 3px; margin-bottom: 22px;
+      text-shadow: 3px 3px 0 rgba(255,0,255,0.35), 0 0 50px rgba(255,0,255,0.2); }
+  .contact-sub { font-size: 1.05rem; line-height: 1.65; color: rgba(255,255,255,0.62); max-width: 600px; margin: 0 auto; }
+
+  /* -- FORM + INFO -- */
+  .contact-section { background: #181b22; padding: 30px 0 100px; }
+  .contact-grid { display: grid; grid-template-columns: 1fr 400px; gap: 56px; align-items: start; }
+  .col-heading { font-family: 'Bebas Neue', sans-serif; font-size: 1.9rem; letter-spacing: 2px; color: #fff; margin-bottom: 26px; }
+
+  .contact-form { display: flex; flex-direction: column; }
+  .form-group { margin-bottom: 22px; }
+  .form-label { display: block; font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; letter-spacing: 2px; color: rgba(255,255,255,0.75); text-transform: uppercase; margin-bottom: 9px; }
+  .form-input { width: 100%; padding: 14px 16px; background: #11141a; border: 1px solid rgba(255,0,255,0.18); border-radius: 8px; color: #fff; font-size: 1rem; font-family: inherit; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+  .form-input::placeholder { color: rgba(255,255,255,0.32); }
+  .form-input:focus { outline: none; border-color: #ff00ff; box-shadow: 0 0 0 3px rgba(255,0,255,0.15); }
+  .form-select { appearance: none; background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='14' height='14' viewBox='0 0 24 24' fill='none' stroke='%23ff00ff' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 16px center; padding-right: 42px; cursor: pointer; }
+  .form-select option { background: #11141a; color: #fff; }
+  .form-textarea { min-height: 150px; resize: vertical; }
+
+  .form-submit { margin-top: 6px; padding: 15px 28px; background: #ff00ff; color: #fff; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 1.15rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: transform 0.15s ease, box-shadow 0.2s ease, background 0.2s ease; }
+  .form-submit:hover { background: #ff2bff; box-shadow: 0 10px 30px rgba(255,0,255,0.3); transform: translateY(-2px); }
+  .form-submit:disabled { opacity: 0.6; cursor: default; transform: none; box-shadow: none; }
+
+  .form-success, .form-error { display: none; margin-top: 18px; padding: 14px 16px; border-radius: 8px; font-size: 0.95rem; line-height: 1.5; }
+  .form-success--visible, .form-error--visible { display: block; }
+  .form-success { background: rgba(46,204,113,0.12); border: 1px solid rgba(46,204,113,0.4); color: #7ee2a8; }
+  .form-error { background: rgba(255,77,109,0.1); border: 1px solid rgba(255,77,109,0.4); color: #ff9bac; }
+  .form-error a { color: #ff00ff; }
+  .form-error__retry { display: inline-block; margin-top: 10px; padding: 7px 16px; background: transparent; color: #fff; border: 2px solid rgba(255,77,109,0.5); border-radius: 6px; font-family: 'Bebas Neue', sans-serif; letter-spacing: 1px; cursor: pointer; }
+  .form-error__retry:hover { border-color: #ff4d6d; }
+
+  /* -- INFO CARD -- */
+  .contact-info-card { background: #1a1d2e; border: 1px solid rgba(255,0,255,0.15); border-radius: 12px; padding: 32px 28px; }
+  .info-block { display: flex; gap: 16px; margin-bottom: 26px; }
+  .info-block__icon { flex-shrink: 0; width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: rgba(255,0,255,0.1); color: #ff00ff; }
+  .info-block__heading { font-family: 'Bebas Neue', sans-serif; font-size: 1.25rem; letter-spacing: 1.5px; color: #fff; margin-bottom: 5px; }
+  .info-block__text { font-size: 0.92rem; line-height: 1.55; color: rgba(255,255,255,0.6); margin-bottom: 6px; }
+  .info-block__email { font-size: 0.95rem; color: #ff00ff; text-decoration: none; word-break: break-word; }
+  .info-block__email:hover { text-decoration: underline; }
+
+  .info-divider { height: 1px; background: rgba(255,0,255,0.15); margin: 6px 0 22px; }
+  .info-socials__heading { font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 2px; color: rgba(255,255,255,0.75); text-transform: uppercase; margin-bottom: 14px; }
+  .info-socials__row { display: flex; gap: 12px; flex-wrap: wrap; }
+  .info-social-icon { width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; border-radius: 10px; background: #11141a; border: 1px solid rgba(255,0,255,0.18); color: rgba(255,255,255,0.8); transition: color 0.2s ease, border-color 0.2s ease, transform 0.15s ease; }
+  .info-social-icon:hover { color: #ff00ff; border-color: #ff00ff; transform: translateY(-3px); }
+
+  /* -- FAQ -- */
+  .faq-section { background: #14161d; padding: 90px 0; }
+  .section-header { display: flex; align-items: center; gap: 24px; margin-bottom: 50px; }
+  .header-rule { flex: 1; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,0,255,0.4) 60%); }
+  .header-rule:last-child { background: linear-gradient(270deg, transparent, rgba(255,0,255,0.4) 60%); }
+  .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(1.8rem, 4vw, 3rem); color: #fff; letter-spacing: 3px; white-space: nowrap; text-shadow: 0 0 30px rgba(255,0,255,0.3); }
+  .faq-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 24px; }
+  .faq-card { background: #1a1d2e; border: 1px solid rgba(255,0,255,0.15); border-radius: 12px; padding: 26px 24px; transition: border-color 0.2s ease, transform 0.2s ease; }
+  .faq-card:hover { border-color: rgba(255,0,255,0.4); transform: translateY(-3px); }
+  .faq-q { font-family: 'Bebas Neue', sans-serif; font-size: 1.3rem; letter-spacing: 1px; color: #ff00ff; margin-bottom: 12px; }
+  .faq-a { font-size: 0.95rem; line-height: 1.65; color: rgba(255,255,255,0.7); }
+
+  /* -- NEWSLETTER -- */
+  .crew-section { background: #181b22; padding: 90px 0; text-align: center; border-top: 1px solid rgba(255,0,255,0.1); }
+  .crew-inner { max-width: 560px; margin: 0 auto; }
+  .crew-eyebrow { font-family: 'Bebas Neue', sans-serif; font-size: 0.8rem; letter-spacing: 5px; color: #ff00ff; text-transform: uppercase; margin-bottom: 10px; opacity: 0.9; }
+  .crew-heading { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 5vw, 3rem); letter-spacing: 2px; color: #fff; margin-bottom: 12px; }
+  .crew-sub { font-size: 1rem; line-height: 1.6; color: rgba(255,255,255,0.6); margin-bottom: 26px; }
+  .crew-form { display: flex; gap: 10px; max-width: 460px; margin: 0 auto; }
+  .crew-input { flex: 1; padding: 14px 16px; background: #11141a; border: 1px solid rgba(255,0,255,0.18); border-radius: 8px; color: #fff; font-size: 1rem; font-family: inherit; }
+  .crew-input::placeholder { color: rgba(255,255,255,0.32); }
+  .crew-input:focus { outline: none; border-color: #ff00ff; box-shadow: 0 0 0 3px rgba(255,0,255,0.15); }
+  .crew-submit { padding: 14px 26px; background: #ff00ff; color: #fff; border: none; border-radius: 8px; font-family: 'Bebas Neue', sans-serif; font-size: 1.05rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: background 0.2s ease, transform 0.15s ease; }
+  .crew-submit:hover { background: #ff2bff; transform: translateY(-2px); }
+  .crew-submit:disabled { opacity: 0.6; cursor: default; transform: none; }
+  .crew-note { font-size: 0.82rem; color: rgba(255,255,255,0.4); margin-top: 14px; }
+  .crew-msg { min-height: 1.2em; margin-top: 12px; font-size: 0.92rem; }
+  .crew-msg--ok { color: #7ee2a8; }
+  .crew-msg--err { color: #ff9bac; }
+
+  /* -- RESPONSIVE -- */
+  @media (max-width: 900px) {
+    .contact-grid { grid-template-columns: 1fr; gap: 40px; }
+    .contact-info-col { order: -1; }
+  }
+  @media (max-width: 600px) {
+    .contact-hero { padding: 120px 0 50px; }
+    .crew-form { flex-direction: column; }
+    .section-header { gap: 14px; }
+  }
+</style>
