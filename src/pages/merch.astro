@@ -6,14 +6,30 @@ import { getAllProducts, urlFor } from '../lib/sanity';
 
 const products = await getAllProducts();
 
-/* Card image: prefer the Sanity heroImage; fall back to the first variant's
-   first colour mockup (a plain Printful URL), then the variant thumbnail. */
+/* Stable per-design seed from the slug, so each card lands on a consistent
+   colour across builds (no random reshuffle every deploy). */
+function hashSeed(str) {
+  let h = 0;
+  for (let i = 0; i < String(str).length; i++) h = (h * 31 + String(str).charCodeAt(i)) | 0;
+  return Math.abs(h);
+}
+
+/* Card image: prefer the Sanity heroImage; otherwise show the first variant
+   (the tee) in a colour picked by the slug hash — spreads the grid across the
+   full colourway range instead of defaulting every card to the first swatch
+   (which was Azalea/pink on nearly everything). Falls back to the plain
+   Printful URL, then nothing. */
 function cardImage(p) {
   if (p.heroImage) {
     try { return urlFor(p.heroImage).width(600).height(600).fit('crop').url(); } catch (_) {}
   }
   const v = p.variants?.[0];
-  return v?.colourImages?.[0]?.imageUrl || v?.printfulImageUrl || '';
+  const imgs = v?.colourImages || [];
+  if (imgs.length) {
+    const idx = hashSeed(p.slug || p.name || '') % imgs.length;
+    return imgs[idx].imageUrl || v?.printfulImageUrl || '';
+  }
+  return v?.printfulImageUrl || '';
 }
 ---
 
