@@ -2,7 +2,7 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
-import { getAllProducts, urlFor } from '../lib/sanity';
+import { getAllProducts } from '../lib/sanity';
 
 const products = await getAllProducts();
 
@@ -14,23 +14,49 @@ function hashSeed(str) {
   return Math.abs(h);
 }
 
-/* Card image: prefer the Sanity heroImage; otherwise show the first variant
-   (the tee) in a colour picked by the slug hash — spreads the grid across the
-   full colourway range instead of defaulting every card to the first swatch
-   (which was Azalea/pink on nearly everything). Falls back to the plain
-   Printful URL, then nothing. */
-function cardImage(p) {
-  if (p.heroImage) {
-    try { return urlFor(p.heroImage).width(600).height(600).fit('crop').url(); } catch (_) {}
-  }
-  const v = p.variants?.[0];
-  const imgs = v?.colourImages || [];
+/* Per-garment card image: show THIS garment's mockup in a colour picked by a
+   hash of slug+type, so cards land across the full colourway range (no wall of
+   pink) while staying stable across builds. */
+function cardImageFor(p, variant) {
+  const imgs = variant?.colourImages || [];
   if (imgs.length) {
-    const idx = hashSeed(p.slug || p.name || '') % imgs.length;
-    return imgs[idx].imageUrl || v?.printfulImageUrl || '';
+    const idx = hashSeed((p.slug || p.name || '') + '-' + (variant.productType || '')) % imgs.length;
+    return { url: imgs[idx].imageUrl || variant.printfulImageUrl || '', colour: imgs[idx].colour || '' };
   }
-  return v?.printfulImageUrl || '';
+  return { url: variant?.printfulImageUrl || '', colour: '' };
 }
+
+/* Garment categories, in display order. Each tab shows every design available
+   on that garment; empty categories are dropped automatically. */
+const categoryOrder = [
+  { key: 'tshirt', label: 'T-Shirts', types: ['tshirt'] },
+  { key: 'hoodie', label: 'Hoodies', types: ['hoodie'] },
+  { key: 'tank', label: 'Tanks', types: ['tank'] },
+  { key: 'longsleeve', label: 'Long Sleeves', types: ['longsleeve'] },
+  { key: 'tumbler', label: 'Tumblers', types: ['tumbler'] },
+  { key: 'glass', label: 'Can Glasses', types: ['glass'] },
+  { key: 'socks', label: 'Socks', types: ['socks'] },
+];
+
+const categories = categoryOrder.map((cat) => ({
+  key: cat.key,
+  label: cat.label,
+  items: products.flatMap((p) =>
+    (p.variants || [])
+      .filter((v) => cat.types.includes(v.productType))
+      .map((variant) => {
+        const { url, colour } = cardImageFor(p, variant);
+        const prices = (variant.sizePrices || []).map((s) => s.price).filter((n) => typeof n === 'number');
+        const price = prices.length ? Math.min(...prices) : variant.basePrice;
+        return {
+          slug: p.slug, name: p.name, tagline: p.tagline || p.backstory,
+          price, image: url, colour, type: variant.label, typeKey: variant.productType,
+        };
+      })
+  ),
+})).filter((cat) => cat.items.length > 0);
+
+const defaultCat = categories[0]?.key || 'tshirt';
 ---
 
 <Layout title="Merch - Cats On Crack" description="Shop official Cats On Crack merchandise — apparel, accessories, and collectibles featuring your favorite alley cats.">
@@ -55,31 +81,48 @@ function cardImage(p) {
           <div class="header-rule"></div>
         </div>
 
-        {products.length === 0 ? (
+        {categories.length === 0 ? (
           <p class="empty-note">New gear dropping soon. Check back shortly.</p>
         ) : (
-          <div class="products-grid">
-            {products.map((p) => (
-              <a class="product-card fade-in" href={`/product/${p.slug}`}>
-                <div class="card-worn-edge top-edge"></div>
-                <div class="card-worn-edge bottom-edge"></div>
+          <>
+            <nav class="cat-tabs" aria-label="Product categories">
+              {categories.map((cat) => (
+                <button
+                  class={`cat-tab ${cat.key === defaultCat ? 'active' : ''}`}
+                  data-cat={cat.key}
+                  aria-pressed={cat.key === defaultCat ? 'true' : 'false'}
+                >
+                  {cat.label}<span class="cat-count">{cat.items.length}</span>
+                </button>
+              ))}
+            </nav>
 
-                <div class="product-thumb">
-                  <div class="thumb-bg-noise"></div>
-                  <img class="product-img" src={cardImage(p)} alt={p.name} loading="lazy" />
-                </div>
+            {categories.map((cat) => (
+              <div class={`products-grid ${cat.key === defaultCat ? 'active' : ''}`} data-grid={cat.key}>
+                {cat.items.map((item) => (
+                  <a class="product-card" href={`/product/${item.slug}?type=${item.typeKey}`}>
+                    <div class="card-worn-edge top-edge"></div>
+                    <div class="card-worn-edge bottom-edge"></div>
 
-                <div class="product-info">
-                  <h3>{p.name}</h3>
-                  <p class="product-desc">{p.tagline || p.backstory}</p>
-                  <div class="product-footer">
-                    <span class="product-price">{p.fromPrice ? `from £${p.fromPrice.toFixed(2)}` : ''}</span>
-                    <span class="shop-btn">Shop</span>
-                  </div>
-                </div>
-              </a>
+                    <div class="product-thumb">
+                      <div class="thumb-bg-noise"></div>
+                      <img class="product-img" src={item.image} alt={`${item.name} ${item.type}`} loading="lazy" />
+                    </div>
+
+                    <div class="product-info">
+                      <h3>{item.name}</h3>
+                      {item.colour && <span class="product-colour">{item.colour}</span>}
+                      <p class="product-desc">{item.tagline}</p>
+                      <div class="product-footer">
+                        <span class="product-price">{item.price != null ? `from £${item.price.toFixed(2)}` : ''}</span>
+                        <span class="shop-btn">Shop</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
             ))}
-          </div>
+          </>
         )}
       </div>
     </section>
@@ -141,7 +184,17 @@ function cardImage(p) {
   .section-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(2rem, 4vw, 3.5rem); color: #fff; letter-spacing: 4px; white-space: nowrap; text-shadow: 0 0 30px rgba(255,0,255,0.3); }
   .empty-note { text-align: center; color: rgba(255,255,255,0.5); font-family: 'Bebas Neue', sans-serif; letter-spacing: 2px; }
 
-  .products-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 32px; }
+  /* ── CATEGORY PILLS ── */
+  .cat-tabs { display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; margin-bottom: 48px; }
+  .cat-tab { display: inline-flex; align-items: center; gap: 8px; padding: 9px 18px; background: #1a1d2e; border: 1px solid rgba(255,0,255,0.25); color: rgba(255,255,255,0.7); font-family: 'Bebas Neue', sans-serif; font-size: 0.95rem; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.25s ease; }
+  .cat-tab:hover { border-color: #ff00ff; color: #fff; }
+  .cat-tab.active { background: #ff00ff; border-color: #ff00ff; color: #fff; box-shadow: 0 0 18px rgba(255,0,255,0.35); }
+  .cat-count { display: inline-flex; align-items: center; justify-content: center; min-width: 20px; height: 18px; padding: 0 5px; font-size: 0.7rem; background: rgba(0,0,0,0.25); color: inherit; }
+  .cat-tab:not(.active) .cat-count { background: rgba(255,0,255,0.12); }
+
+  .products-grid { display: none; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 32px; animation: gridFade 0.35s ease; }
+  .products-grid.active { display: grid; }
+  @keyframes gridFade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
 
   .product-card { position: relative; background: #1a1d2e; border: 1px solid rgba(255,0,255,0.15); overflow: visible; transition: transform 0.3s ease, box-shadow 0.3s ease; text-decoration: none; display: block; }
   .card-worn-edge { position: absolute; left: -2px; right: -2px; height: 4px; z-index: 2; background: #181b22;
@@ -156,6 +209,7 @@ function cardImage(p) {
 
   .product-info { padding: 20px 22px 22px; border-top: 1px solid rgba(255,0,255,0.1); }
   .product-info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: #fff; letter-spacing: 1px; margin-bottom: 6px; }
+  .product-colour { display: block; font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,0,255,0.55); margin-bottom: 8px; }
   .product-desc { font-size: 0.82rem; color: rgba(255,255,255,0.4); margin-bottom: 16px; line-height: 1.5; min-height: 2.4em; }
   .product-footer { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
   .product-price { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: #fff; letter-spacing: 1px; }
@@ -193,6 +247,18 @@ function cardImage(p) {
 </style>
 
 <script>
+  /* Category tab switching */
+  const tabs = document.querySelectorAll('.cat-tab');
+  const grids = document.querySelectorAll('.products-grid[data-grid]');
+  tabs.forEach((tab) => tab.addEventListener('click', () => {
+    const cat = tab.getAttribute('data-cat');
+    if (!cat) return;
+    tabs.forEach((t) => { t.classList.remove('active'); t.setAttribute('aria-pressed', 'false'); });
+    tab.classList.add('active');
+    tab.setAttribute('aria-pressed', 'true');
+    grids.forEach((g) => g.classList.toggle('active', g.getAttribute('data-grid') === cat));
+  }));
+
   /* Newsletter signup — posts to a Netlify function so no API token lives in
      the browser. Create netlify/functions/subscribe (reuse your existing
      newsletter pattern) that reads MAILERLITE_TOKEN from env and adds the
