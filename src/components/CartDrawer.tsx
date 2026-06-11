@@ -161,6 +161,10 @@ export default function CartDrawer() {
       fontSize: '12px', letterSpacing: '1.5px', textTransform: 'uppercase' as const,
       cursor: 'pointer', transition: 'color 0.2s',
     },
+    payNote: {
+      color: textMuted, fontSize: '11px', lineHeight: 1.5,
+      textAlign: 'center' as const, margin: '4px 0 12px',
+    },
     // ── Branded confirm modal ──
     modalOverlay: {
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)',
@@ -238,6 +242,9 @@ export default function CartDrawer() {
               <span style={styles.totalLabel}>Total</span>
               <span style={styles.totalValue}>&pound;{total.toFixed(2)}</span>
             </div>
+            <p style={styles.payNote}>
+              Payments are taken by The Metavision Multimedia Ltd and show on your statement as THE METAVISION.
+            </p>
             <button
               style={styles.checkoutBtn}
               onClick={handleCheckout}

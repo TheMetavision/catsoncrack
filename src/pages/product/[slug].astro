@@ -87,6 +87,8 @@ const variantsJson = JSON.stringify(
           <span class="t-added" style="display:none;">Added!</span>
         </button>
 
+        <p class="pdp-pay-note">Payments are processed by The Metavision Multimedia Ltd and appear on your statement as THE METAVISION.</p>
+
         {design.designStory && (
           <div class="pdp-story"><h2>The story</h2><p>{design.designStory}</p></div>
         )}
@@ -248,6 +250,7 @@ const variantsJson = JSON.stringify(
     .pdp-add { font-family: 'Bebas Neue', sans-serif; width: 100%; max-width: 360px; margin-top: 1.5rem; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 4px; text-transform: uppercase; letter-spacing: 3px; cursor: pointer; font-size: 1.2rem; }
     .pdp-add:hover { filter: brightness(1.08); }
     .pdp-add:hover { filter: brightness(1.08); }
+    .pdp-pay-note { color: #8a8880; font-size: 0.78rem; line-height: 1.5; margin: 0.9rem 0 0; max-width: 360px; }
     .pdp-story { margin-top: 2rem; border-top: 1px solid #ffffff14; padding-top: 1.5rem; }
     .pdp-story h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; color: #8a8880; }
     @media (max-width: 768px) { .pdp-grid { grid-template-columns: 1fr; } }
