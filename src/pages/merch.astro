@@ -20,7 +20,15 @@ function hashSeed(str) {
 function cardImageFor(p, variant) {
   const imgs = variant?.colourImages || [];
   if (imgs.length) {
-    const idx = hashSeed((p.slug || p.name || '') + '-' + (variant.productType || '')) % imgs.length;
+    /* Only spread cards across the colourway range when the garment actually
+       has multiple distinct colours (apparel). Colourless products — can glass,
+       tumbler, socks (colour "") — carry several presentation shots (e.g. glass
+       no-lid vs lid & straw), and the hash would split cards ~50/50 between them.
+       For those, always use the primary (first) image so every card matches. */
+    const distinctColours = [...new Set(imgs.map((i) => i.colour || ''))].filter(Boolean);
+    const idx = distinctColours.length > 1
+      ? hashSeed((p.slug || p.name || '') + '-' + (variant.productType || '')) % imgs.length
+      : 0;
     return { url: imgs[idx].imageUrl || variant.printfulImageUrl || '', colour: imgs[idx].colour || '' };
   }
   return { url: variant?.printfulImageUrl || '', colour: '' };
