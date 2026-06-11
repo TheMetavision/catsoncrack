@@ -240,14 +240,22 @@ const variantsJson = JSON.stringify(
 
       /* ---- Desktop hover magnify ---- */
       const fine = window.matchMedia('(pointer: fine)').matches;
-      const HOVER_SCALE = 2.4;
+      const MAX_ZOOM = 2.6;   // never magnify further than this
+      const MIN_ZOOM = 1.4;   // ...nor less than this (below isn't worth it)
+      /* Largest magnification that still keeps roughly <=1 source pixel per
+         screen pixel — i.e. the point past which the image starts to look soft.
+         Adapts to each image's real resolution so zoom never turns to mush. */
+      const sharpCap = (naturalW, displayW) =>
+        (!naturalW || !displayW) ? MAX_ZOOM
+          : Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, naturalW / displayW));
       if (fine) {
         main.addEventListener('mousemove', (e) => {
           const r = main.getBoundingClientRect();
           const x = ((e.clientX - r.left) / r.width) * 100;
           const y = ((e.clientY - r.top) / r.height) * 100;
+          const s = sharpCap(hero.naturalWidth, r.width);
           hero.style.transformOrigin = `${x}% ${y}%`;
-          hero.style.transform = `scale(${HOVER_SCALE})`;
+          hero.style.transform = `scale(${s})`;
         });
         main.addEventListener('mouseleave', () => {
           hero.style.transform = '';
@@ -261,7 +269,7 @@ const variantsJson = JSON.stringify(
       const lbClose = document.getElementById('pdp-lightbox-close');
       if (!lb || !lbImg) return;
 
-      const SCALE = 2.4;
+      let SCALE = 2.4;
       let zoomed = false, panX = 0, panY = 0, startX = 0, startY = 0, dragging = false, moved = false;
 
       function clamp() {
@@ -318,6 +326,7 @@ const variantsJson = JSON.stringify(
         lb.classList.remove('dragging');
         if (!moved) {
           if (!zoomed) {
+            SCALE = sharpCap(lbImg.naturalWidth, lbImg.clientWidth);
             const r = lbImg.getBoundingClientRect();
             const cx = e.clientX - (r.left + r.width / 2);
             const cy = e.clientY - (r.top + r.height / 2);
