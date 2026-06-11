@@ -52,6 +52,7 @@ const variantsJson = JSON.stringify(
             Zoom
           </span>
         </div>
+        <div class="pdp-gallery-strip" id="pdp-gallery-strip" style="display:none;"></div>
         <div class="pdp-thumbs">
           {design.variants?.map((v, i) => (
             <button class={`pdp-thumb ${i === 0 ? 'active' : ''}`} data-type={v.productType} title={v.label}>
@@ -140,7 +141,7 @@ const variantsJson = JSON.stringify(
       const inMatrix = new Set((variant.matrix || []).map((m) => m.colour));
       let opts = (variant.colourImages || []).map((c) => c.colour).filter((c) => inMatrix.has(c));
       if (!opts.length) opts = [...inMatrix];
-      return opts;
+      return [...new Set(opts)];
     }
     /* Sizes available for THIS colour, ordered */
     function sizesFor(variant, colour) {
@@ -186,6 +187,29 @@ const variantsJson = JSON.stringify(
     }
     function updateHero() {
       if (heroEl) heroEl.src = imageForColour(getVariant(), selectedColour);
+      renderGalleryStrip(getVariant());
+    }
+    /* Secondary image strip: shows every stored image for the CURRENT colour.
+       Most variants have one image (strip stays hidden); the can glass has two
+       (lid & straw + plain), so both become tappable here without affecting
+       colour, size, price or add-to-cart. */
+    function renderGalleryStrip(variant) {
+      const stripEl = document.getElementById('pdp-gallery-strip');
+      if (!stripEl) return;
+      const imgs = (variant.colourImages || []).filter((c) => c.colour === selectedColour && c.imageUrl);
+      if (imgs.length <= 1) { stripEl.style.display = 'none'; stripEl.innerHTML = ''; return; }
+      const cur = heroEl ? heroEl.src : '';
+      stripEl.style.display = 'flex';
+      stripEl.innerHTML = imgs.map((c) =>
+        `<button type="button" class="pdp-shot" data-src="${c.imageUrl}"><img src="${c.imageUrl}" alt="" loading="lazy" /></button>`
+      ).join('');
+      const btns = [...stripEl.querySelectorAll('.pdp-shot')];
+      const mark = (el) => btns.forEach((b) => b.classList.toggle('active', b === el));
+      mark(btns.find((b) => b.dataset.src === cur) || btns[0]);
+      btns.forEach((b) => b.addEventListener('click', () => {
+        if (heroEl) heroEl.src = b.dataset.src;
+        mark(b);
+      }));
     }
     function selectType(type) {
       currentType = type;
@@ -366,6 +390,11 @@ const variantsJson = JSON.stringify(
     .pdp-lightbox-close { position: fixed; top: 16px; right: 20px; width: 42px; height: 42px; display: flex; align-items: center; justify-content: center; background: rgba(255,255,255,.1); border: 1px solid rgba(255,255,255,.25); color: #fff; font-size: 24px; line-height: 1; border-radius: 50%; cursor: pointer; transition: all .15s ease; }
     .pdp-lightbox-close:hover { background: var(--accent); color: #000; border-color: var(--accent); }
     .pdp-thumbs { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .pdp-gallery-strip { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+    .pdp-shot { width: 72px; height: 72px; border-radius: 6px; overflow: hidden; border: 2px solid #ffffff1f; background: #1f2330; cursor: pointer; padding: 0; transition: border-color .15s ease; }
+    .pdp-shot:hover { border-color: rgba(255,0,255,0.5); }
+    .pdp-shot.active { border-color: var(--accent); }
+    .pdp-shot img { width: 100%; height: 100%; object-fit: cover; }
     .pdp-thumb { width: 64px; height: 64px; border-radius: 6px; overflow: hidden; border: 2px solid transparent; background: #1f2330; cursor: pointer; padding: 0; }
     .pdp-thumb.active { border-color: var(--accent); }
     .pdp-thumb img { width: 100%; height: 100%; object-fit: cover; }
