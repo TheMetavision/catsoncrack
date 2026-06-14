@@ -253,6 +253,11 @@ const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt')
   .thumb-bg-noise { position: absolute; inset: 0; background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 300 300' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.08'/%3E%3C/svg%3E"); background-size: 200px 200px; pointer-events: none; }
   .product-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; }
 
+  /* Wall-art cards: landscape frame, show the whole piece (no crop). Scoped to
+     the wall-art grid so garment cards keep their square crop. */
+  .products-grid[data-grid="wallart"] .product-thumb { aspect-ratio: 16 / 9; }
+  .products-grid[data-grid="wallart"] .product-img { object-fit: contain; }
+
   .product-info { padding: 20px 22px 22px; border-top: 1px solid rgba(255,0,255,0.1); }
   .product-info h3 { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: #fff; letter-spacing: 1px; margin-bottom: 6px; }
   .product-colour { display: block; font-size: 0.68rem; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(255,0,255,0.55); margin-bottom: 8px; }
