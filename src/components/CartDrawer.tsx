@@ -8,6 +8,12 @@
 import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
 import { $cartItems, $cartOpen, $cartTotal, $cartCount, removeFromCart, toggleCart, addToCart, clearCart } from '../lib/cart';
+// @ts-ignore — shared CommonJS pricing module (no .d.ts; resolved by Vite at build)
+import { isWallArt, artworkVariantLabel } from '../lib/artwork-pricing.cjs';
+
+// Keep in sync with FREE_THRESHOLD_PENCE in create-checkout.js (£75) and
+// FREE_SHIPPING_THRESHOLD in cart.ts.
+const FREE_SHIPPING_THRESHOLD = 75;
 
 export default function CartDrawer() {
   const items = useStore($cartItems);
@@ -50,6 +56,7 @@ export default function CartDrawer() {
             price: item.price,
             size: item.size,
             colour: item.colour || '',
+            format: item.format || '',
             image: item.image,
             productType: item.productType || '',
             quantity: item.quantity,
@@ -165,6 +172,19 @@ export default function CartDrawer() {
       color: textMuted, fontSize: '11px', lineHeight: 1.5,
       textAlign: 'center' as const, margin: '4px 0 12px',
     },
+    // ── Free-delivery progress ──
+    shipWrap: { marginBottom: '16px' },
+    shipNote: {
+      color: textMuted, fontSize: '12px', textAlign: 'center' as const,
+      margin: '0 0 8px', letterSpacing: '0.5px',
+    },
+    shipTrack: {
+      height: '6px', background: '#2a2f3d', borderRadius: '999px', overflow: 'hidden' as const,
+    },
+    shipFill: {
+      height: '100%', background: accent, borderRadius: '999px',
+      transition: 'width 0.3s ease',
+    },
     // ── Branded confirm modal ──
     modalOverlay: {
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)',
@@ -225,7 +245,9 @@ export default function CartDrawer() {
                 <div>
                   <p style={styles.itemName}>{item.title}</p>
                   <p style={styles.itemVariant}>
-                    {item.colour ? `${item.colour} · ` : ''}Size: {item.size} · Qty: {item.quantity}
+                    {isWallArt(item)
+                      ? `${artworkVariantLabel(item.format || '', item.size)} · Qty: ${item.quantity}`
+                      : `${item.colour ? `${item.colour} · ` : ''}Size: ${item.size} · Qty: ${item.quantity}`}
                   </p>
                   <p style={styles.itemPrice}>&pound;{(item.price * item.quantity).toFixed(2)}</p>
                   <button style={styles.removeBtn} onClick={() => removeFromCart(item.id, item.size)}>
@@ -238,6 +260,25 @@ export default function CartDrawer() {
         </div>
         {items.length > 0 && (
           <div style={styles.footer}>
+            {(() => {
+              const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total);
+              const pct = Math.min(100, (total / FREE_SHIPPING_THRESHOLD) * 100);
+              const unlocked = remaining <= 0;
+              return (
+                <div style={styles.shipWrap}>
+                  <p style={styles.shipNote}>
+                    {unlocked ? (
+                      <>You&rsquo;ve unlocked <strong style={{ color: accent }}>FREE UK delivery</strong>!</>
+                    ) : (
+                      <>Add <strong style={{ color: accent }}>&pound;{remaining.toFixed(2)}</strong> more for <strong>FREE UK delivery</strong></>
+                    )}
+                  </p>
+                  <div style={styles.shipTrack}>
+                    <div style={{ ...styles.shipFill, width: `${pct}%` }} />
+                  </div>
+                </div>
+              );
+            })()}
             <div style={styles.totalRow}>
               <span style={styles.totalLabel}>Total</span>
               <span style={styles.totalValue}>&pound;{total.toFixed(2)}</span>

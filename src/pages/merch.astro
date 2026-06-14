@@ -3,8 +3,11 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import { getAllProducts } from '../lib/sanity';
+import { getAllWallArt } from '../lib/wallart';
+import { ARTWORK_FROM_PRICE, formatGBP } from '../lib/artwork-pricing.cjs';
 
 const products = await getAllProducts();
+const wallArt = await getAllWallArt();
 
 /* Stable per-design seed from the slug, so each card lands on a consistent
    colour across builds (no random reshuffle every deploy). */
@@ -64,7 +67,7 @@ const categories = categoryOrder.map((cat) => ({
   ),
 })).filter((cat) => cat.items.length > 0);
 
-const defaultCat = categories[0]?.key || 'tshirt';
+const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt');
 ---
 
 <Layout title="Merch - Cats On Crack" description="Shop official Cats On Crack merchandise — apparel, accessories, and collectibles featuring your favorite alley cats.">
@@ -89,7 +92,7 @@ const defaultCat = categories[0]?.key || 'tshirt';
           <div class="header-rule"></div>
         </div>
 
-        {categories.length === 0 ? (
+        {categories.length === 0 && wallArt.length === 0 ? (
           <p class="empty-note">New gear dropping soon. Check back shortly.</p>
         ) : (
           <>
@@ -103,6 +106,15 @@ const defaultCat = categories[0]?.key || 'tshirt';
                   {cat.label}<span class="cat-count">{cat.items.length}</span>
                 </button>
               ))}
+              {wallArt.length > 0 && (
+                <button
+                  class={`cat-tab cat-tab--art ${defaultCat === 'wallart' ? 'active' : ''}`}
+                  data-cat="wallart"
+                  aria-pressed={defaultCat === 'wallart' ? 'true' : 'false'}
+                >
+                  Wall Art<span class="cat-count">{wallArt.length}</span>
+                </button>
+              )}
             </nav>
 
             {categories.map((cat) => (
@@ -130,6 +142,32 @@ const defaultCat = categories[0]?.key || 'tshirt';
                 ))}
               </div>
             ))}
+
+            {wallArt.length > 0 && (
+              <div class={`products-grid ${defaultCat === 'wallart' ? 'active' : ''}`} data-grid="wallart">
+                {wallArt.map((piece) => (
+                  <a class="product-card" href={`/wall-art/${piece.slug}`}>
+                    <div class="card-worn-edge top-edge"></div>
+                    <div class="card-worn-edge bottom-edge"></div>
+
+                    <div class="product-thumb">
+                      <div class="thumb-bg-noise"></div>
+                      <img class="product-img" src={piece.imageUrl} alt={piece.title} loading="lazy" />
+                    </div>
+
+                    <div class="product-info">
+                      <h3>{piece.title}</h3>
+                      <span class="product-colour">Poster &amp; Canvas</span>
+                      <p class="product-desc">{piece.tagline || ''}</p>
+                      <div class="product-footer">
+                        <span class="product-price">from {formatGBP(ARTWORK_FROM_PRICE)}</span>
+                        <span class="shop-btn">Shop</span>
+                      </div>
+                    </div>
+                  </a>
+                ))}
+              </div>
+            )}
           </>
         )}
       </div>
