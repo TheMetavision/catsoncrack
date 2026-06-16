@@ -23,7 +23,8 @@ const defSize = (sizes[1] || sizes[0]).id;
 const defPence = ARTWORK_PRICES[defFormat][defSize];
 const fmtGBP = (p) => `£${(p / 100).toFixed(2)}`;
 
-const gallery = [piece.imageUrl, ...(piece.mockups || []).map((m) => m.url)].filter(Boolean);
+const mockupUrls = [piece.studioMockupUrl, piece.posterMockupUrl, piece.roomMockupUrl].filter(Boolean);
+const gallery = (mockupUrls.length ? mockupUrls : [piece.imageUrl]).filter(Boolean);
 ---
 
 <Layout title={`${piece.title} — Wall Art — Cats On Crack`} description={piece.tagline || piece.description || `${piece.title} wall art — poster and canvas prints.`}>
@@ -157,7 +158,7 @@ const gallery = [piece.imageUrl, ...(piece.mockups || []).map((m) => m.url)].fil
   }
 </style>
 
-<script define:vars={{ prices: ARTWORK_PRICES, formatList: formats, sizeList: sizes, slug: piece.slug, title: piece.title, image: piece.imageUrl, defFormat, defSize }}>
+<script define:vars={{ prices: ARTWORK_PRICES, formatList: formats, sizeList: sizes, slug: piece.slug, title: piece.title, image: piece.studioMockupUrl || piece.imageUrl, defFormat, defSize }}>
   (function () {
     let selFormat = defFormat;
     let selSize = defSize;
