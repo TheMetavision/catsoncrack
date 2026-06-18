@@ -306,7 +306,7 @@ const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt')
   .wa-grid--port { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
   .wa-grid--land .product-thumb { aspect-ratio: 3 / 2; }
   .wa-grid--port .product-thumb { aspect-ratio: 2 / 3; }
-  .wa-grid .product-img { object-fit: contain; }
+  .wa-grid .product-img { object-fit: cover; }
   @media (max-width: 768px) { .wa-grid--land, .wa-grid--port { grid-template-columns: 1fr; } }
 
   .product-info { padding: 20px 22px 22px; border-top: 1px solid rgba(255,0,255,0.1); }
