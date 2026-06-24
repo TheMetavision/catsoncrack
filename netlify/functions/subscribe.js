@@ -1,46 +1,50 @@
 /**
  * netlify/functions/subscribe.js  (Cats On Crack)
  *
- * Server-side newsletter signup. The merch page form POSTs { email } here;
- * this function adds the subscriber to the COC MailerLite group using a token
- * held in an env var — so no API token is ever exposed in client-side JS.
+ * Server-side newsletter signup. The homepage form and the Alleyway Gazette
+ * form POST { email } to /api/subscribe (netlify.toml rewrites
+ * /api/*  ->  /.netlify/functions/*). The MailerLite API token lives in an
+ * env var and is NEVER sent to the browser.
  *
- * Required env var:
- *   MAILERLITE_TOKEN     — MailerLite API token (rotate the old leaked one!)
- * Optional env var:
- *   MAILERLITE_GROUP_ID  — COC group id (defaults to the existing COC group)
+ * Env vars (set in Netlify; mark MAILERLITE_API_KEY as "Secret"):
+ *   MAILERLITE_API_KEY   - MailerLite API token  (use the ROTATED token)
+ *   MAILERLITE_GROUP_ID  - COC newsletter group  (default below = the group
+ *                          the homepage/gazette currently subscribe people to)
+ *
+ * Response contract (consumed by the two COC newsletter forms):
+ *   200 { ok: true }                 -> newly subscribed
+ *   200 { ok: true, already: true }  -> already on the list
+ *   400 { error }                    -> invalid email / bad request
+ *   500 { error }                    -> not configured (env var missing)
+ *   502 { error }                    -> MailerLite unreachable / errored
  */
 
-const GROUP_ID = process.env.MAILERLITE_GROUP_ID || '184361347785426604';
+const GROUP_ID = process.env.MAILERLITE_GROUP_ID || '184360844895716414';
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 exports.handler = async (event) => {
-  const headers = {
-    'Access-Control-Allow-Origin': '*',
-    'Access-Control-Allow-Headers': 'Content-Type',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-  };
-
-  if (event.httpMethod === 'OPTIONS') return { statusCode: 204, headers, body: '' };
   if (event.httpMethod !== 'POST') {
-    return { statusCode: 405, headers, body: JSON.stringify({ error: 'Method not allowed' }) };
+    return json(405, { error: 'Method not allowed' });
   }
-  if (!process.env.MAILERLITE_TOKEN) {
-    console.error('subscribe: MAILERLITE_TOKEN not set');
-    return { statusCode: 500, headers, body: JSON.stringify({ error: 'Newsletter not configured' }) };
+  if (!process.env.MAILERLITE_API_KEY) {
+    console.error('subscribe: MAILERLITE_API_KEY not set');
+    return json(500, { error: 'Newsletter not configured' });
   }
 
   let email;
   try {
     ({ email } = JSON.parse(event.body || '{}'));
   } catch (_) {
-    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Invalid request' }) };
+    return json(400, { error: 'Invalid request' });
   }
 
   email = String(email || '').trim().toLowerCase();
   if (!EMAIL_RE.test(email)) {
-    return { statusCode: 400, headers, body: JSON.stringify({ error: 'Please enter a valid email address' }) };
+    return json(400, { error: 'Please enter a valid email address' });
   }
+
+  const payload = { email, status: 'active' };
+  if (GROUP_ID) payload.groups = [GROUP_ID];
 
   try {
     const res = await fetch('https://connect.mailerlite.com/api/subscribers', {
@@ -48,23 +52,28 @@ exports.handler = async (event) => {
       headers: {
         'Content-Type': 'application/json',
         Accept: 'application/json',
-        Authorization: `Bearer ${process.env.MAILERLITE_TOKEN}`,
+        Authorization: `Bearer ${process.env.MAILERLITE_API_KEY}`,
       },
-      body: JSON.stringify({ email, groups: [GROUP_ID], status: 'active' }),
+      body: JSON.stringify(payload),
     });
 
-    // MailerLite returns 200/201 for create, 200 for an already-existing
-    // subscriber (idempotent upsert) — all are success from the user's view.
-    if (res.ok) {
-      return { statusCode: 200, headers, body: JSON.stringify({ ok: true }) };
-    }
+    if (res.ok) return json(200, { ok: true });
+    // 422 = validation / already-handled address -> friendly "already in" state
+    if (res.status === 422) return json(200, { ok: true, already: true });
 
     const detail = await res.text();
     console.error('subscribe: MailerLite error', res.status, detail);
-    // 422 = validation (e.g. already unsubscribed/blocked) — don't leak detail.
-    return { statusCode: 502, headers, body: JSON.stringify({ error: 'Could not sign you up right now. Please try again later.' }) };
+    return json(502, { error: 'Could not sign you up right now. Please try again later.' });
   } catch (err) {
-    console.error('subscribe: request failed', err.message || err);
-    return { statusCode: 502, headers, body: JSON.stringify({ error: 'Could not sign you up right now. Please try again later.' }) };
+    console.error('subscribe: request failed', (err && err.message) || err);
+    return json(502, { error: 'Could not sign you up right now. Please try again later.' });
   }
 };
+
+function json(statusCode, body) {
+  return {
+    statusCode,
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  };
+}
