@@ -151,7 +151,7 @@ const variantsJson = JSON.stringify(
 
     function renderColours(variant) {
       const opts = coloursFor(variant);
-      const colourless = opts.length <= 1 && !opts[0];
+      const colourless = opts.length <= 1;
       if (colourless) {
         colourWrap.style.display = 'none';
         selectedColour = opts[0] || '';
