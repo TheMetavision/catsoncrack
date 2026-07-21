@@ -1,20 +1,15 @@
 ---
 /**
- * src/pages/order-success.astro
+ * src/pages/order-success.astro  (Cats On Crack)
  *
- * Post-checkout landing page. Stripe redirects here after payment.
- * Customise the brand name, colours, and links per brand.
- *
- * Replace:
- *   Cats On Crack  → e.g. "Cats On Crack"
- *   #FF00FF      → e.g. "#FF00FF"
- *   /merch    → e.g. "/shop" or "/merch"
- *   /    → e.g. "/"
+ * Post-checkout landing page. Stripe redirects here after payment with
+ * ?session_id=... — which triggers the cart clear. Voice matches the COC
+ * transactional email ("Thanks for repping the alley").
  */
 import Layout from '../layouts/Layout.astro';
 ---
 
-<Layout title="Order Confirmed — Cats On Crack">
+<Layout title="Order Snagged — Cats On Crack">
   {/* Empty the cart once Stripe redirects back with a session_id.
       is:inline so it runs during parse, before the CartDrawer island hydrates. */}
   <script is:inline>
@@ -35,7 +30,7 @@ import Layout from '../layouts/Layout.astro';
       <div style={`
         font-size: 64px;
         margin-bottom: 24px;
-      `}>&#10003;</div>
+      `}>&#128062;</div>
 
       <h1 style={`
         font-size: 36px;
@@ -44,7 +39,7 @@ import Layout from '../layouts/Layout.astro';
         text-transform: uppercase;
         letter-spacing: 3px;
         margin: 0 0 16px;
-      `}>Order Confirmed</h1>
+      `}>Order Snagged</h1>
 
       <p style={`
         font-size: 16px;
@@ -52,8 +47,9 @@ import Layout from '../layouts/Layout.astro';
         color: #ccc;
         margin: 0 0 32px;
       `}>
-        Thanks for your order! You'll receive a confirmation email shortly.
-        Your items are being prepared and you'll get tracking details once they ship.
+        Thanks for repping the alley. A confirmation email is prowling its way
+        to your inbox, and we'll send tracking the moment your gear claws out
+        of production.
       </p>
 
       <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap;">
@@ -68,7 +64,7 @@ import Layout from '../layouts/Layout.astro';
           letter-spacing: 1px;
           border-radius: 4px;
           font-size: 14px;
-        `}>Continue Shopping</a>
+        `}>Keep Prowling</a>
 
         <a href="/" style={`
           display: inline-block;
@@ -80,7 +76,7 @@ import Layout from '../layouts/Layout.astro';
           border: 1px solid #333;
           border-radius: 4px;
           font-size: 14px;
-        `}>Back to Home</a>
+        `}>Back to the Alley</a>
       </div>
     </div>
   </section>
