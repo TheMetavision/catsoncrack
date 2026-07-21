@@ -19,6 +19,12 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 const { artworkPrice, artworkVariantLabel, isWallArt } = require('../../src/lib/artwork-pricing.cjs');
 
 /* ── CONFIG (COC) ───────────────────────────────────────────────────── */
+/* Brand key stamped on every Checkout Session. The stripe-webhook's BRAND
+   GUARD only processes sessions where metadata.brand matches — this is what
+   stops the other IP brands' webhooks (shared Stripe account) from firing on
+   COC orders and vice versa. Deploy together with the stripe webhook. */
+const BRAND_KEY = 'catsoncrack';
+
 const SANITY_PROJECT_ID = process.env.SANITY_PROJECT_ID || '8ksun996';
 const SANITY_DATASET    = process.env.SANITY_DATASET || 'production';
 const SANITY_API_VER    = '2024-01-01';
@@ -235,7 +241,7 @@ exports.handler = async (event) => {
       shipping_options: buildShippingOptions(cartTotalPence),
       success_url: `${SITE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE_URL}/merch`,
-      metadata: { source: 'catsoncrack-web' },
+      metadata: { source: 'catsoncrack-web', brand: BRAND_KEY },
     });
 
     return { statusCode: 200, headers, body: JSON.stringify({ url: session.url }) };
