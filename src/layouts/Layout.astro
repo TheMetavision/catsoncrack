@@ -58,9 +58,8 @@ const preloadAudio = renderThemeAudio ? themeAudio.audioUrl : null;
 		<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512x512.png">
 		<link rel="canonical" href={Astro.url.href} />
 		<link rel="sitemap" href="/sitemap-index.xml" />
-		<link rel="preconnect" href="https://fonts.googleapis.com">
-		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-		<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+		<link rel="preload" href="/fonts/bebasneue-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin>
+		<link rel="stylesheet" href="/fonts/fonts.css">
 
 		<!-- Open Graph -->
 		<meta property="og:title" content={`${title} | Cats On Crack`} />

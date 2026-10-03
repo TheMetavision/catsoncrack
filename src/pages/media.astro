@@ -8,6 +8,9 @@
 //
 // Three sections: hero trailer + episodes grid + book series.
 // All videos play in a shared lightbox modal (single iframe, swap on open).
+// Click-to-load: thumbnails are self-hosted (public/video-thumbs/<id>.jpg, from
+// tools/fetch-video-thumbs.mjs) and nothing is requested from YouTube until the
+// visitor presses play; the player then loads from youtube-nocookie.com.
 //
 // Author: Axiom, 2026-04-30
 // Brand voice: Alleyway Gazette neutral framing + Cats On Crack chaos register
@@ -16,6 +19,7 @@ import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import { getAllEpisodes, getAllBooks, urlFor } from '../lib/sanity';
+import { existsSync } from 'node:fs';
 
 const HERO_TRAILER_FALLBACK_ID = 'ay215yKvntY';
 
@@ -29,6 +33,12 @@ const heroTitle = (featured && featured.title) || 'Cats On Crack Official Traile
 const heroDescription =
   (featured && featured.description) ||
   "Meet the wildest alley cats you'll ever encounter. Six cats. Zero rules. One alley.";
+
+// Self-hosted thumbnail if we have one; otherwise null (plain poster), never YouTube.
+function thumbFor(id) {
+  return id && existsSync(`public/video-thumbs/${id}.jpg`) ? `/video-thumbs/${id}.jpg` : null;
+}
+const heroThumb = thumbFor(heroYoutubeId);
 
 function extractYoutubeId(url) {
   if (!url) return null;
@@ -105,7 +115,7 @@ const ldEpisodes = episodeCards
     position: idx + 1,
     name: e.title,
     description: e.description,
-    thumbnailUrl: `https://img.youtube.com/vi/${e.resolvedYoutubeId}/maxresdefault.jpg`,
+    thumbnailUrl: new URL(thumbFor(e.resolvedYoutubeId) || '/coc-logo-purple.png', Astro.site || Astro.url).href,
     embedUrl: `https://www.youtube.com/embed/${e.resolvedYoutubeId}`,
     uploadDate: e.publishedAt || undefined,
   }));
@@ -186,14 +196,18 @@ const breadcrumbLd = {
               aria-label={`Play: ${heroTitle}`}
             >
               <div class="trailer-thumb-wrap">
-                <img
-                  class="trailer-thumb"
-                  src={`https://img.youtube.com/vi/${heroYoutubeId}/maxresdefault.jpg`}
-                  alt={`${heroTitle} thumbnail`}
-                  loading="eager"
-                  width="640"
-                  height="360"
-                />
+                {heroThumb ? (
+                  <img
+                    class="trailer-thumb"
+                    src={heroThumb}
+                    alt={`${heroTitle} thumbnail`}
+                    loading="eager"
+                    width="640"
+                    height="360"
+                  />
+                ) : (
+                  <div class="trailer-thumb episode-thumb-placeholder" aria-hidden="true"></div>
+                )}
                 <div class="trailer-overlay"></div>
                 <div class="trailer-play-glow">
                   <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -207,6 +221,7 @@ const breadcrumbLd = {
                 <p class="trailer-desc">{heroDescription}</p>
               </div>
             </button>
+            <p class="yt-notice">Plays from YouTube, which may set cookies.</p>
           </div>
         </div>
       </div>
@@ -227,15 +242,14 @@ const breadcrumbLd = {
               class="inline-link"
             >@CatsOnCrack on YouTube</a> &mdash; subscribe so you don't miss a thing.
           </p>
+          <p class="yt-notice">Videos play from YouTube, which may set cookies.</p>
         </div>
 
         {episodeCards.length > 0 ? (
           <div class="episodes-grid stagger-children">
             {episodeCards.map((ep) => {
               const hasVideo = !!ep.resolvedYoutubeId;
-              const thumbSrc = hasVideo
-                ? `https://img.youtube.com/vi/${ep.resolvedYoutubeId}/maxresdefault.jpg`
-                : null;
+              const thumbSrc = hasVideo ? thumbFor(ep.resolvedYoutubeId) : null;
               return (
                 <article class={`episode-card ${hasVideo ? 'is-playable' : 'is-coming-soon'}`}>
                   <button
@@ -261,7 +275,7 @@ const breadcrumbLd = {
                             <rect x="3" y="6" width="26" height="20" rx="2"/>
                             <path d="M14 12 L20 16 L14 20 Z" fill="currentColor"/>
                           </svg>
-                          <span>Footage Pending</span>
+                          <span>{hasVideo ? 'Press play' : 'Footage Pending'}</span>
                         </div>
                       )}
                       <div class="episode-overlay"></div>
@@ -438,7 +452,7 @@ const breadcrumbLd = {
 
       function openModal(youtubeId, label) {
         if (!youtubeId) return;
-        const src = `https://www.youtube.com/embed/${youtubeId}?autoplay=1&rel=0&modestbranding=1`;
+        const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeId)}?autoplay=1&rel=0&modestbranding=1`;
         iframe.setAttribute('src', src);
         if (label) titleEl.textContent = label;
         modal.classList.add('is-open');
@@ -684,6 +698,13 @@ const breadcrumbLd = {
       letter-spacing: 0.12em;
       text-transform: uppercase;
     }
+    .yt-notice {
+      margin: 10px 0 0;
+      font-size: 0.75rem;
+      color: rgba(255, 255, 255, 0.55);
+      text-align: center;
+    }
+
     .trailer-meta {
       padding: 18px 20px 22px;
     }
