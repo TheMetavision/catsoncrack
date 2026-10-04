@@ -1,4 +1,6 @@
 ---
+import { localImg } from '../lib/sanityImage';
+const year = new Date().getFullYear();
 import SectionDivider from './SectionDivider.astro';
 import LegalLinks from './LegalLinks.astro';
 ---
@@ -13,7 +15,10 @@ import LegalLinks from './LegalLinks.astro';
 		<div class="footer-top">
 			<a href="/" class="footer-logo-link">
 				<img
-					src="/images/logo.webp"
+					src={localImg('/images/logo.webp', 180)}
+					srcset={`${localImg('/images/logo.webp', 180)} 1x, ${localImg('/images/logo.webp', 360)} 2x`}
+					width="180"
+					height="102"
 					alt="Cats On Crack"
 					class="footer-logo"
 				/>
@@ -103,7 +108,14 @@ import LegalLinks from './LegalLinks.astro';
 		<!-- Bottom bar -->
 		<div class="footer-bottom">
 			<div class="footer-crack-line"></div>
-			<p class="copyright">&copy; Cats On Crack 2026. Part of <a href="https://www.themetavision.co.uk" target="_blank" rel="noopener noreferrer">The Metavision IP Universe</a>. All rights reserved.</p>
+			<p class="copyright">&copy; {year} Cats On Crack. Part of <a href="https://www.themetavision.co.uk" target="_blank" rel="noopener noreferrer">The Metavision IP Universe</a>. All rights reserved.</p>
+			<p class="copyright footer-legal">
+				Cats On Crack is a trading name of The Metavision Multimedia Limited.
+				Registered in England &amp; Wales, company no. 16282479.
+				Registered office: 167-169 Great Portland Street, 5th Floor, London, W1W 5PF.
+				VAT no. GB 503 7530 17.
+				<a href="mailto:info@catsoncrack.co.uk">info@catsoncrack.co.uk</a>
+			</p>
 		</div>
 
 	</div>
@@ -339,6 +351,13 @@ import LegalLinks from './LegalLinks.astro';
 
 	.footer-bottom {
 		text-align: center;
+	}
+
+	.footer-bottom .footer-legal {
+		font-size: 0.72rem;
+		line-height: 1.6;
+		max-width: 60rem;
+		margin: 0.5rem auto 0;
 	}
 
 	.footer-crack-line {

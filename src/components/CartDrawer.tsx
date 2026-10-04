@@ -5,6 +5,8 @@
  * Brand palette: bg #181B22, accent #FF00FF (magenta), amber #FF8C00, text #F0EDE8
  */
 
+// Display only: the cart keeps the original image URL; productImg resizes it via the CDN.
+import { productImg } from '../lib/sanityImage';
 import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
 import { $cartItems, $cartOpen, $cartTotal, $cartCount, removeFromCart, toggleCart, addToCart, clearCart } from '../lib/cart';
@@ -241,7 +243,7 @@ export default function CartDrawer() {
           ) : (
             items.map((item) => (
               <div style={styles.item} key={item.id + '-' + item.size}>
-                <img style={styles.itemImg} src={item.image} alt={item.title} />
+                <img style={styles.itemImg} src={productImg(item.image, 144)} alt={item.title} />
                 <div>
                   <p style={styles.itemName}>{item.title}</p>
                   <p style={styles.itemVariant}>

@@ -1,5 +1,7 @@
 ---
 import { organizationSchema, websiteSchema } from '../lib/schema';
+import { canonicalUrl } from '../lib/url';
+import { socialImg } from '../lib/sanityImage';
 import CartDrawer from '../components/CartDrawer';
 // ── Theme audio additions (2026-04-30 — IP brand theme-tune feature build #4/4 — FINAL) ──
 import CocChaosButton from '../components/CocChaosButton.astro';
@@ -11,6 +13,8 @@ interface Props {
 	description?: string;
 	jsonLd?: Record<string, any> | Record<string, any>[];
 	noIndex?: boolean;
+	/** Absolute social-card image; defaults to the character line-up. */
+	ogImage?: string;
 }
 
 const {
@@ -18,7 +22,34 @@ const {
 	description = "Join Cats On Crack for wild, chaotic adventures in our animated series. Watch character videos, read the book series, and shop official merch!",
 	jsonLd,
 	noIndex = false,
+	ogImage = socialImg('/images/coc-characters.png'),
 } = Astro.props;
+
+// Titles stay within 60 characters: a trailing brand/section suffix
+// (" | Cats On Crack", " — Cats On Crack", " — The Alleyway Gazette") is dropped
+// before the page's own words are touched.
+const TITLE_MAX = 60;
+const fullTitle = title.length <= TITLE_MAX
+  ? title
+  : title.replace(/\s+[|—–-]\s+(Cats On Crack|The Alleyway Gazette)\s*$/, '');
+// Descriptions stay within 155: drop whole trailing sentences first (many SEO
+// descriptions end with a short brand line), then trim at a word boundary as
+// a last resort. Never empty.
+const DESC_MAX = 155;
+function fitDescription(d: string): string {
+  let clean = String(d || '').replace(/\s+/g, ' ').trim();
+  if (clean.length <= DESC_MAX) return clean;
+  const sentences = clean.split(/(?<=[.!?])\s+(?=[A-Z"“])/);
+  while (sentences.length > 1 && sentences.join(' ').length > DESC_MAX) sentences.pop();
+  clean = sentences.join(' ');
+  if (clean.length <= DESC_MAX) return clean;
+  const cut = clean.slice(0, DESC_MAX - 1);
+  return cut.slice(0, cut.lastIndexOf(' ')).replace(/[\s,;:—–-]+$/, '') + '…';
+}
+const metaDescription = fitDescription(description) || 'Join Cats On Crack for wild, chaotic adventures in our animated series. Watch character videos, read the book series, and shop official merch!';
+
+// Apex host, trailing slash: the address Netlify actually serves.
+const pageUrl = canonicalUrl(Astro.url.pathname);
 
 const allSchemas = [organizationSchema(), websiteSchema()];
 if (jsonLd) {
@@ -49,30 +80,32 @@ const preloadAudio = renderThemeAudio ? themeAudio.audioUrl : null;
 <html lang="en">
 	<head>
 		<meta charset="UTF-8" />
-		<meta name="description" content={description} />
+		<meta name="description" content={metaDescription} />
 		<meta name="viewport" content="width=device-width" />
 		{noIndex && <meta name="robots" content="noindex, nofollow" />}
 		<link rel="icon" type="image/x-icon" href="/favicon.ico">
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 		<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
 		<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512x512.png">
-		<link rel="canonical" href={Astro.url.href} />
+		<link rel="canonical" href={pageUrl} />
 		<link rel="sitemap" href="/sitemap-index.xml" />
 		<link rel="preload" href="/fonts/bebasneue-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 		<link rel="stylesheet" href="/fonts/fonts.css">
 
 		<!-- Open Graph -->
 		<meta property="og:title" content={`${title} | Cats On Crack`} />
-		<meta property="og:description" content={description} />
+		<meta property="og:description" content={metaDescription} />
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content={Astro.url.href} />
+		<meta property="og:url" content={pageUrl} />
 		<meta property="og:site_name" content="Cats On Crack" />
+		<meta property="og:image" content={ogImage} />
+		<meta name="twitter:image" content={ogImage} />
 
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
 		<meta name="twitter:site" content="@Cats_on_Crack_" />
 		<meta name="twitter:title" content={title} />
-		<meta name="twitter:description" content={description} />
+		<meta name="twitter:description" content={metaDescription} />
 
 		<!-- JSON-LD -->
 		{allSchemas.map((schema) => (
@@ -90,7 +123,7 @@ const preloadAudio = renderThemeAudio ? themeAudio.audioUrl : null;
 			/>
 		)}
 
-		<title>{title}</title>
+		<title>{fullTitle}</title>
 	</head>
 	<body>
 		<slot />

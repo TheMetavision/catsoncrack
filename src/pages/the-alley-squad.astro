@@ -1,4 +1,5 @@
 ---
+import { sanityImg, sanitySrcset, sanityDims } from '../lib/sanityImage';
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
@@ -99,7 +100,7 @@ const characters = allCharacters.map((char: any) => {
 							{characters.map((c: any, i: number) => (
 								<a href={`#char-${i}`} class="mosaic-tile" style={`--accent: ${c.accent}; --accent-dim: ${c.accentDim}; --delay: ${i * 0.04}s`} title={c.name}>
 									{c.realImage ? (
-										<img src={c.realImage + '?w=200&h=260&fit=crop'} alt={c.name} class="mosaic-img" loading="lazy" />
+										<img src={sanityImg(c.realImage, 200, { h: 260 })} width="200" height="260" alt={c.name} class="mosaic-img" loading="lazy" />
 									) : (
 										<svg viewBox="0 0 100 100" class="mosaic-shape mosaic-shape-fallback">
 											<polygon points="50,5 95,25 95,75 50,95 5,75 5,25" fill={c.accentDim} stroke={c.accent} stroke-width="1.5" opacity="0.6"/>
@@ -150,7 +151,7 @@ const characters = allCharacters.map((char: any) => {
 											<text x="50" y="52" text-anchor="middle" dominant-baseline="middle" font-size="28" font-weight="900" font-family="Impact, sans-serif" fill={char.accent} filter={`url(#glow-${i})`} opacity="0.7">{char.initials}</text>
 										</svg>
 										{char.realImage && (
-											<img src={char.realImage} alt={char.name} class="char-real-image" />
+											<img src={sanityImg(char.realImage, 600)} srcset={sanitySrcset(char.realImage, 500)} sizes="(min-width: 900px) 500px, 100vw" {...sanityDims(char.realImage, 600)} alt={char.name} class="char-real-image" loading="lazy" />
 										)}
 										<div class="char-scanlines"></div>
 										<div class="char-vignette"></div>

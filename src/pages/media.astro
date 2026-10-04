@@ -1,4 +1,5 @@
 ---
+import { localImg, localSrcset } from '../lib/sanityImage';
 // src/pages/media.astro
 //
 // Cats On Crack — /media page
@@ -199,7 +200,9 @@ const breadcrumbLd = {
                 {heroThumb ? (
                   <img
                     class="trailer-thumb"
-                    src={heroThumb}
+                    src={localImg(heroThumb, 640)}
+                    srcset={localSrcset(heroThumb, 640, 1280)}
+                    sizes="(min-width: 900px) 640px, 100vw"
                     alt={`${heroTitle} thumbnail`}
                     loading="eager"
                     width="640"
@@ -263,7 +266,9 @@ const breadcrumbLd = {
                       {thumbSrc ? (
                         <img
                           class="episode-thumb"
-                          src={thumbSrc}
+                          src={localImg(thumbSrc, 480)}
+                          srcset={localSrcset(thumbSrc, 480, 1280)}
+                          sizes="(min-width: 900px) 480px, 100vw"
                           alt={`${ep.title} thumbnail`}
                           loading="lazy"
                           width="480"
