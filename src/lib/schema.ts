@@ -25,9 +25,9 @@ export function organizationSchema() {
 export function websiteSchema() {
   return {
     '@context': 'https://schema.org', '@type': 'WebSite',
-    name: 'Cats On Crack', url: 'https://catsoncrack.co.uk',
+    name: 'Cats On Crack', url: canonicalUrl('/'),
     description: 'The wildest alley cats you\'ll ever meet — animated series, book universe, and official merch.',
-    publisher: { '@type': 'Organization', name: 'Cats On Crack' },
+    publisher: { '@id': canonicalUrl('/') + '#organization' },
   };
 }
 
@@ -43,7 +43,7 @@ export function tvSeriesSchema() {
     '@context': 'https://schema.org', '@type': 'TVSeries',
     name: 'Cats On Crack',
     description: 'An animated series following six chaotic alley cats navigating street life with grit, humour, and zero impulse control.',
-    genre: ['Animation', 'Comedy', 'Urban'], url: 'https://catsoncrack.co.uk',
+    genre: ['Animation', 'Comedy', 'Urban'], url: canonicalUrl('/'),
     productionCompany: { '@type': 'Organization', name: 'The Metavision Multimedia Limited' },
   };
 }
@@ -97,6 +97,6 @@ export function collectionSchema(collection: { name: string; description: string
   return {
     '@context': 'https://schema.org', '@type': 'CollectionPage',
     name: collection.name, description: collection.description, url: collection.url, numberOfItems: collection.itemCount,
-    isPartOf: { '@type': 'WebSite', name: 'Cats On Crack', url: 'https://catsoncrack.co.uk' },
+    isPartOf: { '@type': 'WebSite', name: 'Cats On Crack', url: canonicalUrl('/') },
   };
 }

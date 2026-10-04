@@ -5,6 +5,10 @@ import sitemap from '@astrojs/sitemap';
 export default defineConfig({
   site: 'https://catsoncrack.co.uk',
   output: 'static',
-  integrations: [react(), sitemap()],
+  integrations: [
+    react(),
+    // Transactional pages (noindex) stay out of the sitemap.
+    sitemap({ filter: (page) => !/\/order-success\/?$/.test(new URL(page).pathname) }),
+  ],
   vite: { ssr: { noExternal: ['@sanity/client', '@sanity/image-url'] } }
 });

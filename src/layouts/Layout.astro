@@ -1,5 +1,6 @@
 ---
 import { organizationSchema, websiteSchema } from '../lib/schema';
+import { canonicalUrl } from '../lib/url';
 import CartDrawer from '../components/CartDrawer';
 // ── Theme audio additions (2026-04-30 — IP brand theme-tune feature build #4/4 — FINAL) ──
 import CocChaosButton from '../components/CocChaosButton.astro';
@@ -19,6 +20,9 @@ const {
 	jsonLd,
 	noIndex = false,
 } = Astro.props;
+
+// Apex host, trailing slash: the address Netlify actually serves.
+const pageUrl = canonicalUrl(Astro.url.pathname);
 
 const allSchemas = [organizationSchema(), websiteSchema()];
 if (jsonLd) {
@@ -56,7 +60,7 @@ const preloadAudio = renderThemeAudio ? themeAudio.audioUrl : null;
 		<link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png">
 		<link rel="icon" type="image/png" sizes="192x192" href="/favicon-192x192.png">
 		<link rel="icon" type="image/png" sizes="512x512" href="/favicon-512x512.png">
-		<link rel="canonical" href={Astro.url.href} />
+		<link rel="canonical" href={pageUrl} />
 		<link rel="sitemap" href="/sitemap-index.xml" />
 		<link rel="preload" href="/fonts/bebasneue-normal-400-latin.woff2" as="font" type="font/woff2" crossorigin>
 		<link rel="stylesheet" href="/fonts/fonts.css">
@@ -65,7 +69,7 @@ const preloadAudio = renderThemeAudio ? themeAudio.audioUrl : null;
 		<meta property="og:title" content={`${title} | Cats On Crack`} />
 		<meta property="og:description" content={description} />
 		<meta property="og:type" content="website" />
-		<meta property="og:url" content={Astro.url.href} />
+		<meta property="og:url" content={pageUrl} />
 		<meta property="og:site_name" content="Cats On Crack" />
 
 		<!-- Twitter -->
