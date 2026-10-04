@@ -3,6 +3,7 @@ import { organizationSchema, websiteSchema } from '../lib/schema';
 import { canonicalUrl } from '../lib/url';
 import { socialImg } from '../lib/sanityImage';
 import CartDrawer from '../components/CartDrawer';
+import ConsentBanner from '../components/ConsentBanner.astro';
 // ── Theme audio additions (2026-04-30 — IP brand theme-tune feature build #4/4 — FINAL) ──
 import CocChaosButton from '../components/CocChaosButton.astro';
 import { getThemeAudio } from '../lib/sanity';
@@ -128,6 +129,7 @@ const preloadAudio = renderThemeAudio ? themeAudio.audioUrl : null;
 	<body>
 		<slot />
 		<CartDrawer client:load />
+		<ConsentBanner />
 		{/* Theme audio control — Glitchy Chaos Button (Gizmo the Genius invention) */}
 		{renderThemeAudio && (
 			<CocChaosButton

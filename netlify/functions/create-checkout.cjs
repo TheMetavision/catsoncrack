@@ -176,6 +176,9 @@ function buildPodLineItems(products, items) {
             printful_variant_id: match.syncVariantId,
             coc_size: String(item.size || ''),
             coc_colour: String(item.colour || ''),
+            // GA4 item_id / item_category for the webhook's purchase event.
+            coc_slug: String(product.slug || ''),
+            coc_type: String(match.variant.productType || item.productType || ''),
           },
         },
       },
@@ -184,6 +187,19 @@ function buildPodLineItems(products, items) {
     cartTotalPence += unitPence * quantity;
   }
   return { line_items, cartTotalPence, unresolved, invalid, inactive, corrections };
+}
+
+/* GA4 ids from the browser (sent only with analytics consent), for the
+   webhook's server-side purchase. client_id is "digits.digits", session_id is
+   1-20 digits; a session id is kept only alongside a valid client id.
+   Returns the metadata fields to add (possibly none). */
+function gaMetadata(ga) {
+  const clientId = ga && typeof ga.client_id === 'string' ? ga.client_id : '';
+  if (!/^\d+\.\d+$/.test(clientId)) return {};
+  const out = { ga_client_id: clientId };
+  const sessionId = typeof ga.session_id === 'string' ? ga.session_id : '';
+  if (/^\d{1,20}$/.test(sessionId)) out.ga_session_id = sessionId;
+  return out;
 }
 
 exports.handler = async (event) => {
@@ -197,7 +213,7 @@ exports.handler = async (event) => {
   if (!process.env.STRIPE_SECRET_KEY) return { statusCode: 500, headers, body: JSON.stringify({ error: 'Stripe not configured' }) };
 
   try {
-    const { items } = JSON.parse(event.body || '{}');
+    const { items, ga } = JSON.parse(event.body || '{}');
     if (!items || items.length === 0) return { statusCode: 400, headers, body: JSON.stringify({ error: 'Cart is empty' }) };
 
     const SITE_URL = process.env.SITE_URL || process.env.PUBLIC_SITE_URL || 'https://catsoncrack.co.uk';
@@ -314,7 +330,7 @@ exports.handler = async (event) => {
       shipping_options: buildShippingOptions(cartTotalPence),
       success_url: `${SITE_URL}/order-success?session_id={CHECKOUT_SESSION_ID}`,
       cancel_url: `${SITE_URL}/merch`,
-      metadata: { source: 'catsoncrack-web', brand: BRAND_KEY },
+      metadata: { source: 'catsoncrack-web', brand: BRAND_KEY, ...gaMetadata(ga) },
     });
 
     return { statusCode: 200, headers, body: JSON.stringify({ url: session.url }) };
@@ -326,3 +342,4 @@ exports.handler = async (event) => {
 
 // For tests: the pure resolver/pricer.
 exports.buildPodLineItems = buildPodLineItems;
+exports.gaMetadata = gaMetadata;

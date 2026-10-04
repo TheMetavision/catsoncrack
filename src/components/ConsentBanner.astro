@@ -1,0 +1,158 @@
+---
+/**
+ * src/components/ConsentBanner.astro  (Cats On Crack)
+ *
+ * UK PECR cookie consent. Fixed to the bottom of every public page until the
+ * visitor chooses; the footer's "Cookie settings" link (any [data-cookie-settings])
+ * reopens it. Pages without the footer (product pages, /order-success) get a
+ * small fallback link below the content instead; CSS hides it wherever the
+ * footer's link exists. Accept and Reject are deliberately styled the same.
+ * The logic lives in src/lib/analytics.ts.
+ */
+---
+
+<div id="coc-consent" class="coc-consent" role="region" aria-label="Cookie consent" hidden>
+	<p class="coc-consent__text">
+		Google Analytics cookies are only set if you accept.
+		<a href="/legal/privacy-policy">Privacy policy</a>
+	</p>
+	<div class="coc-consent__actions">
+		<button type="button" class="coc-consent__btn" data-consent="granted">Accept</button>
+		<button type="button" class="coc-consent__btn" data-consent="denied">Reject</button>
+	</div>
+</div>
+
+<p class="coc-cookie-fallback">
+	<button type="button" class="coc-cookie-fallback__link" data-cookie-settings>Cookie settings</button>
+</p>
+
+<script>
+	import { getConsent, grantConsent, denyConsent, initAnalytics, drainQueue } from '../lib/analytics';
+
+	const banner = document.getElementById('coc-consent');
+	const root = document.documentElement;
+
+	// Keep fixed bottom controls (the chaos button) clear of the banner.
+	const syncHeight = () => {
+		if (banner) root.style.setProperty('--coc-consent-h', `${banner.offsetHeight}px`);
+	};
+	if (banner && 'ResizeObserver' in window) new ResizeObserver(syncHeight).observe(banner);
+
+	function show() {
+		if (!banner) return;
+		banner.hidden = false;
+		root.classList.add('coc-consent-open');
+		syncHeight();
+	}
+	function hide() {
+		if (!banner) return;
+		banner.hidden = true;
+		root.classList.remove('coc-consent-open');
+	}
+
+	banner?.querySelectorAll<HTMLButtonElement>('[data-consent]').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			if (btn.dataset.consent === 'granted') grantConsent();
+			else denyConsent();
+			hide();
+		});
+	});
+
+	document.addEventListener('click', (e) => {
+		const link = (e.target as Element | null)?.closest?.('[data-cookie-settings]');
+		if (!link) return;
+		e.preventDefault();
+		show();
+		banner?.querySelector<HTMLButtonElement>('[data-consent]')?.focus();
+	});
+
+	initAnalytics();
+	drainQueue();
+	if (!getConsent()) show();
+</script>
+
+<style is:global>
+	.coc-consent {
+		position: fixed;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		/* Above the page and the chaos button; below the cart drawer (2000). */
+		z-index: 1990;
+		display: flex;
+		flex-wrap: wrap;
+		align-items: center;
+		justify-content: center;
+		gap: 12px 24px;
+		padding: 14px 20px calc(14px + env(safe-area-inset-bottom));
+		background: rgba(24, 27, 34, 0.97);
+		border-top: 1px solid rgba(255, 0, 255, 0.45);
+		box-shadow: 0 -8px 30px rgba(0, 0, 0, 0.5), 0 -1px 18px rgba(255, 0, 255, 0.18);
+		backdrop-filter: blur(8px);
+	}
+	.coc-consent[hidden] { display: none; }
+
+	.coc-consent__text {
+		margin: 0;
+		font-size: 0.9rem;
+		line-height: 1.5;
+		color: var(--text-primary, #f0ede8);
+		text-align: center;
+	}
+	.coc-consent__text a {
+		color: var(--primary, #ff00ff);
+		text-decoration: underline;
+		text-underline-offset: 3px;
+		white-space: nowrap;
+	}
+
+	.coc-consent__actions { display: flex; gap: 10px; }
+
+	.coc-consent__btn {
+		min-width: 110px;
+		padding: 9px 22px;
+		font-family: 'Bebas Neue', 'Impact', sans-serif;
+		font-size: 1rem;
+		letter-spacing: 2px;
+		color: var(--text-primary, #f0ede8);
+		background: rgba(255, 0, 255, 0.1);
+		border: 1px solid rgba(255, 0, 255, 0.55);
+		cursor: pointer;
+		transition: background 0.2s ease, box-shadow 0.2s ease;
+	}
+	.coc-consent__btn:hover,
+	.coc-consent__btn:focus-visible {
+		background: rgba(255, 0, 255, 0.22);
+		box-shadow: 0 0 16px rgba(255, 0, 255, 0.35);
+		outline: none;
+	}
+
+	/* Fallback "Cookie settings" for pages without Footer.astro. */
+	.coc-cookie-fallback {
+		margin: 0;
+		padding: 24px 20px 32px;
+		text-align: center;
+		background: var(--black, #181b22);
+	}
+	body:has(.footer [data-cookie-settings]) .coc-cookie-fallback { display: none; }
+	.coc-cookie-fallback__link {
+		padding: 0;
+		background: none;
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.78rem;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.35);
+		transition: color 0.25s ease, text-shadow 0.25s ease;
+	}
+	.coc-cookie-fallback__link:hover,
+	.coc-cookie-fallback__link:focus-visible {
+		color: #ff00ff;
+		text-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
+	}
+
+	/* The chaos button sits bottom-left (bottom-right on phones): lift it above the banner. */
+	html.coc-consent-open .coc-chaos {
+		bottom: calc(var(--coc-consent-h, 0px) + 16px);
+	}
+</style>

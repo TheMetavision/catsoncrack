@@ -1,0 +1,59 @@
+---
+/**
+ * src/pages/404.astro  (Cats On Crack)
+ *
+ * Built to dist/404.html, which Netlify serves for any missing page.
+ */
+import Layout from '../layouts/Layout.astro';
+import Navigation from '../components/Navigation.astro';
+import Footer from '../components/Footer.astro';
+---
+
+<Layout title="Page Not Found — Cats On Crack" noIndex={true}>
+	<Navigation />
+	<main class="nf">
+		<p class="nf__code glow-text">404</p>
+		<h1 class="nf__title">This alley's a dead end</h1>
+		<p class="nf__text">The page you're after has scarpered. Try one of these instead.</p>
+		<div class="nf__links">
+			<a href="/" class="nf__btn">Back to the Alley</a>
+			<a href="/merch" class="nf__btn">Shop Merch</a>
+		</div>
+	</main>
+	<Footer />
+</Layout>
+
+<style>
+	.nf {
+		min-height: 70vh;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		justify-content: center;
+		gap: 16px;
+		padding: 140px 20px 80px;
+		text-align: center;
+	}
+	.nf__code {
+		font-family: 'Bebas Neue', 'Impact', sans-serif;
+		font-size: clamp(5rem, 16vw, 9rem);
+		line-height: 1;
+		color: var(--primary);
+	}
+	.nf__title {
+		font-size: clamp(1.8rem, 5vw, 2.8rem);
+		text-transform: uppercase;
+		color: var(--text-primary);
+	}
+	.nf__text { max-width: 30rem; color: var(--text-secondary); }
+	.nf__links { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 12px; }
+	.nf__btn {
+		padding: 10px 24px;
+		font-family: 'Bebas Neue', 'Impact', sans-serif;
+		letter-spacing: 2px;
+		color: var(--text-primary);
+		border: 1px solid rgba(255, 0, 255, 0.55);
+		background: rgba(255, 0, 255, 0.1);
+	}
+	.nf__btn:hover { color: var(--text-primary); background: rgba(255, 0, 255, 0.22); box-shadow: 0 0 16px rgba(255, 0, 255, 0.35); }
+</style>

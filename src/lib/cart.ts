@@ -1,8 +1,10 @@
 import { atom, computed } from 'nanostores';
 import { persistentAtom } from '@nanostores/persistent';
+import { track, toGaItem, ecommerceParams } from './analytics';
 
 export interface CartItem {
   id: string;        // POD: product-{slug}-{type}-{colour}-{size}  ·  wall art: wallart-{slug}-{format}-{size}
+  slug?: string;     // product / artwork slug (GA4 item_id); missing on carts saved before it was added
   title: string;
   price: number;     // per-size price, already resolved on the PDP (server re-prices wall art)
   size: string;
@@ -45,6 +47,8 @@ export function addToCart(item: Omit<CartItem, 'quantity'>) {
     $cartItems.set([...items, { ...item, quantity: 1 }]);
   }
   $cartOpen.set(true);
+  // Every add (PDP, wall art) comes through here. No-op without analytics consent.
+  track('add_to_cart', ecommerceParams([toGaItem({ ...item, quantity: 1 })]));
 }
 
 export function removeFromCart(id: string, size: string) {

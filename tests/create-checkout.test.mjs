@@ -180,3 +180,36 @@ test('handler: inactive, unknown and bad-quantity lines are refused with 422', a
   assert.equal((await post([tee('M', 25, { quantity: 500 })])).status, 422);
   assert.equal(sessionParams, null); // no Stripe session was created
 });
+
+/* ── GA4 ids in the session metadata ───────────────────────────────────── */
+
+test('handler: valid GA ids are stored on the session; invalid ones are dropped', async () => {
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ result: PRODUCTS }) });
+  const postGa = async (ga) => {
+    sessionParams = null;
+    await handler({ httpMethod: 'POST', body: JSON.stringify({ items: [tee('M', 25)], ga }) });
+    return sessionParams.metadata;
+  };
+  try {
+    assert.deepEqual(await postGa({ client_id: '123.456', session_id: '1727000000' }),
+      { source: 'catsoncrack-web', brand: 'catsoncrack', ga_client_id: '123.456', ga_session_id: '1727000000' });
+    // A session id only alongside a valid client id.
+    assert.deepEqual(await postGa({ client_id: 'GA1.1.123.456', session_id: '1727000000' }),
+      { source: 'catsoncrack-web', brand: 'catsoncrack' });
+    assert.deepEqual(await postGa({ client_id: '123.456', session_id: '12.5' }),
+      { source: 'catsoncrack-web', brand: 'catsoncrack', ga_client_id: '123.456' });
+    assert.deepEqual(await postGa({ client_id: '123.456', session_id: '1'.repeat(21) }),
+      { source: 'catsoncrack-web', brand: 'catsoncrack', ga_client_id: '123.456' });
+    assert.deepEqual(await postGa(undefined), { source: 'catsoncrack-web', brand: 'catsoncrack' });
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
+test('POD line items carry the slug and product type for GA4', () => {
+  const r = buildPodLineItems(PRODUCTS, [tee('M', 25)]);
+  const meta = r.line_items[0].price_data.product_data.metadata;
+  assert.equal(meta.coc_slug, 'actually-everyone-move');
+  assert.equal(meta.coc_type, 'tshirt');
+});

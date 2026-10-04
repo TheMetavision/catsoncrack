@@ -200,14 +200,35 @@ const gallery = [piece.imageUrl, piece.studioMockupUrl, piece.posterMockupUrl, p
       if (priceEl) priceEl.textContent = gbp(penceFor(selFormat, selSize));
     }
 
+    /* GA4 view_item for the selected variant: on load and whenever the format
+       changes. Queued for the consent banner, which drops it without consent. */
+    function trackViewItem() {
+      const price = penceFor(selFormat, selSize) / 100;
+      (window.cocGa = window.cocGa || []).push(['view_item', {
+        currency: 'GBP',
+        value: price,
+        items: [{
+          item_id: slug,
+          item_name: title,
+          item_variant: `${selFormat} / ${selSize}`,
+          item_category: 'wallart',
+          price,
+          quantity: 1,
+        }],
+      }]);
+    }
+    trackViewItem();
+
     if (formatWrap) {
       formatWrap.querySelectorAll('[data-format]').forEach((btn) => {
         btn.addEventListener('click', () => {
+          const prevFormat = selFormat;
           selFormat = btn.getAttribute('data-format');
           formatWrap.querySelectorAll('[data-format]').forEach((b) => b.classList.toggle('active', b === btn));
           const f = formatList.find((x) => x.id === selFormat);
           if (blurbEl && f) blurbEl.textContent = f.blurb;
           refreshPrice();
+          if (selFormat !== prevFormat) trackViewItem();
         });
       });
     }
@@ -236,6 +257,7 @@ const gallery = [piece.imageUrl, piece.studioMockupUrl, piece.posterMockupUrl, p
         const pence = penceFor(selFormat, selSize);
         const detail = {
           id: `wallart-${slug}-${selFormat}-${selSize}`,
+          slug: slug,
           title: title,
           price: pence / 100,            // £ for display; server re-prices at checkout
           size: selSize,                  // size id

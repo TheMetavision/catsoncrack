@@ -136,7 +136,7 @@ const productJsonLd = {
     </div>
   </main>
 
-  <script define:vars={{ designId: design._id, designName: design.name, variantsJson, defaultType: defaultVariant?.productType || '' }}>
+  <script define:vars={{ designId: design._id, designSlug: design.slug, designName: design.name, variantsJson, defaultType: defaultVariant?.productType || '' }}>
     const variants = JSON.parse(variantsJson);
     const qp = new URLSearchParams(window.location.search).get('type');
     let currentType = (qp && variants.some((v) => v.type === qp)) ? qp : defaultType;
@@ -264,6 +264,7 @@ const productJsonLd = {
         mark(b);
       }));
     }
+    let viewedType = null;
     function selectType(type) {
       currentType = type;
       const v = getVariant();
@@ -273,6 +274,25 @@ const productJsonLd = {
       renderSizes(v);
       updateHero();
       updatePrice();
+      if (currentType !== viewedType) { viewedType = currentType; trackViewItem(v); }
+    }
+
+    /* GA4 view_item for the selected variant: on load and whenever the product
+       type changes. Queued for the consent banner, which drops it without consent. */
+    function trackViewItem(v) {
+      const price = Number(currentPrice) || 0;
+      (window.cocGa = window.cocGa || []).push(['view_item', {
+        currency: 'GBP',
+        value: price,
+        items: [{
+          item_id: designSlug,
+          item_name: `${designName} ${v?.label || ''}`.trim(),
+          item_variant: [selectedColour, selectedSize].filter(Boolean).join(' / '),
+          item_category: currentType,
+          price,
+          quantity: 1,
+        }],
+      }]);
     }
 
     document.querySelectorAll('.pdp-type').forEach((b) => b.addEventListener('click', () => selectType(b.dataset.type)));
@@ -289,6 +309,7 @@ const productJsonLd = {
       const v = getVariant();
       window.dispatchEvent(new CustomEvent('add-to-cart', { detail: {
         id: `${designId}-${currentType}-${selectedColour}-${selectedSize}`,
+        slug: designSlug,
         title: `${designName} ${v?.label || ''}`.trim(),
         price: currentPrice,
         size: selectedSize,

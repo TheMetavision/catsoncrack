@@ -9,9 +9,13 @@
  *      fulfilled / fulfilment-failed / paid — a record of EVERY paid order,
  *      so the ones that need manual attention are visible in Studio.
  *
- * Steps 2–4 are each non-fatal: a failure in one never blocks the others or
+ *   5. Report the purchase to GA4 (Measurement Protocol) for shoppers who
+ *      accepted analytics — src/lib/ga4-purchase.cjs. Skipped on a retry for
+ *      an order already in the Sanity log, so Stripe retries don't resend it.
+ *
+ * Steps 2–5 are each non-fatal: a failure in one never blocks the others or
  * the 200 back to Stripe. Each logs its own [EMAIL-*] / [FULFILMENT-*] /
- * [ORDER-*] line.
+ * [ORDER-*] / [GA4-*] line.
  *
  * Env vars:
  *   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, PRINTFUL_API_KEY
@@ -20,6 +24,7 @@
  *   SANITY_TOKEN          — Sanity *write* (Editor) token for the order log
  *   SANITY_PROJECT_ID     — optional; default 8ksun996
  *   SANITY_DATASET        — optional; default production
+ *   GA4_MEASUREMENT_ID, GA4_API_SECRET — optional; GA4 purchase is skipped without them
  */
 
 const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
@@ -38,6 +43,7 @@ const SANITY_API_VER = '2024-01-01';
 // Shared wall-art helper (same module the checkout uses; single source of truth).
 // Path assumes netlify/functions/ -> src/lib/. Adjust if your lib lives elsewhere.
 const { artworkVariantLabel } = require('../../src/lib/artwork-pricing.cjs');
+const { sendGa4Purchase } = require('../../src/lib/ga4-purchase.cjs');
 
 function readVariantId(lineItem) {
   const product = lineItem.price && lineItem.price.product;
@@ -276,11 +282,32 @@ async function sendMerchantEmail(session, lineItems, status, printfulOrderId) {
   }
 }
 
-/* Persist the order, then alert the merchant. Called once at every exit so the
-   owner always hears about a sale — and especially about a fulfilment failure. */
-async function finalize(session, lineItems, status, printfulOrderId) {
+/* Persist the order, alert the merchant, then report the purchase to GA4.
+   Called once at every exit so the owner always hears about a sale — and
+   especially about a fulfilment failure. The GA4 step is time-limited and
+   never throws (src/lib/ga4-purchase.cjs). */
+async function finalize(session, lineItems, status, printfulOrderId, alreadyRecorded) {
   await saveOrder(session, lineItems, status, printfulOrderId);
   await sendMerchantEmail(session, lineItems, status, printfulOrderId);
+  await sendGa4Purchase(session, { lineItems, stripe, alreadyRecorded });
+}
+
+/* True if this session's order is already in the Sanity log — i.e. this is a
+   Stripe retry of an order a previous delivery handled. Checked before the
+   order is (re)written. False when the log can't be read. */
+async function orderAlreadyRecorded(session) {
+  if (!process.env.SANITY_TOKEN) return false;
+  const sessionKey = String(session.id).slice(-32);
+  const found = await Promise.all([orderExists(`order.${sessionKey}`), orderExists(`order-${sessionKey}`)]);
+  return found.some(Boolean);
+}
+
+/* Brand guard: only sessions this site's create-checkout created. Accepts
+   either stamp (metadata.brand from the new checkout, metadata.source from
+   the older one) so in-flight sessions aren't orphaned across a deploy. */
+function isCatsOnCrackSession(session) {
+  const m = (session && session.metadata) || {};
+  return m.brand === 'catsoncrack' || m.source === 'catsoncrack-web';
 }
 
 /* True if a document with this _id exists. Authenticated: order docs are
@@ -413,9 +440,9 @@ exports.handler = async (event) => {
      older one) so in-flight sessions aren't orphaned across the deploy.
      MUST return 200 — a non-2xx makes Stripe retry and eventually disable
      this endpoint. */
-  const sessionBrand = (session.metadata && session.metadata.brand) || null;
-  const sessionSource = (session.metadata && session.metadata.source) || null;
-  if (sessionBrand !== 'catsoncrack' && sessionSource !== 'catsoncrack-web') {
+  if (!isCatsOnCrackSession(session)) {
+    const sessionBrand = (session.metadata && session.metadata.brand) || null;
+    const sessionSource = (session.metadata && session.metadata.source) || null;
     console.log(`[BRAND-GUARD] session ${session.id}: brand="${sessionBrand || 'none'}" source="${sessionSource || 'none'}" — not Cats On Crack, skipping.`);
     return { statusCode: 200, body: JSON.stringify({ received: true, skipped: 'other-brand' }) };
   }
@@ -423,6 +450,7 @@ exports.handler = async (event) => {
   console.log(`[ORDER] checkout.session.completed — session ${session.id}`);
 
   let lineItems;
+  const recordedCheck = orderAlreadyRecorded(session); // in parallel with the line items
   try {
     lineItems = await stripe.checkout.sessions.listLineItems(session.id, {
       limit: 100,
@@ -432,6 +460,7 @@ exports.handler = async (event) => {
     console.error(`[ORDER] session ${session.id}: could not list line items —`, err && err.message ? err.message : err);
     lineItems = { data: [] };
   }
+  const alreadyRecorded = await recordedCheck;
 
   /* Customer confirmation email — independent of Printful, never fatal. */
   await sendCustomerEmail(session, lineItems);
@@ -439,7 +468,7 @@ exports.handler = async (event) => {
   try {
     if (!process.env.PRINTFUL_API_KEY) {
       console.error(`[FULFILMENT-FAIL] session ${session.id}: PRINTFUL_API_KEY not set.`);
-      await finalize(session, lineItems, 'paid', null);
+      await finalize(session, lineItems, 'paid', null, alreadyRecorded);
       return { statusCode: 200, body: JSON.stringify({ received: true }) };
     }
 
@@ -469,18 +498,18 @@ exports.handler = async (event) => {
     if (printfulItems.length === 0) {
       if (inhouseLines.length > 0 && missing.length === 0) {
         console.log(`[INHOUSE] session ${session.id}: ${inhouseLines.length} in-house item(s), no POD — owner will make & dispatch.`);
-        await finalize(session, lineItems, 'inhouse', null);
+        await finalize(session, lineItems, 'inhouse', null, alreadyRecorded);
         return { statusCode: 200, body: JSON.stringify({ received: true, inhouse: inhouseLines.length }) };
       }
       console.error(`[FULFILMENT-FAIL] session ${session.id}: nothing to send to Printful and no in-house items — place it manually.`);
-      await finalize(session, lineItems, 'fulfilment-failed', null);
+      await finalize(session, lineItems, 'fulfilment-failed', null, alreadyRecorded);
       return { statusCode: 200, body: JSON.stringify({ received: true }) };
     }
 
     const ship = getShip(session);
     if (!ship || !ship.address) {
       console.error(`[FULFILMENT-FAIL] session ${session.id}: no shipping address on session — order NOT fulfilled. Place it manually.`);
-      await finalize(session, lineItems, 'fulfilment-failed', null);
+      await finalize(session, lineItems, 'fulfilment-failed', null, alreadyRecorded);
       return { statusCode: 200, body: JSON.stringify({ received: true }) };
     }
 
@@ -514,7 +543,7 @@ exports.handler = async (event) => {
       console.error(
         `[FULFILMENT-FAIL] session ${session.id}: Printful API ${res.status} — order NOT created. Response: ${bodyText}`
       );
-      await finalize(session, lineItems, 'fulfilment-failed', null);
+      await finalize(session, lineItems, 'fulfilment-failed', null, alreadyRecorded);
       return { statusCode: 200, body: JSON.stringify({ received: true, printful: 'failed' }) };
     }
 
@@ -522,11 +551,14 @@ exports.handler = async (event) => {
     try { printfulId = JSON.parse(bodyText).result?.id; } catch (_) { /* ignore */ }
     console.log(`[FULFILMENT-OK] session ${session.id}: Printful order created${printfulId ? ' #' + printfulId : ''} (${printfulItems.length} item(s)).`);
 
-    await finalize(session, lineItems, 'fulfilled', printfulId);
+    await finalize(session, lineItems, 'fulfilled', printfulId, alreadyRecorded);
     return { statusCode: 200, body: JSON.stringify({ received: true, printful: 'created' }) };
   } catch (err) {
     console.error(`[FULFILMENT-FAIL] session ${session.id}: unexpected error —`, err && err.message ? err.message : err);
-    await finalize(session, lineItems, 'fulfilment-failed', null);
+    await finalize(session, lineItems, 'fulfilment-failed', null, alreadyRecorded);
     return { statusCode: 200, body: JSON.stringify({ received: true, printful: 'error' }) };
   }
 };
+
+// For tests.
+exports.isCatsOnCrackSession = isCatsOnCrackSession;

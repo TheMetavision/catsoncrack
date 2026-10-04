@@ -12,6 +12,7 @@ import { useEffect, useState } from 'react';
 import { $cartItems, $cartOpen, $cartTotal, $cartCount, removeFromCart, toggleCart, addToCart, clearCart } from '../lib/cart';
 // @ts-ignore — shared CommonJS pricing module (no .d.ts; resolved by Vite at build)
 import { isWallArt, artworkVariantLabel } from '../lib/artwork-pricing.cjs';
+import { getGaIds, trackAndWait, toGaItem, ecommerceParams } from '../lib/analytics';
 
 // Keep in sync with FREE_THRESHOLD_PENCE in create-checkout.js (£75) and
 // FREE_SHIPPING_THRESHOLD in cart.ts.
@@ -48,6 +49,11 @@ export default function CartDrawer() {
   async function handleCheckout() {
     if (items.length === 0) return;
     try {
+      // Analytics (consent only, each capped at 0.8 s, started together):
+      // begin_checkout, and GA's client/session ids so the Stripe webhook can
+      // report the purchase server-side. Without consent both resolve at once.
+      const beganCheckout = trackAndWait('begin_checkout', ecommerceParams(items.map(toGaItem)), 800);
+      const ga = await getGaIds(800);
       const res = await fetch('/.netlify/functions/create-checkout', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -63,10 +69,12 @@ export default function CartDrawer() {
             productType: item.productType || '',
             quantity: item.quantity,
           })),
+          ga,
         }),
       });
       const data = await res.json();
       if (data.url) {
+        await beganCheckout;
         window.location.href = data.url;
       } else if (data.error) {
         alert(`Checkout failed: ${data.error}`);

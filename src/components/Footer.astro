@@ -103,6 +103,7 @@ import LegalLinks from './LegalLinks.astro';
 		<!-- Legal links — sit just below the socials, above the bottom bar -->
 		<div class="footer-legal-row">
 			<LegalLinks />
+			<button type="button" class="cookie-settings-link" data-cookie-settings>Cookie settings</button>
 		</div>
 
 		<!-- Bottom bar -->
@@ -345,8 +346,28 @@ import LegalLinks from './LegalLinks.astro';
 	/* Legal row sits below socials, above the crack line */
 	.footer-legal-row {
 		display: flex;
+		flex-wrap: wrap;
 		justify-content: center;
+		align-items: baseline;
+		gap: 8px 28px;
 		margin-bottom: 32px;
+	}
+
+	/* Reopens the consent banner (ConsentBanner.astro); styled like the legal links. */
+	.cookie-settings-link {
+		padding: 0;
+		background: none;
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.78rem;
+		letter-spacing: 1.5px;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.35);
+		transition: color 0.25s ease, text-shadow 0.25s ease;
+	}
+	.cookie-settings-link:hover,
+	.cookie-settings-link:focus-visible {
+		color: #ff00ff;
+		text-shadow: 0 0 10px rgba(255, 0, 255, 0.4);
 	}
 
 	.footer-bottom {
