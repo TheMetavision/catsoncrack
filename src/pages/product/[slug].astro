@@ -44,7 +44,7 @@ const variantsJson = JSON.stringify(
 );
 ---
 
-<Layout title={`${design.name} — Cats On Crack`} description={design.backstory || design.tagline}>
+<Layout title={design.seoTitle || `${design.name} — Cats On Crack`} description={design.seoDescription || design.description || design.tagline || design.backstory}>
   <main class="pdp" style={`--accent: ${design.accent || '#FF00FF'};`}>
     <div class="pdp-grid">
       <!-- Gallery -->
