@@ -1,6 +1,7 @@
 ---
 import { organizationSchema, websiteSchema } from '../lib/schema';
 import { canonicalUrl } from '../lib/url';
+import { socialImg } from '../lib/sanityImage';
 import CartDrawer from '../components/CartDrawer';
 // ── Theme audio additions (2026-04-30 — IP brand theme-tune feature build #4/4 — FINAL) ──
 import CocChaosButton from '../components/CocChaosButton.astro';
@@ -12,6 +13,8 @@ interface Props {
 	description?: string;
 	jsonLd?: Record<string, any> | Record<string, any>[];
 	noIndex?: boolean;
+	/** Absolute social-card image; defaults to the character line-up. */
+	ogImage?: string;
 }
 
 const {
@@ -19,6 +22,7 @@ const {
 	description = "Join Cats On Crack for wild, chaotic adventures in our animated series. Watch character videos, read the book series, and shop official merch!",
 	jsonLd,
 	noIndex = false,
+	ogImage = socialImg('/images/coc-characters.png'),
 } = Astro.props;
 
 // Titles stay within 60 characters: a trailing brand/section suffix
@@ -94,6 +98,8 @@ const preloadAudio = renderThemeAudio ? themeAudio.audioUrl : null;
 		<meta property="og:type" content="website" />
 		<meta property="og:url" content={pageUrl} />
 		<meta property="og:site_name" content="Cats On Crack" />
+		<meta property="og:image" content={ogImage} />
+		<meta name="twitter:image" content={ogImage} />
 
 		<!-- Twitter -->
 		<meta name="twitter:card" content="summary_large_image" />
