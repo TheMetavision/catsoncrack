@@ -1,16 +1,24 @@
+import { canonicalUrl } from './url';
+
+/* The real trader: Cats On Crack is a trading name of The Metavision Multimedia
+   Limited (not a separate subsidiary), at its registered office. */
 export function organizationSchema() {
   return {
     '@context': 'https://schema.org', '@type': 'Organization',
-    name: 'Cats On Crack', url: 'https://catsoncrack.co.uk',
+    '@id': canonicalUrl('/') + '#organization',
+    name: 'Cats On Crack', legalName: 'The Metavision Multimedia Limited', url: canonicalUrl('/'),
     logo: 'https://catsoncrack.co.uk/favicon.svg',
-    description: 'Join Cats On Crack for wild, chaotic adventures in our animated series. Watch character videos, read the book series, and shop official merch!',
+    description: 'Join Cats On Crack for wild, chaotic adventures in our animated series. Watch character videos, read the book series, and shop official merch! A trading name of The Metavision Multimedia Limited, registered in England & Wales.',
+    email: 'info@catsoncrack.co.uk',
+    address: { '@type': 'PostalAddress', streetAddress: '167-169 Great Portland Street, 5th Floor', addressLocality: 'London', postalCode: 'W1W 5PF', addressCountry: 'GB' },
+    vatID: 'GB503753017',
+    identifier: { '@type': 'PropertyValue', propertyID: 'Companies House', value: '16282479' },
     sameAs: [
       'https://www.youtube.com/@CatsOnCrackMedia',
       'https://www.instagram.com/catsoncrack2025',
       'https://www.tiktok.com/@catsoncrackmedia',
       'https://x.com/Cats_on_Crack_',
     ],
-    parentOrganization: { '@type': 'Organization', name: 'The Metavision Multimedia Limited', url: 'https://themetavision.co.uk' },
   };
 }
 
