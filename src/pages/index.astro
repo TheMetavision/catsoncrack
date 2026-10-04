@@ -157,6 +157,7 @@ import SectionDivider from '../components/SectionDivider.astro';
 							<button class="carousel-dot" data-dot="3" aria-label="Slide 4"></button>
 							<button class="carousel-dot" data-dot="4" aria-label="Slide 5"></button>
 							<button class="carousel-dot" data-dot="5" aria-label="Slide 6"></button>
+							<button type="button" class="carousel-pause" id="carouselPause" aria-pressed="false">Pause</button>
 						</div>
 					</div>
 				</div>
@@ -725,6 +726,28 @@ import SectionDivider from '../components/SectionDivider.astro';
 		display: flex;
 		justify-content: center;
 		gap: 8px;
+	}
+
+	.carousel-pause {
+		margin-left: 10px;
+		background: none;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		border-radius: 999px;
+		color: rgba(255, 255, 255, 0.75);
+		font: inherit;
+		font-size: 0.7rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		padding: 2px 10px;
+		cursor: pointer;
+	}
+
+	/* Reduced motion: no slide fades and no entrance slide-ins. */
+	@media (prefers-reduced-motion: reduce) {
+		.carousel-slide, .carousel-dot { transition: none; }
+		.hero-anim-immediate,
+		.hero-image-col.fade-left.hero-anim-immediate,
+		.hero-text-col.fade-right.hero-anim-immediate { animation: none; opacity: 1; transform: none; }
 	}
 
 	.carousel-dot {
@@ -1312,7 +1335,12 @@ import SectionDivider from '../components/SectionDivider.astro';
 		const prevBtn = document.getElementById('carouselPrev');
 		const nextBtn = document.getElementById('carouselNext');
 		let current = 0;
-		let timer: ReturnType<typeof setInterval>;
+		let timer: ReturnType<typeof setInterval> | undefined;
+		// Stopped by the Pause button, or from the start under reduced motion;
+		// hover and focus pause it only while they last.
+		let stopped = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+		let held = false;
+		const pauseBtn = document.getElementById('carouselPause');
 
 		function goTo(index: number) {
 			slides[current].classList.remove('active');
@@ -1323,8 +1351,23 @@ import SectionDivider from '../components/SectionDivider.astro';
 		}
 
 		function startTimer() {
-			timer = setInterval(() => goTo(current + 1), 4000);
+			clearInterval(timer);
+			if (stopped) return;
+			timer = setInterval(() => { if (!held) goTo(current + 1); }, 4000);
 		}
+
+		function paintPause() {
+			if (!pauseBtn) return;
+			pauseBtn.textContent = stopped ? 'Play' : 'Pause';
+			pauseBtn.setAttribute('aria-pressed', String(stopped));
+			pauseBtn.setAttribute('aria-label', stopped ? 'Start the character slideshow' : 'Stop the character slideshow');
+		}
+		pauseBtn?.addEventListener('click', () => { stopped = !stopped; paintPause(); startTimer(); });
+		carousel.addEventListener('mouseenter', () => { held = true; });
+		carousel.addEventListener('mouseleave', () => { held = false; });
+		carousel.addEventListener('focusin', () => { held = true; });
+		carousel.addEventListener('focusout', () => { held = false; });
+		paintPause();
 
 		function resetTimer() {
 			clearInterval(timer);

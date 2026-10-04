@@ -10,6 +10,17 @@
 [images]
   remote_images = ['https://files\.cdn\.printful\.com/.*']
 
+# ── Security headers ─────────────────────────────────────────────────────────
+# Nothing on the site uses the camera or microphone.
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(), payment=(self \"https://js.stripe.com\")"
+    # Report-only for now: violations appear in the browser console; nothing is blocked.
+    Content-Security-Policy-Report-Only = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cdn.sanity.io; font-src 'self'; connect-src 'self' https://cdn.sanity.io https://*.api.sanity.io; media-src 'self' https://cdn.sanity.io; frame-src https://www.youtube-nocookie.com https://www.youtube.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+
 # Route /api/* requests to Netlify Functions.
 # Required for the contact form (src/pages/contact.astro POSTs to /api/contact
 # which gets rewritten to /.netlify/functions/contact).
