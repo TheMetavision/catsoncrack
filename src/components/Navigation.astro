@@ -1,4 +1,5 @@
 ---
+import { localImg } from '../lib/sanityImage';
 import CartButton from './CartButton';
 const currentPath = Astro.url.pathname;
 ---
@@ -10,7 +11,7 @@ const currentPath = Astro.url.pathname;
 
 			<a href="/" class="logo" aria-label="Cats On Crack Home">
 				<div class="logo-glow"></div>
-				<img src="/images/logo.webp" alt="Cats On Crack logo" />
+				<img src={localImg('/images/logo.webp', 160)} srcset={`${localImg('/images/logo.webp', 160)} 1x, ${localImg('/images/logo.webp', 320)} 2x`} width="160" height="90" alt="Cats On Crack logo" />
 			</a>
 
 			<div class="nav-links">

@@ -1,4 +1,5 @@
 ---
+import { sanityImg, sanitySrcset } from '../lib/sanityImage';
 import MerchPromo from '../components/MerchPromo.astro';
 import Layout from '../layouts/Layout.astro';
 import { tvSeriesSchema } from '../lib/schema';
@@ -22,7 +23,11 @@ import SectionDivider from '../components/SectionDivider.astro';
 						<div class="carousel-slide active" data-index="0">
 							<div class="character-frame">
 								<img
-									src="https://cdn.sanity.io/images/8ksun996/production/5417f6065374acc6ea2a64473e8c896e3742fca0-896x1344.png"
+									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/5417f6065374acc6ea2a64473e8c896e3742fca0-896x1344.png", 460)}
+									srcset={sanitySrcset("https://cdn.sanity.io/images/8ksun996/production/5417f6065374acc6ea2a64473e8c896e3742fca0-896x1344.png", 460)}
+									sizes="(min-width: 900px) 460px, 320px"
+									width="460"
+									height="690"
 									alt="Toothless Terry"
 									class="hero-character"
 									loading="eager"
@@ -40,7 +45,11 @@ import SectionDivider from '../components/SectionDivider.astro';
 						<div class="carousel-slide" data-index="1">
 							<div class="character-frame">
 								<img
-									src="https://cdn.sanity.io/images/8ksun996/production/03c37b531e58887940cdecfcde357725bf1d93f7-1920x1080.png?w=896&h=1344&fit=crop&crop=center"
+									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/03c37b531e58887940cdecfcde357725bf1d93f7-1920x1080.png", 460, { h: 690 })}
+									srcset={[320, 460, 640, 920].map((w) => `${sanityImg("https://cdn.sanity.io/images/8ksun996/production/03c37b531e58887940cdecfcde357725bf1d93f7-1920x1080.png", w, { h: w * 1.5 })} ${w}w`).join(', ')}
+									sizes="(min-width: 900px) 460px, 320px"
+									width="460"
+									height="690"
 									alt="Whiskers McScruff"
 									class="hero-character"
 									loading="lazy"
@@ -57,7 +66,11 @@ import SectionDivider from '../components/SectionDivider.astro';
 						<div class="carousel-slide" data-index="2">
 							<div class="character-frame">
 								<img
-									src="https://cdn.sanity.io/images/8ksun996/production/87fee4d99ed54660972e1f7253091a621f4d4d24-896x1344.png"
+									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/87fee4d99ed54660972e1f7253091a621f4d4d24-896x1344.png", 460)}
+									srcset={sanitySrcset("https://cdn.sanity.io/images/8ksun996/production/87fee4d99ed54660972e1f7253091a621f4d4d24-896x1344.png", 460)}
+									sizes="(min-width: 900px) 460px, 320px"
+									width="460"
+									height="690"
 									alt="Luna the Loner"
 									class="hero-character"
 									loading="lazy"
@@ -74,7 +87,11 @@ import SectionDivider from '../components/SectionDivider.astro';
 						<div class="carousel-slide" data-index="3">
 							<div class="character-frame">
 								<img
-									src="https://cdn.sanity.io/images/8ksun996/production/e1ed30a067bbe4cff4f6b4962859557dd7fa103a-896x1344.png"
+									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/e1ed30a067bbe4cff4f6b4962859557dd7fa103a-896x1344.png", 460)}
+									srcset={sanitySrcset("https://cdn.sanity.io/images/8ksun996/production/e1ed30a067bbe4cff4f6b4962859557dd7fa103a-896x1344.png", 460)}
+									sizes="(min-width: 900px) 460px, 320px"
+									width="460"
+									height="690"
 									alt="Chubby Cheeks"
 									class="hero-character"
 									loading="lazy"
@@ -91,7 +108,11 @@ import SectionDivider from '../components/SectionDivider.astro';
 						<div class="carousel-slide" data-index="4">
 							<div class="character-frame">
 								<img
-									src="https://cdn.sanity.io/images/8ksun996/production/2058d4f4b5dff10ada3007a9c58828708cf2d685-896x1344.png"
+									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/2058d4f4b5dff10ada3007a9c58828708cf2d685-896x1344.png", 460)}
+									srcset={sanitySrcset("https://cdn.sanity.io/images/8ksun996/production/2058d4f4b5dff10ada3007a9c58828708cf2d685-896x1344.png", 460)}
+									sizes="(min-width: 900px) 460px, 320px"
+									width="460"
+									height="690"
 									alt="Gizmo the Genius"
 									class="hero-character"
 									loading="lazy"
@@ -108,7 +129,11 @@ import SectionDivider from '../components/SectionDivider.astro';
 						<div class="carousel-slide" data-index="5">
 							<div class="character-frame">
 								<img
-									src="https://cdn.sanity.io/images/8ksun996/production/e323f904272aa43242549c2743913bdc24cb755c-896x1344.png"
+									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/e323f904272aa43242549c2743913bdc24cb755c-896x1344.png", 460)}
+									srcset={sanitySrcset("https://cdn.sanity.io/images/8ksun996/production/e323f904272aa43242549c2743913bdc24cb755c-896x1344.png", 460)}
+									sizes="(min-width: 900px) 460px, 320px"
+									width="460"
+									height="690"
 									alt="Trixie the Trickster"
 									class="hero-character"
 									loading="lazy"

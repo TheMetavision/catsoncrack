@@ -1,4 +1,6 @@
 ---
+import { sanityImg, sanitySrcset, sanityDims, productImg, productSrcset, productDims } from '../lib/sanityImage';
+import { sanityImg, sanitySrcset, sanityDims, localImg, localSrcset, productImg, productSrcset, productDims } from '../lib/sanityImage';
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
@@ -138,7 +140,7 @@ const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt')
 
                     <div class="product-thumb">
                       <div class="thumb-bg-noise"></div>
-                      <img class="product-img" src={item.image} alt={`${item.name} ${item.type}`} loading="lazy" />
+                      <img class="product-img" src={productImg(item.image, 400)} srcset={productSrcset(item.image, 300)} sizes="(min-width: 1200px) 300px, (min-width: 769px) 45vw, 100vw" {...productDims(item.image, 400)} alt={`${item.name} ${item.type}`} loading="lazy" />
                     </div>
 
                     <div class="product-info">
@@ -167,7 +169,7 @@ const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt')
                           <div class="card-worn-edge bottom-edge"></div>
                           <div class="product-thumb">
                             <div class="thumb-bg-noise"></div>
-                            <img class="product-img" src={piece.imageUrl} alt={piece.title} loading="lazy" />
+                            <img class="product-img" src={sanityImg(piece.imageUrl, 600)} srcset={sanitySrcset(piece.imageUrl, 560)} sizes="(min-width: 769px) 560px, 100vw" {...sanityDims(piece.imageUrl, 600)} alt={piece.title} loading="lazy" />
                           </div>
                           <div class="product-info">
                             <h3>{piece.title}</h3>
@@ -193,7 +195,7 @@ const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt')
                           <div class="card-worn-edge bottom-edge"></div>
                           <div class="product-thumb">
                             <div class="thumb-bg-noise"></div>
-                            <img class="product-img" src={piece.imageUrl} alt={piece.title} loading="lazy" />
+                            <img class="product-img" src={sanityImg(piece.imageUrl, 400)} srcset={sanitySrcset(piece.imageUrl, 300)} sizes="(min-width: 1200px) 300px, (min-width: 769px) 45vw, 100vw" {...sanityDims(piece.imageUrl, 400)} alt={piece.title} loading="lazy" />
                           </div>
                           <div class="product-info">
                             <h3>{piece.title}</h3>
