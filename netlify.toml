@@ -5,6 +5,11 @@
 [build.environment]
   NPM_FLAGS = "--legacy-peer-deps"
 
+# Printful mockups are served through Netlify Image CDN (/.netlify/images?url=…),
+# so visitors load them from catsoncrack.co.uk, resized, and never contact printful.com.
+[images]
+  remote_images = ['https://files\.cdn\.printful\.com/.*']
+
 # Route /api/* requests to Netlify Functions.
 # Required for the contact form (src/pages/contact.astro POSTs to /api/contact
 # which gets rewritten to /.netlify/functions/contact).
