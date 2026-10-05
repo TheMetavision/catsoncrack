@@ -4,6 +4,8 @@
  * On checkout.session.completed:
  *   1. Verify the Stripe signature (STRIPE_WEBHOOK_SECRET).
  *   2. Email the customer a branded order confirmation (RESEND_API_KEY).
+ *      Skipped on a retry for an order already in the Sanity log, as is the
+ *      merchant alert, so Stripe retries don't resend either.
  *   3. Create the Printful order (PRINTFUL_API_KEY), idempotent via external_id.
  *   4. Write an `order` document to Sanity (SANITY_API_TOKEN) with a status of
  *      fulfilled / fulfilment-failed / paid — a record of EVERY paid order,
@@ -287,11 +289,16 @@ async function sendMerchantEmail(session, lineItems, status, printfulOrderId) {
 
 /* Persist the order, alert the merchant, then report the purchase to GA4.
    Called once at every exit so the owner always hears about a sale — and
-   especially about a fulfilment failure. The GA4 step is time-limited and
-   never throws (src/lib/ga4-purchase.cjs). */
+   especially about a fulfilment failure. A Stripe retry of an order already
+   in the log gets neither the alert nor the GA4 purchase again. The GA4 step
+   is time-limited and never throws (src/lib/ga4-purchase.cjs). */
 async function finalize(session, lineItems, status, printfulOrderId, alreadyRecorded) {
   await saveOrder(session, lineItems, status, printfulOrderId);
-  await sendMerchantEmail(session, lineItems, status, printfulOrderId);
+  if (alreadyRecorded) {
+    console.log(`[MERCHANT-SKIP] session ${session.id}: order already in the Sanity log (Stripe retry) — alert not resent.`);
+  } else {
+    await sendMerchantEmail(session, lineItems, status, printfulOrderId);
+  }
   await sendGa4Purchase(session, { lineItems, stripe, alreadyRecorded });
 }
 
@@ -475,7 +482,11 @@ exports.handler = async (event) => {
   const alreadyRecorded = await recordedCheck;
 
   /* Customer confirmation email — independent of Printful, never fatal. */
-  await sendCustomerEmail(session, lineItems);
+  if (alreadyRecorded) {
+    console.log(`[EMAIL-SKIP] session ${session.id}: order already in the Sanity log (Stripe retry) — confirmation not resent.`);
+  } else {
+    await sendCustomerEmail(session, lineItems);
+  }
 
   try {
     if (!process.env.PRINTFUL_API_KEY) {

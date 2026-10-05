@@ -1,7 +1,8 @@
 // A Stripe retry of checkout.session.completed must not undo what happened to
 // the order since (netlify/functions/stripe-webhook.cjs saveOrder): it patches
 // the payment fields only and leaves status and printful-webhook's shipping
-// fields alone. Runs both webhooks against one in-memory Sanity.
+// fields alone, and it doesn't resend the order confirmation or merchant
+// alert. Runs both webhooks against one in-memory Sanity.
 //
 // fetch and Stripe are stubbed, so nothing leaves the machine.
 //
@@ -20,6 +21,9 @@ const ORDER_ID = `order.${SESSION_KEY}`;
 
 process.env.STRIPE_SECRET_KEY = 'sk_test_dummy';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_test';
+// Read once when stripe-webhook loads, so it has to be set before the require.
+process.env.NOTIFICATION_TO = 'owner@catsoncrack.co.uk';
+delete process.env.ORDER_NOTIFICATION_TO;
 const LINE_ITEMS = {
   data: [{ id: 'li_1', description: 'Tiny Terror T-Shirt — Black (M)', quantity: 1, amount_total: 2500,
     price: { product: { metadata: { printful_variant_id: '101', coc_colour: 'Black', coc_size: 'M' } } } }],
@@ -90,10 +94,7 @@ async function fakeFetch(url, init = {}) {
 beforeEach(() => {
   docs = {}; rev = 0; emails = []; sanityMutations = []; printfulAccepts = true;
   globalThis.fetch = fakeFetch;
-  Object.assign(process.env, {
-    RESEND_API_KEY: 're_test', PRINTFUL_API_KEY: 'pf_test', SANITY_API_TOKEN: 'sk_api',
-    NOTIFICATION_TO: 'owner@catsoncrack.co.uk',
-  });
+  Object.assign(process.env, { RESEND_API_KEY: 're_test', PRINTFUL_API_KEY: 'pf_test', SANITY_API_TOKEN: 'sk_api' });
   for (const k of ['SANITY_TOKEN', 'PRINTFUL_WEBHOOK_SECRET', 'GA4_MEASUREMENT_ID', 'GA4_API_SECRET']) delete process.env[k];
 });
 
@@ -119,6 +120,8 @@ const SHIPMENT = { carrier: 'ROYAL MAIL', tracking_number: 'RM123456789GB', trac
 const shippedEvent = () => ({ type: 'package_shipped', data: { order: { id: 987654, external_id: SESSION_KEY }, shipment: SHIPMENT } });
 const shippingEmails = () => emails.filter((e) => /has shipped/.test(e.subject));
 const SHIPPING_FIELDS = ['carrier', 'trackingNumber', 'trackingUrl', 'shippedAt', 'failureReason'];
+const confirmations = () => emails.filter((e) => e.to === 'tom@example.com' && /locked in/.test(e.subject));
+const merchantAlerts = () => emails.filter((e) => e.to === 'owner@catsoncrack.co.uk');
 
 /* ── Tests ─────────────────────────────────────────────────────────────── */
 
@@ -133,6 +136,38 @@ test('first delivery creates the full order', async () => {
   assert.equal(o.total, 29.95);
   assert.equal(o.shippingAddress.postalCode, 'E1 1AA');
   assert.equal(o.items.length, 1);
+});
+
+test('first delivery sends the customer confirmation and the merchant alert once each', async () => {
+  await stripeDelivery();
+  assert.equal(confirmations().length, 1);
+  assert.equal(merchantAlerts().length, 1);
+  assert.equal(emails.length, 2);
+});
+
+test('a Stripe retry sends neither the confirmation nor the merchant alert', async () => {
+  await stripeDelivery();
+  await stripeDelivery();
+  await stripeDelivery(); // Stripe can retry more than once
+  assert.equal(confirmations().length, 1);
+  assert.equal(merchantAlerts().length, 1);
+  assert.equal(emails.length, 2);
+  assert.equal(sanityMutations.length, 3, 'the order log is still updated on each retry');
+});
+
+test('a retry for an old order- id is recognised too: no emails', async () => {
+  const oldId = `order-${SESSION_KEY}`;
+  docs[oldId] = { _id: oldId, _rev: 'r0', _type: 'order', status: 'fulfilled', orderRef: 'M3N4O5P6' };
+  await stripeDelivery();
+  assert.equal(emails.length, 0);
+});
+
+test('if the order log can\'t be read, both emails still go (twice beats never)', async () => {
+  delete process.env.SANITY_API_TOKEN;
+  await stripeDelivery();
+  await stripeDelivery();
+  assert.equal(confirmations().length, 2);
+  assert.equal(merchantAlerts().length, 2);
 });
 
 test('a Stripe retry after shipping keeps status "shipped" and the tracking details', async () => {
