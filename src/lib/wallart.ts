@@ -6,7 +6,7 @@
 // Tokenless read against the public dataset, same approach as create-checkout.js.
 // (CoC's dataset is already read-publicly by the checkout function.)
 //
-// Pricing/formats/sizes do NOT live here — they come from artwork-pricing.cjs,
+// Pricing/formats/sizes do NOT live here — they come from artwork-pricing.mjs,
 // the single source of truth shared with the Netlify functions.
 // -----------------------------------------------------------------------------
 

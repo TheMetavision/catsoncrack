@@ -5,6 +5,15 @@
 [build.environment]
   NPM_FLAGS = "--legacy-peer-deps"
 
+# These two functions require() src/lib/artwork-pricing.mjs, the ES module the
+# Astro pages also import. esbuild bundles it into each function at build time,
+# so the deployed function does not depend on the runtime's require(esm).
+[functions."create-checkout"]
+  node_bundler = "esbuild"
+
+[functions."stripe-webhook"]
+  node_bundler = "esbuild"
+
 # Printful mockups are served through Netlify Image CDN (/.netlify/images?url=…),
 # so visitors load them from catsoncrack.co.uk, resized, and never contact printful.com.
 [images]

@@ -12,7 +12,7 @@
  * outside 1-99 (on every line, wall art included), and anything unresolvable or
  * unpriced reject the whole checkout (422). buildPodLineItems() is pure and
  * tested (tests/create-checkout.test.mjs), as on Wyrmfuel. Wall art keeps its
- * price matrix (src/lib/artwork-pricing.cjs). Then build Stripe line items with
+ * price matrix (src/lib/artwork-pricing.mjs). Then build Stripe line items with
  * ad-hoc price_data (NO Stripe Price objects) and stash printful_variant_id on
  * each line item's product metadata for the webhook to read.
  */
@@ -21,7 +21,7 @@ const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
 
 // Shared wall-art pricing (single source of truth, also imported by Astro).
 // Path assumes netlify/functions/ -> src/lib/. Adjust if your lib lives elsewhere.
-const { artworkPrice, artworkVariantLabel, isWallArt } = require('../../src/lib/artwork-pricing.cjs');
+const { artworkPrice, artworkVariantLabel, isWallArt } = require('../../src/lib/artwork-pricing.mjs');
 
 /* ── CONFIG (COC) ───────────────────────────────────────────────────── */
 /* Brand key stamped on every Checkout Session. The stripe-webhook's BRAND

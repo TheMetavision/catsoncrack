@@ -11,7 +11,7 @@ import { useStore } from '@nanostores/react';
 import { useEffect, useState } from 'react';
 import { $cartItems, $cartOpen, $cartTotal, $cartCount, removeFromCart, toggleCart, addToCart, clearCart } from '../lib/cart';
 // @ts-ignore — shared CommonJS pricing module (no .d.ts; resolved by Vite at build)
-import { isWallArt, artworkVariantLabel } from '../lib/artwork-pricing.cjs';
+import { isWallArt, artworkVariantLabel } from '../lib/artwork-pricing.mjs';
 import { getGaIds, trackAndWait, toGaItem, ecommerceParams } from '../lib/analytics';
 
 // Keep in sync with FREE_THRESHOLD_PENCE in create-checkout.js (£75) and
