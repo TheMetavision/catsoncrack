@@ -22,6 +22,7 @@ export default defineType({
       options: { list: [
         { title: 'Paid (not yet fulfilled)', value: 'paid' },
         { title: 'Fulfilled (sent to Printful)', value: 'fulfilled' },
+        { title: 'Shipped (Printful dispatched)', value: 'shipped' },
         { title: 'Fulfilment FAILED — action needed', value: 'fulfilment-failed' },
       ] },
     }),
@@ -66,6 +67,12 @@ export default defineType({
     }),
     defineField({ name: 'stripeSessionId', title: 'Stripe Session ID', type: 'string' }),
     defineField({ name: 'printfulOrderId', title: 'Printful Order ID', type: 'string' }),
+    // ── Written by printful-webhook on package_shipped / order_failed ──
+    defineField({ name: 'carrier', title: 'Carrier', type: 'string' }),
+    defineField({ name: 'trackingNumber', title: 'Tracking Number', type: 'string' }),
+    defineField({ name: 'trackingUrl', title: 'Tracking URL', type: 'url' }),
+    defineField({ name: 'shippedAt', title: 'Shipped At', type: 'datetime' }),
+    defineField({ name: 'failureReason', title: 'Printful Failure Reason', type: 'string' }),
   ],
   orderings: [
     { title: 'Newest first', name: 'placedAtDesc', by: [{ field: 'placedAt', direction: 'desc' }] },
@@ -73,7 +80,7 @@ export default defineType({
   preview: {
     select: { ref: 'orderRef', email: 'customerEmail', total: 'total', status: 'status', placedAt: 'placedAt' },
     prepare: ({ ref, email, total, status, placedAt }) => {
-      const badge = status === 'fulfilment-failed' ? '⚠️ ' : status === 'fulfilled' ? '✓ ' : '• ';
+      const badge = status === 'fulfilment-failed' ? '⚠️ ' : status === 'fulfilled' ? '✓ ' : status === 'shipped' ? '🚚 ' : '• ';
       const date = placedAt ? new Date(placedAt).toLocaleDateString('en-GB') : '';
       return {
         title: `${badge}#${ref || '—'} · £${(total ?? 0).toFixed(2)}`,

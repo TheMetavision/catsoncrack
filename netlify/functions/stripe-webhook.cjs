@@ -5,7 +5,7 @@
  *   1. Verify the Stripe signature (STRIPE_WEBHOOK_SECRET).
  *   2. Email the customer a branded order confirmation (RESEND_API_KEY).
  *   3. Create the Printful order (PRINTFUL_API_KEY), idempotent via external_id.
- *   4. Write an `order` document to Sanity (SANITY_TOKEN) with a status of
+ *   4. Write an `order` document to Sanity (SANITY_API_TOKEN) with a status of
  *      fulfilled / fulfilment-failed / paid — a record of EVERY paid order,
  *      so the ones that need manual attention are visible in Studio.
  *
@@ -21,7 +21,8 @@
  *   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, PRINTFUL_API_KEY
  *   RESEND_API_KEY        — Resend key (FROM domain must be verified in it)
  *   ORDER_EMAIL_FROM      — optional; default "Cats On Crack <orders@catsoncrack.co.uk>"
- *   SANITY_TOKEN          — Sanity *write* (Editor) token for the order log
+ *   SANITY_API_TOKEN      — Sanity *write* (Editor) token for the order log
+ *                           (SANITY_TOKEN still works as a fallback)
  *   SANITY_PROJECT_ID     — optional; default 8ksun996
  *   SANITY_DATASET        — optional; default production
  *   GA4_MEASUREMENT_ID, GA4_API_SECRET — optional; GA4 purchase is skipped without them
@@ -39,6 +40,8 @@ const MERCHANT_FROM = process.env.NOTIFICATION_FROM || 'Cats On Crack <meow@cats
 const SANITY_PROJECT_ID = process.env.SANITY_PROJECT_ID || '8ksun996';
 const SANITY_DATASET = process.env.SANITY_DATASET || 'production';
 const SANITY_API_VER = '2024-01-01';
+// Read per call: SANITY_API_TOKEN is the name Netlify and the site use; SANITY_TOKEN is the older one.
+const sanityWriteToken = () => process.env.SANITY_API_TOKEN || process.env.SANITY_TOKEN || '';
 
 // Shared wall-art helper (same module the checkout uses; single source of truth).
 // Path assumes netlify/functions/ -> src/lib/. Adjust if your lib lives elsewhere.
@@ -296,7 +299,7 @@ async function finalize(session, lineItems, status, printfulOrderId, alreadyReco
    Stripe retry of an order a previous delivery handled. Checked before the
    order is (re)written. False when the log can't be read. */
 async function orderAlreadyRecorded(session) {
-  if (!process.env.SANITY_TOKEN) return false;
+  if (!sanityWriteToken()) return false;
   const sessionKey = String(session.id).slice(-32);
   const found = await Promise.all([orderExists(`order.${sessionKey}`), orderExists(`order-${sessionKey}`)]);
   return found.some(Boolean);
@@ -317,7 +320,7 @@ async function orderExists(id) {
     const q = encodeURIComponent('count(*[_id == $id])');
     const res = await fetch(
       `https://${SANITY_PROJECT_ID}.api.sanity.io/v${SANITY_API_VER}/data/query/${SANITY_DATASET}?query=${q}&$id=${encodeURIComponent(JSON.stringify(id))}`,
-      { headers: { Authorization: 'Bearer ' + process.env.SANITY_TOKEN } }
+      { headers: { Authorization: 'Bearer ' + sanityWriteToken() } }
     );
     return res.ok && (await res.json()).result > 0;
   } catch {
@@ -328,8 +331,8 @@ async function orderExists(id) {
 /* Write/overwrite the order doc in Sanity. Deterministic _id keyed on the
    session id makes webhook retries idempotent (createOrReplace). Non-fatal. */
 async function saveOrder(session, lineItems, status, printfulOrderId) {
-  if (!process.env.SANITY_TOKEN) {
-    console.warn(`[ORDER-SKIP] session ${session.id}: SANITY_TOKEN not set.`);
+  if (!sanityWriteToken()) {
+    console.warn(`[ORDER-SKIP] session ${session.id}: neither SANITY_API_TOKEN nor SANITY_TOKEN is set.`);
     return;
   }
   const ship = getShip(session);
@@ -390,7 +393,7 @@ async function saveOrder(session, lineItems, status, printfulOrderId) {
       `https://${SANITY_PROJECT_ID}.api.sanity.io/v${SANITY_API_VER}/data/mutate/${SANITY_DATASET}`,
       {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + process.env.SANITY_TOKEN },
+        headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + sanityWriteToken() },
         body: JSON.stringify({ mutations: [{ createOrReplace: doc }] }),
       }
     );

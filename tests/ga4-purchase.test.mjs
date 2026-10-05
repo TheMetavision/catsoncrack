@@ -184,7 +184,7 @@ function withEnv(vars, fn) {
   for (const k of Object.keys(vars)) { saved[k] = process.env[k]; if (vars[k] == null) delete process.env[k]; else process.env[k] = vars[k]; }
   return fn().finally(() => { for (const k of Object.keys(saved)) { if (saved[k] == null) delete process.env[k]; else process.env[k] = saved[k]; } });
 }
-const NO_SIDE_EFFECTS = { RESEND_API_KEY: null, PRINTFUL_API_KEY: null, SANITY_TOKEN: null, ...ENV };
+const NO_SIDE_EFFECTS = { RESEND_API_KEY: null, PRINTFUL_API_KEY: null, SANITY_API_TOKEN: null, SANITY_TOKEN: null, ...ENV };
 
 test('brand guard: other brands\' sessions get 200 and nothing else happens', async () => {
   const realFetch = globalThis.fetch;
@@ -237,6 +237,38 @@ test('webhook: a Stripe retry for an order already in the Sanity log does not re
   } finally { globalThis.fetch = realFetch; }
   assert.ok(calls.some((c) => c.url.includes('/data/mutate/')), 'order log still written');
   assert.equal(calls.filter((c) => c.url.includes('google-analytics.com')).length, 0);
+});
+
+test('webhook: Sanity order log uses SANITY_API_TOKEN, falling back to SANITY_TOKEN', async () => {
+  const realFetch = globalThis.fetch;
+  const sanityAuth = [];
+  globalThis.fetch = async (url, init) => {
+    url = String(url);
+    if (url.includes('.api.sanity.io/')) sanityAuth.push({ url, auth: init.headers.Authorization });
+    const body = url.includes('/data/query/') ? { result: 0 } : {};
+    return { ok: true, status: 200, json: async () => body, text: async () => '' };
+  };
+  const sanityCalls = async (env) => {
+    sanityAuth.length = 0;
+    await withEnv({ ...NO_SIDE_EFFECTS, ...env }, async () => {
+      assert.equal((await deliver(session())).statusCode, 200);
+    });
+    return sanityAuth.slice();
+  };
+  try {
+    // Both set: the API token wins, for the retry lookup and the write.
+    let seen = await sanityCalls({ SANITY_API_TOKEN: 'sk_api', SANITY_TOKEN: 'sk_old' });
+    assert.ok(seen.some((c) => c.url.includes('/data/mutate/')), 'order log written');
+    assert.ok(seen.every((c) => c.auth === 'Bearer sk_api'));
+
+    // Only the old name: still works.
+    seen = await sanityCalls({ SANITY_TOKEN: 'sk_old' });
+    assert.ok(seen.some((c) => c.url.includes('/data/mutate/')));
+    assert.ok(seen.every((c) => c.auth === 'Bearer sk_old'));
+
+    // Neither: no Sanity calls at all.
+    assert.equal((await sanityCalls({})).length, 0);
+  } finally { globalThis.fetch = realFetch; }
 });
 
 test('webhook: GA failure never fails the response', async () => {
