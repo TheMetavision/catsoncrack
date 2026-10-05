@@ -328,8 +328,15 @@ async function orderExists(id) {
   }
 }
 
-/* Write/overwrite the order doc in Sanity. Deterministic _id keyed on the
-   session id makes webhook retries idempotent (createOrReplace). Non-fatal. */
+/* Write the order doc in Sanity. Deterministic _id keyed on the session id
+   makes webhook retries idempotent. One atomic transaction:
+     createIfNotExists — an empty order shell, only on the first delivery;
+     patch.set         — the payment fields from the Stripe session;
+     patch.setIfMissing — status, printfulOrderId, inhouseStatus: written once.
+   So a Stripe retry refreshes the payment details but never undoes what
+   happened since — a "shipped" status, the owner's in-house progress — and
+   never touches the fields printful-webhook owns (carrier, trackingNumber,
+   trackingUrl, shippedAt, failureReason). Non-fatal. */
 async function saveOrder(session, lineItems, status, printfulOrderId) {
   if (!sanityWriteToken()) {
     console.warn(`[ORDER-SKIP] session ${session.id}: neither SANITY_API_TOKEN nor SANITY_TOKEN is set.`);
@@ -356,18 +363,15 @@ async function saveOrder(session, lineItems, status, printfulOrderId) {
   const inhouseCount = items.filter((it) => it.fulfilment === 'inhouse').length;
 
   // The dot keeps the order (name, email, address) out of anonymous API reads.
-  // A retry for a session whose order predates that change overwrites the old
+  // A retry for a session whose order predates that change updates the old
   // doc in place (until tools/migrate-private-ids.mjs moves it) rather than
   // creating a second one.
   const sessionKey = String(session.id).slice(-32);
   const orderId = (await orderExists(`order-${sessionKey}`)) ? `order-${sessionKey}` : `order.${sessionKey}`;
 
-  const doc = {
-    _id: orderId,
-    _type: 'order',
+  const payment = {
     orderRef: String(session.id).slice(-8).toUpperCase(),
     placedAt: new Date(session.created ? session.created * 1000 : Date.now()).toISOString(),
-    status,
     customerName: (ship && ship.name) || (session.customer_details && session.customer_details.name) || '',
     customerEmail: (session.customer_details && session.customer_details.email) || '',
     items,
@@ -378,15 +382,17 @@ async function saveOrder(session, lineItems, status, printfulOrderId) {
     stripeSessionId: session.id,
   };
   if (a) {
-    doc.shippingAddress = {
+    payment.shippingAddress = {
       name: (ship && ship.name) || '',
       line1: a.line1 || '', line2: a.line2 || '',
       city: a.city || '', state: a.state || '',
       postalCode: a.postal_code || '', country: a.country || '',
     };
   }
-  if (printfulOrderId) doc.printfulOrderId = String(printfulOrderId);
-  if (inhouseCount > 0) doc.inhouseStatus = 'to-make';
+
+  const once = { status };
+  if (printfulOrderId) once.printfulOrderId = String(printfulOrderId);
+  if (inhouseCount > 0) once.inhouseStatus = 'to-make';
 
   try {
     const res = await fetch(
@@ -394,14 +400,17 @@ async function saveOrder(session, lineItems, status, printfulOrderId) {
       {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + sanityWriteToken() },
-        body: JSON.stringify({ mutations: [{ createOrReplace: doc }] }),
+        body: JSON.stringify({ mutations: [
+          { createIfNotExists: { _id: orderId, _type: 'order' } },
+          { patch: { id: orderId, set: payment, setIfMissing: once } },
+        ] }),
       }
     );
     if (!res.ok) {
       const t = await res.text();
       console.error(`[ORDER-SAVE-FAIL] session ${session.id}: Sanity ${res.status} — ${t}`);
     } else {
-      console.log(`[ORDER-SAVED] session ${session.id}: ${doc.orderRef} (${status}).`);
+      console.log(`[ORDER-SAVED] session ${session.id}: ${payment.orderRef} (${status}).`);
     }
   } catch (err) {
     console.error(`[ORDER-SAVE-FAIL] session ${session.id}:`, err && err.message ? err.message : err);
