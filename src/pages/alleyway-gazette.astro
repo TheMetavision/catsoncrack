@@ -159,7 +159,9 @@ const featuredHeroImage = featuredPost ? featuredHeroSrc(featuredPost.featuredIm
           <p>Get the latest stories, character updates, and exclusive content delivered straight to your inbox every week.</p>
           <form class="inline-newsletter-form" id="gazetteNewsletterForm">
             <input type="email" name="email" placeholder="Your email address" required />
-            <button type="submit" class="cta-button" id="gazetteBtn">Subscribe Now</button>
+            {/* Disabled until the script is listening, so an early press is not
+                a native GET with the email in the URL. */}
+            <button type="submit" class="cta-button" id="gazetteBtn" disabled>Subscribe Now</button>
           </form>
           <p id="gazetteMessage" style="display:none; margin-top:16px; font-weight:700; color:#ff00ff; font-size:1rem;"></p>
         </div>
@@ -741,4 +743,7 @@ const featuredHeroImage = featuredPost ? featuredHeroSrc(featuredPost.featuredIm
       }
     }
   });
+
+  // Listening now; the button was rendered disabled until this point.
+  if (gazetteBtn) gazetteBtn.disabled = false;
 </script>

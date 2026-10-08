@@ -86,7 +86,9 @@ const faqs = [
               <p class="field-error" id="message-error" hidden>Write us a message.</p>
             </div>
 
-            <button type="submit" class="form-submit" id="formSubmit">
+            {/* Disabled until the page script is listening: a press before then
+                was a native GET that put the message in the URL. */}
+            <button type="submit" class="form-submit" id="formSubmit" disabled>
               <span class="submit-text">Send Message</span>
               <span class="submit-sending" style="display:none;">Sending...</span>
             </button>
@@ -193,7 +195,9 @@ const faqs = [
         <p class="crew-sub">New episodes, drops, and behind-the-scenes chaos — straight to your inbox. Be first in line.</p>
         <form class="crew-form" id="crewForm">
           <input type="email" id="crewEmail" class="crew-input" placeholder="Drop your email" required />
-          <button type="submit" class="crew-submit" id="crewSubmit">
+          {/* Disabled until the script is listening, so an early press does not
+              reload the page and lose the typed email. */}
+          <button type="submit" class="crew-submit" id="crewSubmit" disabled>
             <span class="crew-submit-text">Sign Up</span>
             <span class="crew-submit-sending" style="display:none;">...</span>
           </button>
@@ -337,6 +341,9 @@ const faqs = [
           setSending(false);
         }
       });
+
+      // Listening now; the button was rendered disabled until this point.
+      setSending(false);
     }
 
     // ---- Newsletter ----
@@ -374,6 +381,9 @@ const faqs = [
           if (btn) btn.disabled = false;
         }
       });
+
+      // Listening now; the button was rendered disabled until this point.
+      if (btn) btn.disabled = false;
     }
   })();
 </script>

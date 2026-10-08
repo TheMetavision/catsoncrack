@@ -278,7 +278,9 @@ import SectionDivider from '../components/SectionDivider.astro';
 								aria-label="Email address"
 								class="email-input"
 							/>
-							<button type="submit" class="cta-button">Subscribe</button>
+							{/* Disabled until the script is listening, so an early press does not
+							    reload the page and lose the typed email. */}
+							<button type="submit" class="cta-button" disabled>Subscribe</button>
 						</form>
 						<div class="nl-confirm" id="nl-confirm" style="display:none;" role="status" aria-live="polite">
 							<div class="nl-signal">
@@ -1325,6 +1327,8 @@ import SectionDivider from '../components/SectionDivider.astro';
 			setTimeout(() => { btn.textContent = originalText; }, 3000);
 		}
 	});
+	// Listening now; the button was rendered disabled until this point.
+	if (btn) btn.disabled = false;
 
 	(function() {
 		const carousel = document.getElementById('heroCarousel');
