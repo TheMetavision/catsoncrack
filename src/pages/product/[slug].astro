@@ -1,6 +1,7 @@
 ---
 import { productImg, productSrcset, productDims, sanityFull, socialImg } from '../../lib/sanityImage';
 import { canonicalUrl } from '../../lib/url';
+import QuantitySelector from '../../components/QuantitySelector.astro';
 const HERO_SIZES = '(max-width: 900px) 100vw, 600px';
 /**
  * src/pages/product/[slug].astro  (Cats On Crack — NESTED model)
@@ -118,10 +119,13 @@ const productJsonLd = {
           <div class="pdp-sizes" id="size-options"></div>
         </div>
 
-        <button class="pdp-add" id="add-to-cart-btn">
-          <span class="t-default">Add to cart</span>
-          <span class="t-added" style="display:none;">Added!</span>
-        </button>
+        <div class="pdp-buy-row">
+          <QuantitySelector />
+          <button class="pdp-add" id="add-to-cart-btn">
+            <span class="t-default">Add to cart</span>
+            <span class="t-added" style="display:none;">Added!</span>
+          </button>
+        </div>
 
         {design.designStory && (
           <div class="pdp-story"><h2>The story</h2><p>{design.designStory}</p></div>
@@ -316,7 +320,9 @@ const productJsonLd = {
         colour: selectedColour,
         image: imageForColour(v, selectedColour),
         productType: currentType,
+        quantity: Math.min(10, Math.max(1, Math.floor(Number(document.getElementById('qty-input')?.value)) || 1)),
       }}));
+      document.getElementById('qty-input')?.dispatchEvent(new Event('qty-reset'));
       const def = addBtn.querySelector('.t-default'), added = addBtn.querySelector('.t-added');
       if (def) def.style.display = 'none';
       if (added) added.style.display = 'inline';
@@ -491,7 +497,8 @@ const productJsonLd = {
     .pdp-sizes { display: flex; gap: 10px; flex-wrap: wrap; }
     .pdp-add { font-family: 'Bebas Neue', sans-serif; width: 100%; max-width: 360px; margin-top: 1.5rem; padding: 15px; background: var(--accent); color: #000; border: none; border-radius: 4px; text-transform: uppercase; letter-spacing: 3px; cursor: pointer; font-size: 1.2rem; }
     .pdp-add:hover { filter: brightness(1.08); }
-    .pdp-add:hover { filter: brightness(1.08); }
+    .pdp-buy-row { display: flex; gap: 0.75rem; align-items: stretch; max-width: 360px; margin-top: 1.5rem; }
+    .pdp-buy-row .pdp-add { flex: 1; width: auto; max-width: none; margin-top: 0; }
     .pdp-story { margin-top: 2rem; border-top: 1px solid #ffffff14; padding-top: 1.5rem; }
     .pdp-story h2 { font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; color: #8a8880; }
     @media (max-width: 768px) { .pdp-grid { grid-template-columns: 1fr; } }
