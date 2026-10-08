@@ -234,7 +234,9 @@ const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt')
             <form class="ea-form" id="ea-form">
               <div class="ea-input-group">
                 <input type="email" placeholder="Drop your email" required id="ea-email" />
-                <button type="submit" class="ea-submit">
+                {/* Disabled until the script is listening, so an early press does
+                    not reload the page and lose the typed email. */}
+                <button type="submit" class="ea-submit" disabled>
                   <span class="ea-btn-text">Sign Up</span>
                   <span class="ea-btn-arrow">&#8594;</span>
                 </button>
@@ -392,5 +394,8 @@ const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt')
         if (btn) btn.disabled = false;
       }
     });
+    // Listening now; the button was rendered disabled until this point.
+    const eaBtn = form.querySelector('.ea-submit') as HTMLButtonElement | null;
+    if (eaBtn) eaBtn.disabled = false;
   }
 </script>
