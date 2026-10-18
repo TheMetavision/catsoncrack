@@ -98,7 +98,7 @@ Config: `printful-sync/brands/catsoncrack.config.mjs`.
 
 | Garment | Blank | Price | Notes |
 |---|---|---|---|
-| `tumbler` | #585 Stainless Steel Tumbler 20 oz, White + Black (EU) | £32.95 | `externalKey: tumbler585` (new products sit beside #909's until those go). Design once, centred, 1450 px square on the 2776×2374 wrap (same visible size as on #909) |
+| `tumbler` | #585 Stainless Steel Tumbler 20 oz, White + Black (EU) | £32.95 | `externalKey: tumbler585` (new products sit beside #909's until those go). Printed on both sides, as Dotty's: the design twice, at ¼ and ¾ of the 2776×2374 wrap, each in a 1250×1450 box (`make-mug-wraps.mjs --kind=tumbler` → `designs.tumblerPrintFileUrl`); images: Left, "Printed on both sides", Right |
 | `mug` | #19 White Glossy Mug 11 oz (UK + EU) | £12.95 | design twice, at ¼ and ¾ of the 2700×1050 wrap (`make-mug-wraps.mjs` → `designs.mugPrintFileUrl`); images: Front, "Printed on both sides", Handle on Left |
 | `glass` | #690 | — | removed from the config |
 
@@ -122,13 +122,28 @@ Steps done (18 Oct 2026):
    Checked with `verify-drafts.mjs catsoncrack tumbler,mug glass`: 50 drafts, nothing else changed, every variant id in the
    live store. Production still shows the published (old) catalogue; the deploy preview reads the drafts.
 
-### Still to do, after Alan's check of the preview
+### Launch order, after Alan approves the preview (in this order, nothing earlier)
 
-1. Publish the drafts: `node --env-file=.env publish-drafts.mjs catsoncrack --dry`, then without `--dry`.
-2. Alan merges `feat/margin-delivery` (Netlify rebuilds production from `main`); then deploy the Studio schema from
-   `sanity/` (`npx sanity schema deploy` and `npx sanity deploy`) for the `other-brand` status and `test` flag.
-3. Check live: a tumbler and a mug page, the basket country picker, a GB checkout reaching Stripe with one rate.
-4. Only then, after confirming no open Printful orders (`pins-report.mjs`): delete the old Printful products, the 46 #909
-   tumblers (`catsoncrack-<slug>-tumbler`), the 46 #690 can glasses (`-glass`) and the 4 pin sets (441991684, 441991714,
-   441991759, 441991789); delete the 4 `product-badge-set-*` docs from Sanity (already inactive) or keep them inactive.
-5. `store-check.mjs catsoncrack tumbler585,mug,tumbler,glass,pin` should then show 0 for tumbler, glass and pin.
+1. **Merge the PR** (`feat/margin-delivery`, Alan). Netlify rebuilds production from `main`: the new code against the old,
+   published catalogue. It handles both: can glasses and badges still list and check out until their products go (tabs
+   kept, empty tabs vanish; test "old and new catalogue both check out"), and a basket with no country set just shows the
+   picker.
+2. **Deploy the Studio schema** from `sanity/`: `npx sanity schema deploy` and `npx sanity deploy` (`other-brand` status,
+   `test` flag).
+3. **Publish the drafts**: `cd C:\Users\chris\Projects\printful-sync`, `node --env-file=.env publish-drafts.mjs catsoncrack --dry`,
+   then without `--dry` (46 designs + 4 inactive pin sets). Production then needs a rebuild to show them (Netlify:
+   trigger deploy, or the next push to `main`).
+4. **Check the live site**: a tumbler and a mug page (both-sides images), the basket country picker, a GB basket reaching
+   Stripe with one rate and one country, merch tabs without Can Glasses or Badges.
+5. **Only then delete the old products**, after `pins-report.mjs catsoncrack` shows no unfinished Printful orders: the 46
+   #909 tumblers (`catsoncrack-<slug>-tumbler`), the 46 #690 can glasses (`-glass`) and the 4 pin sets (441991684,
+   441991714, 441991759, 441991789). The 4 `product-badge-set-*` docs stay in Sanity, inactive.
+6. `store-check.mjs catsoncrack tumbler585,mug,tumbler,glass,pin` should then show 0 for tumbler, glass and pin.
+7. Production env: `PRINTFUL_AUTO_CONFIRM=true` (production context only) makes live orders confirmed; without it they are
+   Printful drafts to confirm by hand. Previews never confirm (test-mode payments are always drafts).
+
+### After every preview test payment
+
+Test-mode orders reach Printful as **drafts** (never confirmed) and the Sanity log as `test: true`. Delete them after each test:
+`cd C:\Users\chris\Projects\printful-sync`, `node --env-file=.env delete-test-orders.mjs catsoncrack` (lists them), then
+`... --apply` (deletes the Printful drafts and the test log records).

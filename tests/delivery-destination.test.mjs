@@ -134,6 +134,41 @@ test('checkout: no country, or one we do not deliver to, is refused before Strip
   }
 });
 
+test('checkout: old and new catalogue both check out (can glass and badge until they go; tumbler and mug after)', async () => {
+  const OLD_AND_NEW = [{
+    _id: 'product-tiny-terror', slug: 'tiny-terror', name: 'Tiny Terror', active: true,
+    variants: [
+      { label: '16oz Can Glass', productType: 'glass', basePrice: 11.5, sizePrices: [{ size: '16 oz', price: 11.5 }],
+        printfulVariants: [{ size: '16 oz', colour: '', syncVariantId: '301' }] },
+      { label: '20oz Tumbler', productType: 'tumbler', basePrice: 32.95, sizePrices: [{ size: '20 oz', price: 32.95 }],
+        printfulVariants: [{ size: '20 oz', colour: 'White', syncVariantId: '401' }, { size: '20 oz', colour: 'Black', syncVariantId: '402' }] },
+      { label: '11oz Mug', productType: 'mug', basePrice: 12.95, sizePrices: [{ size: '11 oz', price: 12.95 }],
+        printfulVariants: [{ size: '11 oz', colour: '', syncVariantId: '501' }] },
+    ],
+  }, {
+    _id: 'product-badge-set-1', slug: 'badge-set-1', name: 'Badge Set 1', active: true,
+    variants: [{ label: 'Pin Badge', productType: 'pin', basePrice: 9.95, sizePrices: [{ size: '2.25″', price: 9.95 }],
+      printfulVariants: [{ size: '2.25″', colour: 'White', syncVariantId: '601' }] }],
+  }];
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ result: OLD_AND_NEW }) });
+  try {
+    const line = (id, productType, colour, size, price) => ({ id, title: id, productType, colour, size, price, quantity: 1 });
+    sessionParams = null;
+    const res = await handler({ httpMethod: 'POST', body: JSON.stringify({ country: 'DE', items: [
+      line('product-tiny-terror-glass--16 oz', 'glass', '', '16 oz', 11.5),
+      line('product-tiny-terror-tumbler-Black-20 oz', 'tumbler', 'Black', '20 oz', 32.95),
+      line('product-tiny-terror-mug--11 oz', 'mug', '', '11 oz', 12.95),
+      line('product-badge-set-1-pin-White-2.25″', 'pin', 'White', '2.25″', 9.95),
+    ] }) });
+    assert.equal(res.statusCode, 200, res.body);
+    assert.deepEqual(sessionParams.line_items.map((l) => [l.price_data.unit_amount, l.price_data.product_data.metadata.printful_variant_id]),
+      [[1150, '301'], [3295, '402'], [1295, '501'], [995, '601']]);
+  } finally {
+    globalThis.fetch = realFetch;
+  }
+});
+
 test('checkout: a line Printful will not ship to that country is refused, and named', async () => {
   const realBlocked = SHIP_TO.blocked;
   SHIP_TO.blocked = { hoodie: ['ZA'] };

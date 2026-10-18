@@ -24,6 +24,8 @@
  *
  * Env vars:
  *   STRIPE_SECRET_KEY, STRIPE_WEBHOOK_SECRET, PRINTFUL_API_KEY
+ *   PRINTFUL_AUTO_CONFIRM — 'true' (production context only) confirms live orders;
+ *                           anything else, and every test-mode payment, makes a draft
  *   RESEND_API_KEY        — Resend key (FROM domain must be verified in it)
  *   ORDER_EMAIL_FROM      — optional; default "Cats On Crack <orders@catsoncrack.co.uk>"
  *   SANITY_API_TOKEN      — Sanity *write* (Editor) token for the order log
@@ -95,6 +97,14 @@ function inhouseLineLabel(lineItem) {
     try { return artworkVariantLabel(fmt, size); } catch (_) { /* fall through */ }
   }
   return lineItem.description || 'Wall art';
+}
+
+/* Whether the Printful order is confirmed (sent to production) or left a draft.
+   Confirmed only when PRINTFUL_AUTO_CONFIRM is exactly 'true' (production context
+   only) AND the payment is live. A Stripe test-mode payment on a preview is always
+   a draft, whatever the flag says. */
+function printfulConfirm(session) {
+  return process.env.PRINTFUL_AUTO_CONFIRM === 'true' && session.livemode !== false;
 }
 
 /* Every Printful line must be a variant in this site's own Printful store.
@@ -262,7 +272,7 @@ async function sendMerchantEmail(session, lineItems, status, printfulOrderId, pr
     ? `<p style="background:#b00020;color:#fff;padding:12px 16px;border-radius:6px;font-weight:700;font-size:14px;margin:0 0 16px;">&#9888; FULFILMENT FAILED &mdash; this order did NOT reach Printful. Place it manually.</p>`
     : inhouseOnly
       ? `<p style="background:#1d4ed8;color:#fff;padding:12px 16px;border-radius:6px;font-weight:700;font-size:14px;margin:0 0 16px;">&#128230; IN-HOUSE ORDER &mdash; make &amp; dispatch the wall art below. No Printful order; nothing auto-ships.</p>`
-      : `<p style="background:#0a7d28;color:#fff;padding:12px 16px;border-radius:6px;font-weight:700;font-size:14px;margin:0 0 16px;">&#10003; Sent to Printful${printfulOrderId ? ' (#' + esc(printfulOrderId) + ')' : ''}</p>`;
+      : `<p style="background:#0a7d28;color:#fff;padding:12px 16px;border-radius:6px;font-weight:700;font-size:14px;margin:0 0 16px;">&#10003; Sent to Printful${printfulOrderId ? ' (#' + esc(printfulOrderId) + ')' : ''} as a ${promo.printfulConfirmed ? 'CONFIRMED order' : 'DRAFT: confirm it in Printful to start production'}</p>`;
   // In-house "make & dispatch" block (shown for in-house-only AND mixed carts).
   const inhouseRows = inhouseLis.map((li) => `
     <tr>
@@ -644,7 +654,11 @@ exports.handler = async (event) => {
       items: printfulItems,
     };
 
-    const res = await fetch(PRINTFUL_ORDERS_URL, {
+    // Confirm (start production) only when PRINTFUL_AUTO_CONFIRM is exactly 'true',
+    // which is set in the production context only, and never for a Stripe test-mode
+    // payment: those stay Printful DRAFTS, deleted after each test. Always explicit.
+    const confirm = printfulConfirm(session);
+    const res = await fetch(`${PRINTFUL_ORDERS_URL}?confirm=${confirm ? 'true' : 'false'}`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -665,8 +679,9 @@ exports.handler = async (event) => {
 
     let printfulId;
     try { printfulId = JSON.parse(bodyText).result?.id; } catch (_) { /* ignore */ }
-    console.log(`[FULFILMENT-OK] session ${session.id}: Printful order created${printfulId ? ' #' + printfulId : ''} (${printfulItems.length} item(s)).`);
+    console.log(`[FULFILMENT-OK] session ${session.id}: Printful ${confirm ? 'confirmed' : 'DRAFT'} order created${printfulId ? ' #' + printfulId : ''} (${printfulItems.length} item(s)).`);
 
+    promo.printfulConfirmed = confirm;
     await finalize(session, lineItems, 'fulfilled', printfulId, alreadyRecorded, promo);
     return { statusCode: 200, body: JSON.stringify({ received: true, printful: 'created' }) };
   } catch (err) {
@@ -678,3 +693,4 @@ exports.handler = async (event) => {
 
 // For tests.
 exports.isCatsOnCrackSession = isCatsOnCrackSession;
+exports.printfulConfirm = printfulConfirm;

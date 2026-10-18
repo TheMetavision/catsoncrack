@@ -45,7 +45,7 @@ async function fakeFetch(url, init = {}) {
     return OURS.has(id) ? json(200, { result: { id } }) : json(404, { error: { message: 'Not Found' } });
   }
   if (u.hostname === 'api.printful.com' && u.pathname === '/orders') {
-    ordersPlaced.push(JSON.parse(init.body));
+    ordersPlaced.push({ ...JSON.parse(init.body), confirmParam: u.searchParams.get('confirm') });
     return json(200, { result: { id: 555 } });
   }
   if (u.hostname.endsWith('.api.sanity.io') && u.pathname.includes('/data/query/')) return json(200, { result: null });
@@ -63,7 +63,7 @@ beforeEach(() => {
   docs = {}; emails = []; ordersPlaced = []; variantChecks = []; variantStatus = null;
   globalThis.fetch = fakeFetch;
   Object.assign(process.env, { RESEND_API_KEY: 're_test', PRINTFUL_API_KEY: 'pf_test', SANITY_API_TOKEN: 'sk_api' });
-  for (const k of ['SANITY_TOKEN', 'GA4_MEASUREMENT_ID', 'GA4_API_SECRET']) delete process.env[k];
+  for (const k of ['SANITY_TOKEN', 'GA4_MEASUREMENT_ID', 'GA4_API_SECRET', 'PRINTFUL_AUTO_CONFIRM']) delete process.env[k];
 });
 
 const session = (over = {}) => ({
@@ -117,6 +117,35 @@ test('a Stripe test-mode session is flagged TEST in the log and the alert', asyn
   assert.equal(order().test, true);
   assert.match(alert().subject, /^\[TEST\] /);
   assert.match(alert().html, /TEST MODE/);
+});
+
+/* ── Confirm or draft ───────────────────────────────────────────────────── */
+
+test('confirm: live payment with PRINTFUL_AUTO_CONFIRM=true is confirmed', async () => {
+  lineItems = { data: [line('li_1', '101')] };
+  process.env.PRINTFUL_AUTO_CONFIRM = 'true';
+  await deliver();
+  assert.equal(ordersPlaced[0].confirmParam, 'true');
+  assert.match(alert().html, /CONFIRMED order/);
+});
+
+test('confirm: without the flag (or any other value) the order is a draft, always said explicitly', async () => {
+  for (const flag of [undefined, '', 'TRUE', '1', 'yes']) {
+    docs = {}; emails = []; ordersPlaced = [];
+    if (flag === undefined) delete process.env.PRINTFUL_AUTO_CONFIRM; else process.env.PRINTFUL_AUTO_CONFIRM = flag;
+    lineItems = { data: [line('li_1', '101')] };
+    await deliver();
+    assert.equal(ordersPlaced[0].confirmParam, 'false', `flag ${flag}`);
+    assert.match(alert().html, /DRAFT: confirm it in Printful/);
+  }
+});
+
+test('confirm: a Stripe test-mode payment is a draft even with the flag set', async () => {
+  lineItems = { data: [line('li_1', '101')] };
+  process.env.PRINTFUL_AUTO_CONFIRM = 'true';
+  await deliver(session({ id: 'cs_test_a1B2c3D4e5F6g7H8i9J0k1L2m3N4o5P6', livemode: false }));
+  assert.equal(ordersPlaced[0].confirmParam, 'false');
+  assert.equal(order().test, true);
 });
 
 test('a live session is not flagged as a test', async () => {
