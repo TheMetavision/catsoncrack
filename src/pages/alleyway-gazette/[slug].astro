@@ -3,6 +3,7 @@ import Layout from '../../layouts/Layout.astro';
 import Navigation from '../../components/Navigation.astro';
 import Footer from '../../components/Footer.astro';
 import { getAllBlogPosts, getBlogPostBySlug } from '../../lib/sanity';
+import { articleSchema, breadcrumbSchema } from '../../lib/schema';
 
 export async function getStaticPaths() {
   const posts = await getAllBlogPosts();
@@ -40,9 +41,9 @@ function renderBlock(block: any): string {
 function formatDate(dateStr: string) {
   if (!dateStr) return '';
   const d = new Date(dateStr);
-  return d.toLocaleDateString('en-US', {
-    month: 'long',
+  return d.toLocaleDateString('en-GB', {
     day: 'numeric',
+    month: 'long',
     year: 'numeric',
   }).toUpperCase();
 }
@@ -59,11 +60,27 @@ const heroImageSrc = post.featuredImageUrl
   ? `${post.featuredImageUrl}?w=1600&h=900&fit=crop&auto=format`
   : null;
 const heroImageAlt = post.featuredImageAlt || post.title || '';
+
+// Publish date falls back to the document's creation date; "Updated" shows only for edits made 7+ days after publishing.
+const publishedAt: string = post.publishedAt || post._createdAt;
+const modifiedAt: string = post._updatedAt || publishedAt;
+const showUpdated = !!post._updatedAt &&
+  new Date(post._updatedAt).getTime() - new Date(publishedAt).getTime() > 7 * 24 * 60 * 60 * 1000;
+const pageUrl = new URL(Astro.url.pathname, Astro.site).href;
+const jsonLd = [
+  articleSchema({ title: post.title, excerpt: post.excerpt || post.title, publishedAt, modifiedAt, image: heroImageSrc || undefined, url: pageUrl }),
+  breadcrumbSchema([
+    { name: 'Home', url: new URL('/', Astro.site).href },
+    { name: 'The Alleyway Gazette', url: new URL('/alleyway-gazette', Astro.site).href },
+    { name: post.title, url: pageUrl },
+  ]),
+];
 ---
 
 <Layout
   title={post.seoTitle || `${post.title} — The Alleyway Gazette`}
   description={post.seoDescription || post.excerpt || ''}
+  jsonLd={jsonLd}
 >
   <Navigation />
   <main class="article-main">
@@ -82,9 +99,7 @@ const heroImageAlt = post.featuredImageAlt || post.title || '';
         {post.excerpt && (
           <p class="article-deck">{post.excerpt}</p>
         )}
-        {post.publishedAt && (
-          <p class="article-dateline">{formatDate(post.publishedAt)} &mdash; THE ALLEYWAY GAZETTE</p>
-        )}
+        <p class="article-dateline"><time datetime={publishedAt}>{formatDate(publishedAt)}</time>{showUpdated && <> &middot; UPDATED <time datetime={post._updatedAt}>{formatDate(post._updatedAt)}</time></>} &mdash; THE ALLEYWAY GAZETTE</p>
       </div>
     </header>
 
