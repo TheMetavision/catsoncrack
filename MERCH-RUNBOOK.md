@@ -121,6 +121,15 @@ Steps done (18 Oct 2026):
    all copy and images exactly as published. Pin sets: drafts with `active: false` (`draft-inactive.mjs`).
    Checked with `verify-drafts.mjs catsoncrack tumbler,mug glass`: 50 drafts, nothing else changed, every variant id in the
    live store. Production still shows the published (old) catalogue; the deploy preview reads the drafts.
+7. **Tumbler made two-sided** (Alan, 18 Oct, so wide designs show in full): wraps for all 46 designs
+   (`make-mug-wraps.mjs catsoncrack --kind=tumbler`), checked on Tiny Terror with real Left/Right renders (the whole title
+   shows), then swapped **in place** onto the 46 #585 products (`swap-print-file.mjs catsoncrack <slugs> --types=tumbler
+   --apply`: tumbler only, ids unchanged; the socks' older files left alone), mockups again (`-Flags "--types=tumbler --strict"`:
+   Left, both sides, Right, per colour, 6 images) and drafts re-synced (`--types=tumbler`). `verify-drafts.mjs`: no problems.
+8. Preview checked (18 Oct): `deploy-preview-2--catsoncrack.netlify.app`. Tumbler page £32.95, White/Black, 3 images each;
+   mug £12.95; merch tabs Mugs in, Can Glasses and Badges gone; badge sets 404 (still live in production). Basket: UK
+   £6.95 with the free-UK bar, total right; Brazil shows "can't deliver" and disables checkout. The checkout function refuses
+   no country (400), an unknown one (400), a Printful item to Brazil (422), all before Stripe.
 
 ### Launch order, after Alan approves the preview (in this order, nothing earlier)
 
