@@ -24,7 +24,13 @@ export default defineType({
         { title: 'Fulfilled (sent to Printful)', value: 'fulfilled' },
         { title: 'Shipped (Printful dispatched)', value: 'shipped' },
         { title: 'Fulfilment FAILED — action needed', value: 'fulfilment-failed' },
+        { title: 'Another brand’s order (logged here in error, see reason)', value: 'other-brand' },
       ] },
+    }),
+    defineField({
+      name: 'test', title: 'Test order (Stripe test mode)', type: 'boolean', readOnly: true,
+      description: 'Paid with Stripe test keys on a preview. Nobody was charged.',
+      hidden: ({ value }) => !value,
     }),
     defineField({ name: 'customerName', title: 'Customer Name', type: 'string' }),
     defineField({ name: 'customerEmail', title: 'Customer Email', type: 'string' }),
@@ -88,7 +94,8 @@ export default defineType({
     defineField({ name: 'trackingNumber', title: 'Tracking Number', type: 'string' }),
     defineField({ name: 'trackingUrl', title: 'Tracking URL', type: 'url' }),
     defineField({ name: 'shippedAt', title: 'Shipped At', type: 'datetime' }),
-    defineField({ name: 'failureReason', title: 'Printful Failure Reason', type: 'string' }),
+    defineField({ name: 'failureReason', title: 'Printful Failure Reason', type: 'string',
+      description: 'Why Printful didn’t take or make the order: Printful’s reason, a variant that isn’t in this store, or a note on a record that isn’t this brand’s.' }),
   ],
   orderings: [
     { title: 'Newest first', name: 'placedAtDesc', by: [{ field: 'placedAt', direction: 'desc' }] },
