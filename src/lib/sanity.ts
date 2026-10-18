@@ -105,7 +105,7 @@ export async function getAllBlogPosts() {
 export async function getBlogPostBySlug(slug: string) {
   return client.fetch(`
     *[_type == "blogPost" && slug.current == $slug && ${NOT_DRAFT}][0] {
-      _id, title, "slug": slug.current,
+      _id, _createdAt, _updatedAt, title, "slug": slug.current,
       "category": coalesce(category, tag),
       excerpt, body, featuredImage,
       "featuredImageUrl": featuredImage.asset->url,

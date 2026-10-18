@@ -65,10 +65,10 @@ export function productSchema(product: { name: string; description: string; pric
   };
 }
 
-export function articleSchema(post: { title: string; excerpt: string; publishedAt: string; image?: string; url: string }) {
+export function articleSchema(post: { title: string; excerpt: string; publishedAt: string; modifiedAt?: string; image?: string; url: string }) {
   return {
     '@context': 'https://schema.org', '@type': 'Article',
-    headline: post.title, description: post.excerpt, datePublished: post.publishedAt, image: post.image, url: post.url,
+    headline: post.title, description: post.excerpt, datePublished: post.publishedAt, dateModified: post.modifiedAt || post.publishedAt, image: post.image, url: post.url,
     author: { '@type': 'Organization', name: 'Cats On Crack' },
     publisher: { '@type': 'Organization', name: 'The Metavision Multimedia Limited' },
   };
