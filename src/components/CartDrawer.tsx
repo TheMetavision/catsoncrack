@@ -13,10 +13,35 @@ import { $cartItems, $cartOpen, $cartTotal, $cartCount, removeFromCart, setQuant
 // @ts-ignore — shared CommonJS pricing module (no .d.ts; resolved by Vite at build)
 import { isWallArt, artworkVariantLabel } from '../lib/artwork-pricing.mjs';
 import { getGaIds, trackAndWait, toGaItem, ecommerceParams } from '../lib/analytics';
+// @ts-ignore — shared ES module (no .d.ts); the checkout function uses the same one
+import { SHIPPING_REGIONS, FREE_UK_THRESHOLD_PENCE, deliveryPence, unshippableLines, guessCountry } from '../lib/shipping-regions.mjs';
+import SHIP_TO from '../data/ship-to.json';
 
-// Keep in sync with FREE_THRESHOLD_PENCE in create-checkout.js (£75) and
-// FREE_SHIPPING_THRESHOLD in cart.ts.
-const FREE_SHIPPING_THRESHOLD = 75;
+// Free UK delivery from £75: shipping-regions.mjs (FREE_UK_THRESHOLD_PENCE),
+// cart.ts (FREE_SHIPPING_THRESHOLD) and the checkout all use the same figure.
+const FREE_SHIPPING_THRESHOLD = FREE_UK_THRESHOLD_PENCE / 100;
+
+// The delivery country, remembered on this device (a convenience only; the
+// checkout is what enforces it).
+const COUNTRY_KEY = 'coc-delivery-country';
+function initialCountry(): string {
+  try {
+    const saved = localStorage.getItem(COUNTRY_KEY);
+    if (saved && SHIPPING_REGIONS.some((r: any) => r.countries.includes(saved))) return saved;
+  } catch (_) { /* storage blocked: fall through */ }
+  return guessCountry(typeof navigator !== 'undefined' ? navigator.languages : []) || 'GB';
+}
+
+// Country names in English, A–Z within each region, for the picker.
+function countryOptions() {
+  let names: Intl.DisplayNames | null = null;
+  try { names = new Intl.DisplayNames(['en-GB'], { type: 'region' }); } catch (_) { /* old browser: codes */ }
+  const label = (cc: string) => (cc === 'XK' ? 'Kosovo' : (names && names.of(cc)) || cc);
+  return SHIPPING_REGIONS.map((r: any) => ({
+    name: r.name,
+    countries: r.countries.map((cc: string) => ({ cc, label: label(cc) })).sort((a: any, b: any) => a.label.localeCompare(b.label)),
+  }));
+}
 
 export default function CartDrawer() {
   const items = useStore($cartItems);
@@ -24,6 +49,17 @@ export default function CartDrawer() {
   const total = useStore($cartTotal);
   const count = useStore($cartCount);
   const [confirmClear, setConfirmClear] = useState(false);
+  // 'GB' on the server render; the saved or guessed country once mounted.
+  const [country, setCountry] = useState('GB');
+  const [regions] = useState(countryOptions);
+  useEffect(() => { setCountry(initialCountry()); }, []);
+  function chooseCountry(cc: string) {
+    setCountry(cc);
+    try { localStorage.setItem(COUNTRY_KEY, cc); } catch (_) { /* storage blocked: keep it for this visit */ }
+  }
+  const deliveryGbp = (deliveryPence(country, Math.round(total * 100)) ?? 0) / 100;
+  const cantShip = unshippableLines(items, country, SHIP_TO);
+  const countryName = regions.flatMap((r: any) => r.countries).find((c: any) => c.cc === country)?.label || country;
 
   useEffect(() => {
     function handleAdd(e: any) {
@@ -51,7 +87,7 @@ export default function CartDrawer() {
   }
 
   async function handleCheckout() {
-    if (items.length === 0) return;
+    if (items.length === 0 || cantShip.length > 0) return;
     try {
       // Analytics (consent only, each capped at 0.8 s, started together):
       // begin_checkout, and GA's client/session ids so the Stripe webhook can
@@ -74,6 +110,7 @@ export default function CartDrawer() {
             quantity: item.quantity,
           })),
           ga,
+          country,
         }),
       });
       const data = await res.json();
@@ -81,7 +118,8 @@ export default function CartDrawer() {
         await beganCheckout;
         window.location.href = data.url;
       } else if (data.error) {
-        alert(`Checkout failed: ${data.error}`);
+        const named = Array.isArray(data.items) && data.items.length ? `\n\n${data.items.join('\n')}` : '';
+        alert(`Checkout failed: ${data.error}${named}`);
       }
     } catch (err) {
       console.error('Checkout error:', err);
@@ -220,6 +258,24 @@ export default function CartDrawer() {
       height: '100%', background: accent, borderRadius: '999px',
       transition: 'width 0.3s ease',
     },
+    // ── Delivery country ──
+    countryRow: { marginBottom: '14px' },
+    countryLabel: {
+      display: 'block', color: textMuted, fontSize: '11px', letterSpacing: '1.5px',
+      textTransform: 'uppercase' as const, margin: '0 0 6px',
+    },
+    countrySelect: {
+      width: '100%', padding: '10px 12px', background: bgLight, color: text,
+      border: `1px solid ${accent}44`, borderRadius: '4px', fontSize: '14px', fontFamily: 'inherit',
+    },
+    sumRow: {
+      display: 'flex', justifyContent: 'space-between', color: textMuted,
+      fontSize: '13px', margin: '0 0 6px',
+    },
+    cantShip: {
+      background: '#3a1420', border: '1px solid #ff4466', borderRadius: '4px',
+      color: text, fontSize: '12px', lineHeight: 1.5, padding: '10px 12px', margin: '0 0 14px',
+    },
     // ── Branded confirm modal ──
     modalOverlay: {
       position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.82)',
@@ -323,7 +379,28 @@ export default function CartDrawer() {
         </div>
         {items.length > 0 && (
           <div style={styles.footer}>
-            {(() => {
+            <div style={styles.countryRow}>
+              <label style={styles.countryLabel} htmlFor="coc-delivery-country">Delivering to</label>
+              <select
+                id="coc-delivery-country"
+                style={styles.countrySelect}
+                value={country}
+                onChange={(e) => chooseCountry(e.target.value)}
+              >
+                {regions.map((r: any) => (
+                  <optgroup key={r.name} label={r.name}>
+                    {r.countries.map((c: any) => <option key={c.cc} value={c.cc}>{c.label}</option>)}
+                  </optgroup>
+                ))}
+              </select>
+            </div>
+            {cantShip.length > 0 && (
+              <div style={styles.cantShip} role="alert">
+                <strong>We can&rsquo;t deliver {cantShip.length === 1 ? 'this' : 'these'} to {countryName}:</strong>{' '}
+                {cantShip.map((it: any) => it.title).join(', ')}. Remove {cantShip.length === 1 ? 'it' : 'them'} to check out.
+              </div>
+            )}
+            {country === 'GB' && (() => {
               const remaining = Math.max(0, FREE_SHIPPING_THRESHOLD - total);
               const pct = Math.min(100, (total / FREE_SHIPPING_THRESHOLD) * 100);
               const unlocked = remaining <= 0;
@@ -342,16 +419,25 @@ export default function CartDrawer() {
                 </div>
               );
             })()}
+            <div style={styles.sumRow}>
+              <span>Items</span>
+              <span>&pound;{total.toFixed(2)}</span>
+            </div>
+            <div style={styles.sumRow}>
+              <span>Delivery to {countryName}</span>
+              <span>{deliveryGbp === 0 ? 'FREE' : <>&pound;{deliveryGbp.toFixed(2)}</>}</span>
+            </div>
             <div style={styles.totalRow}>
               <span style={styles.totalLabel}>Total</span>
-              <span style={styles.totalValue}>&pound;{total.toFixed(2)}</span>
+              <span style={styles.totalValue}>&pound;{(total + deliveryGbp).toFixed(2)}</span>
             </div>
             <p style={styles.payNote}>
               Payments are taken by The Metavision Multimedia Ltd and show on your statement as THE METAVISION.
             </p>
             <button
-              style={styles.checkoutBtn}
+              style={{ ...styles.checkoutBtn, ...(cantShip.length > 0 ? { opacity: 0.4, cursor: 'not-allowed' } : {}) }}
               onClick={handleCheckout}
+              disabled={cantShip.length > 0}
               onMouseEnter={(e) => (e.currentTarget.style.background = accentDim)}
               onMouseLeave={(e) => (e.currentTarget.style.background = accent)}
             >

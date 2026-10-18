@@ -6,7 +6,11 @@ export const client = createClient({
   dataset: import.meta.env.SANITY_DATASET || 'production',
   apiVersion: '2024-01-01',
   useCdn: false, // SSG builds at build-time — CDN adds staleness without benefit
-  perspective: 'published', // forces API to return only published docs, never drafts
+  // Production: published docs only, never drafts. A deploy preview may set
+  // SANITY_PERSPECTIVE=previewDrafts (deploy-preview / branch-deploy contexts only)
+  // so a catalogue change can be checked before it is published; drafts then
+  // come back under their published _id, so the NOT_DRAFT guard below still holds.
+  perspective: import.meta.env.SANITY_PERSPECTIVE === 'previewDrafts' ? 'previewDrafts' : 'published',
   token: import.meta.env.SANITY_API_TOKEN,
 });
 
