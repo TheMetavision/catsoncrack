@@ -268,10 +268,16 @@ export async function getHomeSettings() {
   `);
 }
 
-/** True once any episode is marked Live. An episode with no status counts as coming soon. */
-export async function hasLiveEpisode(): Promise<boolean> {
-  const n = await client.fetch(`count(*[_type == "episode" && status == "live" && ${NOT_DRAFT}])`);
-  return n > 0;
+/**
+ * True once any episode is marked Live. An episode with no status counts as
+ * coming soon. Fetched once per build: the footer asks on every page.
+ */
+let liveEpisodePromise: Promise<boolean> | null = null;
+export function hasLiveEpisode(): Promise<boolean> {
+  liveEpisodePromise ??= client
+    .fetch(`count(*[_type == "episode" && status == "live" && ${NOT_DRAFT}])`)
+    .then((n: number) => n > 0);
+  return liveEpisodePromise;
 }
 
 export async function getCharacterCount(): Promise<number> {

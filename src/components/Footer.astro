@@ -3,7 +3,7 @@ import { localImg } from '../lib/sanityImage';
 const year = new Date().getFullYear();
 import SectionDivider from './SectionDivider.astro';
 import LegalLinks from './LegalLinks.astro';
-import { getSocialLinks, SOCIAL_ORDER, type SocialPlatform } from '../lib/sanity';
+import { getSocialLinks, hasLiveEpisode, SOCIAL_ORDER, type SocialPlatform } from '../lib/sanity';
 
 // Class, label and icon per platform; the links come from siteSettings.socialLinks.
 const SOCIAL_META: Record<SocialPlatform, { cls: string; label: string; aria: string; path: string }> = {
@@ -30,6 +30,8 @@ const socialLinks = SOCIAL_ORDER.map((platform) => ({
 	url: sanitySocials.find((l) => l.platform === platform)?.url ?? FALLBACK_SOCIALS[platform],
 }));
 const youtubeUrl = socialLinks.find((l) => l.platform === 'youtube')!.url;
+// Same rule as the homepage series block: only claim new episodes once one is Live.
+const seriesLive = await hasLiveEpisode().catch(() => false);
 ---
 
 <SectionDivider variant="torn" />
@@ -67,7 +69,7 @@ const youtubeUrl = socialLinks.find((l) => l.platform === 'youtube')!.url;
 				</svg>
 				<div class="yt-cta-text">
 					<span class="yt-label">Watch on YouTube</span>
-					<span class="yt-sub">@CatsOnCrackMedia — new episodes dropping</span>
+					<span class="yt-sub">@CatsOnCrackMedia — {seriesLive ? 'new episodes dropping' : 'Series 1 on the way'}</span>
 				</div>
 				<span class="yt-arrow">&#8594;</span>
 			</a>

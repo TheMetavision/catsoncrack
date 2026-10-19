@@ -94,7 +94,8 @@ const books = sanityBooks.length > 0
       teaser: b.description || '',
       coverImage: b.coverImage || null,
       status: b.status || 'coming-soon',
-      orderUrl: b.orderUrl || null,
+      // buyUrl is the current field; orderUrl is the older one.
+      orderUrl: b.buyUrl || b.orderUrl || null,
     }))
   : PLACEHOLDER_BOOKS.map((b) => ({
       ...b,
