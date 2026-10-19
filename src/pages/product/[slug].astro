@@ -171,7 +171,11 @@ const productJsonLd = {
     function setHero(url) {
       if (!heroEl || !url) return;
       heroEl.dataset.orig = url;
-      if (PRINTFUL.test(url) || SANITY.test(url)) heroEl.srcset = [320, 480, 640, 800].map((w) => `${cdn(url, w)} ${w}w`).join(', ');
+      // Same widths as the first render (productSrcset in src/lib/sanityImage.ts): Printful previews are
+      // 800 px; Sanity pictures (e.g. 2000 px mockups) up to 2x the 600 px display, never above the original.
+      const ow = Number((url.match(/-(\d+)x\d+\.\w+(?:\?|$)/) || [])[1]) || 800;
+      if (PRINTFUL.test(url)) heroEl.srcset = [320, 480, 640, 800].map((w) => `${cdn(url, w)} ${w}w`).join(', ');
+      else if (SANITY.test(url)) heroEl.srcset = [320, 480, 640, 800, 1024].filter((w) => w <= Math.min(ow, 1200)).map((w) => `${cdn(url, w)} ${w}w`).join(', ');
       else heroEl.removeAttribute('srcset');
       heroEl.src = cdn(url, 600);
     }
@@ -353,6 +357,11 @@ const productJsonLd = {
         (!naturalW || !displayW) ? MAX_ZOOM
           : Math.min(MAX_ZOOM, Math.max(MIN_ZOOM, naturalW / displayW));
       if (fine) {
+        main.addEventListener('mouseenter', () => {
+          if (hero.dataset.full === hero.dataset.orig) return;
+          const orig = hero.dataset.orig;
+          withFull((full) => { hero.removeAttribute('srcset'); hero.src = full; hero.dataset.full = orig; });
+        });
         main.addEventListener('mousemove', (e) => {
           const r = main.getBoundingClientRect();
           const x = ((e.clientX - r.left) / r.width) * 100;
@@ -374,6 +383,28 @@ const productJsonLd = {
       if (!lb || !lbImg) return;
 
       let SCALE = 2.4;
+
+      /* Full-resolution picture, fetched only when someone zooms (hover or lightbox), so normal
+         page loads are unchanged. */
+      function fullSrc(orig) {
+        if (/^https:\/\/cdn\.sanity\.io\/images\//.test(orig)) {
+          const m = orig.match(/-(\d+)x\d+\.\w+(?:\?|$)/);
+          const u = new URL(orig);
+          u.searchParams.set('w', String(Math.min(m ? Number(m[1]) : 2000, 2400)));
+          u.searchParams.set('auto', 'format'); u.searchParams.set('q', '90'); u.searchParams.set('fit', 'max');
+          return u.href;
+        }
+        if (/^https:\/\/files\.cdn\.printful\.com\//.test(orig)) return `/.netlify/images?url=${encodeURIComponent(orig)}&w=800&fm=webp&q=90`;
+        return '';
+      }
+      function withFull(cb) {
+        const orig = hero.dataset.orig || '';
+        const full = fullSrc(orig);
+        if (!full) return;
+        const pre = new Image();
+        pre.onload = () => { if ((hero.dataset.orig || '') === orig) cb(full); };
+        pre.src = full;
+      }
       let zoomed = false, panX = 0, panY = 0, startX = 0, startY = 0, dragging = false, moved = false;
 
       function clamp() {
@@ -391,7 +422,8 @@ const productJsonLd = {
       function openLB() {
         hero.style.transform = '';
         hero.style.transformOrigin = '';
-        lbImg.src = hero.src;
+        lbImg.src = hero.currentSrc || hero.src;
+        withFull((full) => { if (lb.classList.contains('open')) lbImg.src = full; });
         zoomed = false; panX = 0; panY = 0;
         lb.classList.remove('zoomed', 'dragging');
         apply();
