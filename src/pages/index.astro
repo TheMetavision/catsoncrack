@@ -1,11 +1,74 @@
 ---
-import { sanityImg, sanitySrcset } from '../lib/sanityImage';
+import fs from 'node:fs';
+import path from 'node:path';
+import { PortableText } from 'astro-portabletext';
+import { sanityImg, sanitySrcset, localImg, localSrcset, productImg } from '../lib/sanityImage';
 import MerchPromo from '../components/MerchPromo.astro';
 import Layout from '../layouts/Layout.astro';
 import { tvSeriesSchema } from '../lib/schema';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
 import SectionDivider from '../components/SectionDivider.astro';
+import { getHomeSettings, hasLiveEpisode, getCharacterCount, getSquadCharacters, getHomeWorldLocations, getAllBooks, bookBuyUrl, urlFor } from '../lib/sanity';
+
+const settings = await getHomeSettings();
+const positioningLine = settings?.positioningLine?.trim()
+	|| 'An adult animated comedy about a gang of alley cats scheming, brawling and hustling their way through the backstreets of Meowtown.';
+const youtubeChannelUrl = settings?.youtubeChannelUrl || 'https://www.youtube.com/@CatsOnCrackMedia';
+const subscribeUrl = `${youtubeChannelUrl}?sub_confirmation=1`;
+
+// Trailer: only when siteSettings has a plausible YouTube ID. The poster is
+// self-hosted (public/video-thumbs/<id>.jpg, else a generic alley still) so
+// nothing loads from YouTube before the visitor presses play.
+const rawTrailerId = settings?.trailerYoutubeId?.trim();
+const trailerId = rawTrailerId && /^[\w-]{6,20}$/.test(rawTrailerId) ? rawTrailerId : null;
+const ownThumb = trailerId && fs.existsSync(path.join(process.cwd(), 'public', 'video-thumbs', `${trailerId}.jpg`));
+const seriesPoster = ownThumb
+	? { src: `/video-thumbs/${trailerId}.jpg`, width: 1280 }
+	: { src: '/images/coc-heist.jpg', width: 1392 };
+
+// Series copy follows episode status (a missing status counts as coming soon),
+// so the page never claims an episode is out early.
+const seriesLive = await hasLiveEpisode();
+
+const characterCount = await getCharacterCount();
+
+// The six characters hard-coded in the hero carousel below. No character has
+// coreSix set in Sanity yet, so the squad grid also skips these by slug.
+const HERO_SLUGS = ['toothless-terry', 'whiskers-mcscruff', 'luna-the-loner', 'chubby-cheeks', 'gizmo-the-genius', 'trixie-the-trickster'];
+const squad = (await getSquadCharacters(HERO_SLUGS, 6)).map((c: any) => ({
+	name: c.name,
+	slug: c.slug,
+	role: c.role,
+	line: c.quote || c.tagline || '',
+	image: c.imageUrl,
+}));
+
+const alleyCards = (await getHomeWorldLocations()).map((loc: any) => ({
+	name: loc.title,
+	slug: loc.slug,
+	tagline: loc.tagline,
+	image: sanityImg(loc.imageUrl, 640, { h: 400 }),
+	drawerImage: sanityImg(loc.imageUrl, 960, { h: 544 }),
+	alt: loc.alt || loc.title,
+	description: loc.description,
+	// A card opens the drawer only once its location has a description.
+	hasDrawer: Boolean(loc.slug) && Array.isArray(loc.description) && loc.description.length > 0,
+	residents: loc.residents ?? [],
+	products: (loc.featuredProducts ?? []).map((p: any) => ({
+		name: p.name,
+		slug: p.slug,
+		image: productImg(p.imageUrl || p.heroImageUrl, 400),
+	})),
+}));
+
+const books = (await getAllBooks()).map((b: any) => ({
+	title: b.title,
+	cover: b.coverImage?.asset ? urlFor(b.coverImage).width(360).height(540).fit('crop').auto('format').url() : '',
+	comingSoon: b.status === 'coming-soon',
+	buyUrl: bookBuyUrl(b),
+}));
+const anyBookPending = books.some((b) => !b.buyUrl);
 ---
 
 <Layout title="Cats On Crack - The Wildest Alley Cats You'll Ever Meet" jsonLd={tvSeriesSchema()}>
@@ -163,33 +226,49 @@ import SectionDivider from '../components/SectionDivider.astro';
 				</div>
 
 				<div class="hero-text-col fade-right hero-anim-immediate">
-					<div class="eyebrow">Now Streaming</div>
+					{seriesLive && <div class="eyebrow">Now Streaming</div>}
 					<h1 class="main-title">The Wildest Alley Cats<br>You'll Ever Meet</h1>
+					<p class="hero-positioning">{positioningLine}</p>
 					<p class="hero-body">A crew of street-savvy misfit cats. Rival gangs. Dark alleys. Glowing pipes. This is <strong>Cats On Crack</strong> — and they don't play by anyone's rules.</p>
 					<div class="hero-ctas">
-						<a href="/media" class="cta-button primary-cta">
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M8 5v14l11-7z"/></svg>
-							Watch Our Trailer
-						</a>
-						<a href="/the-alley-squad" class="cta-button secondary-cta">
-							Meet the Squad
-							<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
-						</a>
+						{trailerId ? (
+							<>
+								<a href="#series" class="cta-button primary-cta">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+									Watch Our Trailer
+								</a>
+								<a href="/the-alley-squad" class="cta-button secondary-cta">
+									Meet the Squad
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+								</a>
+							</>
+						) : (
+							<>
+								<a href="/the-alley-squad" class="cta-button primary-cta">
+									Meet the Squad
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+								</a>
+								<a href={subscribeUrl} target="_blank" rel="noopener noreferrer" class="cta-button secondary-cta">
+									<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>
+									Subscribe on YouTube
+								</a>
+							</>
+						)}
 					</div>
 					<div class="hero-stats stagger-children">
 						<div class="stat">
-							<span class="stat-number" data-count="5" data-suffix="+">5+</span>
+							<span class="stat-number">{characterCount}</span>
 							<span class="stat-label">Characters</span>
 						</div>
 						<div class="stat-divider"></div>
 						<div class="stat">
-							<span class="stat-number">Series 1</span>
-							<span class="stat-label">Now Live</span>
+							<span class="stat-number">Dark</span>
+							<span class="stat-label">Comedy</span>
 						</div>
 						<div class="stat-divider"></div>
 						<div class="stat">
-							<span class="stat-number" data-count="100" data-suffix="%">100%</span>
-							<span class="stat-label">Unfiltered</span>
+							<span class="stat-number">Adults</span>
+							<span class="stat-label">Only</span>
 						</div>
 					</div>
 				</div>
@@ -200,51 +279,278 @@ import SectionDivider from '../components/SectionDivider.astro';
 
 		
 
+		<section id="series" class="section series-section">
+			<div class="container">
+				<div class="series-grid">
+					<div class="series-media-col">
+						{trailerId ? (
+							<>
+								<div class="series-media" id="seriesTrailer">
+									<img
+										src={localImg(seriesPoster.src, 640)}
+										srcset={localSrcset(seriesPoster.src, 640, seriesPoster.width)}
+										sizes="(min-width: 900px) 560px, 100vw"
+										width="1280"
+										height="720"
+										loading="lazy"
+										alt="Cats On Crack trailer"
+										class="series-media-img"
+									/>
+									<div class="series-scanlines" aria-hidden="true"></div>
+									<button type="button" class="series-play-btn" aria-label="Play trailer (loads from YouTube)">
+										<svg viewBox="0 0 24 24" fill="white" width="28" height="28" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+									</button>
+								</div>
+								<p class="video-note">Plays from YouTube, which may set cookies.</p>
+							</>
+						) : (
+							<div class="series-media">
+								<img
+									src={localImg(seriesPoster.src, 640)}
+									srcset={localSrcset(seriesPoster.src, 640, seriesPoster.width)}
+									sizes="(min-width: 900px) 560px, 100vw"
+									width="1392"
+									height="752"
+									loading="lazy"
+									alt="A black-and-white alley cat legging it down a back alley with an armful of stolen fish, chased by a furious chef with a knife"
+									class="series-media-img"
+								/>
+								<div class="series-scanlines" aria-hidden="true"></div>
+							</div>
+						)}
+					</div>
+
+					<div class="series-text-col">
+						{seriesLive ? (
+							<>
+								<div class="series-eyebrow">Now Streaming</div>
+								<h2 class="series-heading">Series 1 Is Out</h2>
+								<p class="series-body">Episodes are up on YouTube now. Pull up a bin.</p>
+								<div class="series-ctas">
+									<a href={youtubeChannelUrl} target="_blank" rel="noopener noreferrer" class="primary-cta">Watch Now</a>
+									<a href={subscribeUrl} target="_blank" rel="noopener noreferrer" class="secondary-cta">Subscribe &rarr;</a>
+								</div>
+							</>
+						) : (
+							<>
+								<div class="series-eyebrow">{trailerId ? 'Trailer Out Now' : 'The Animated Series'}</div>
+								<h2 class="series-heading">Series 1 Is on the Way</h2>
+								<p class="series-body">
+									{trailerId
+										? "Watch the trailer, then subscribe on YouTube so you're first in the alley when the full series drops."
+										: "The cats are in the edit. Some of them are refusing to come out. Subscribe on YouTube and you'll know the second it drops."}
+								</p>
+								<div class="series-ctas">
+									<a href={subscribeUrl} target="_blank" rel="noopener noreferrer" class="primary-cta">Subscribe on YouTube</a>
+								</div>
+							</>
+						)}
+					</div>
+				</div>
+			</div>
+		</section>
+
+		{trailerId && (
+			<script define:vars={{ trailerId }}>
+				(function () {
+					// Click-to-load: nothing is requested from YouTube until the visitor
+					// presses play (the poster is self-hosted).
+					const wrap = document.getElementById('seriesTrailer');
+					if (!wrap) return;
+					wrap.addEventListener('click', function () {
+						wrap.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + trailerId + '?autoplay=1&rel=0" title="Cats On Crack trailer" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border-radius:12px;"></iframe>';
+						wrap.querySelector('iframe')?.focus();
+					});
+				})();
+			</script>
+		)}
+
 		<SectionDivider variant="spray" />
 
-		<section id="books" class="section books-section">
+		<section id="squad" class="section squad-section">
 			<div class="container">
-				<div class="content-split">
-					<div class="image-side fade-left">
-						<div class="image-card">
-							<img
-								src="/images/coc-coming-soon.jpg"
-								alt="Cats on Crack - Coming Soon"
-							/>
-						</div>
-					</div>
-					<div class="text-side fade-right">
-						<h2 class="section-title glow-text">Chaos, Claws, and Crack-Pipe Capers – The Ultimate Alley Adventure!</h2>
-						<p>Dive into the gritty, hilarious world of <em>Cats on Crack</em>! This action-packed book series follows a crew of unpredictable alley cats as they hustle, brawl, and outsmart their rivals in the city's darkest corners. Fast-paced, wild, and full of twists—once you start, you won't stop!</p>
-						<a href="/media#books" class="cta-button secondary">Check Out Our Series</a>
-					</div>
+				<div class="squad-header">
+					<p class="squad-eyebrow">The Wider Crew</p>
+					<h2 class="section-title glow-text">Everyone Else in the Alley</h2>
+					<p class="squad-intro">Six of them get the posters. These lot get the blame.</p>
+				</div>
+
+				<ul class="squad-grid">
+					{squad.map((char) => (
+						<li>
+							<a href={`/the-alley-squad#${char.slug}`} class="squad-card">
+								<div class="squad-card-img-wrap">
+									{char.image && (
+										<img
+											src={sanityImg(char.image, 400, { h: 600 })}
+											srcset={[280, 400, 600, 800].map((w) => `${sanityImg(char.image, w, { h: w * 1.5 })} ${w}w`).join(', ')}
+											sizes="(min-width: 1024px) 360px, (min-width: 768px) 45vw, 90vw"
+											width="400"
+											height="600"
+											alt=""
+											class="squad-card-img"
+											loading="lazy"
+										/>
+									)}
+								</div>
+								<div class="squad-card-body">
+									<p class="squad-card-role">{char.role}</p>
+									<p class="squad-card-name">{char.name}</p>
+									{char.line && <p class="squad-card-line">"{char.line}"</p>}
+								</div>
+							</a>
+						</li>
+					))}
+				</ul>
+
+				<p class="squad-footnote">That's just the start — {characterCount} cats, crooks and creatures in the alley.</p>
+				<div class="squad-cta">
+					<a href="/the-alley-squad" class="cta-button secondary">Meet The Gang</a>
 				</div>
 			</div>
 		</section>
 
-		<SectionDivider variant="crack" flip={true} />
+		{alleyCards.length > 0 && (
+			<>
+				<SectionDivider variant="crack" flip={true} />
 
-		<section id="characters" class="section characters-section">
-			<div class="container">
-				<div class="content-split reverse">
-					<div class="text-side fade-left">
-						<h2 class="section-title glow-text">Meet the Squad – The Wildest Cats in Town!</h2>
-						<p>Get to know the misfit crew that rules the alley! From cunning masterminds to chaos-loving rogues, each cat brings their own brand of madness. Meet the legends, learn their stories, and see who's clawing their way to the top!</p>
-						<a href="/the-alley-squad" class="cta-button secondary">Meet The Gang</a>
-					</div>
-					<div class="image-side fade-right">
-						<div class="image-card">
-							<img
-								src="/images/coc-characters.png"
-								alt="Cats on Crack Characters"
-							/>
+				<section class="section alley-section" id="the-alley">
+					<div class="container">
+						<div class="alley-header">
+							<p class="squad-eyebrow">The World</p>
+							<h2 class="section-title glow-text">Welcome to the Alley</h2>
+							<p class="alley-body">
+								Meowtown's back end. Bins, pipes and grudges older than most of the residents. Nobody's in charge. Several cats think they are.
+							</p>
+						</div>
+
+						<div class="alley-location-grid">
+							{alleyCards.map((card) => card.hasDrawer ? (
+								<button
+									type="button"
+									class="location-card location-card--button"
+									style={`background-image: url('${card.image}');`}
+									data-alley-open={card.slug}
+									aria-haspopup="dialog"
+									aria-controls={`alley-drawer-${card.slug}`}
+								>
+									<span class="location-card-overlay"></span>
+									<span class="location-card-marker" aria-hidden="true">+</span>
+									<span class="location-card-content">
+										<span class="location-card-name">{card.name}</span>
+										<span class="location-card-tagline">{card.tagline}</span>
+									</span>
+								</button>
+							) : (
+								<div
+									class="location-card"
+									style={`background-image: url('${card.image}');`}
+									role="img"
+									aria-label={card.alt}
+								>
+									<div class="location-card-overlay"></div>
+									<div class="location-card-content">
+										<span class="location-card-name">{card.name}</span>
+										<span class="location-card-tagline">{card.tagline}</span>
+									</div>
+								</div>
+							))}
 						</div>
 					</div>
-				</div>
-			</div>
-		</section>
 
-		<SectionDivider variant="spray" flip={true} />
+					{alleyCards.filter((card) => card.hasDrawer).map((card) => (
+						<dialog class="alley-drawer" id={`alley-drawer-${card.slug}`} data-alley-drawer={card.slug} aria-labelledby={`alley-drawer-title-${card.slug}`}>
+							<div class="alley-drawer-panel">
+								<button type="button" class="alley-drawer-close" data-alley-close aria-label="Close">
+									<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+								</button>
+								{card.drawerImage && (
+									<img class="alley-drawer-img" src={card.drawerImage} alt={card.alt} width="960" height="544" loading="lazy" />
+								)}
+								<div class="alley-drawer-body">
+									<p class="squad-eyebrow">Meowtown</p>
+									<h2 class="alley-drawer-title" id={`alley-drawer-title-${card.slug}`}>{card.name}</h2>
+									<p class="alley-drawer-tagline">{card.tagline}</p>
+									<div class="alley-drawer-desc">
+										<PortableText value={card.description} />
+									</div>
+
+									{card.residents.length > 0 && (
+										<div class="alley-drawer-group">
+											<h3 class="alley-drawer-subhead">Who Lives Here</h3>
+											<ul class="alley-chips">
+												{card.residents.map((r: any) => (
+													<li><a class="alley-chip" href={`/the-alley-squad#${r.slug}`}>{r.name}</a></li>
+												))}
+											</ul>
+										</div>
+									)}
+
+									{card.products.length > 0 && (
+										<div class="alley-drawer-group">
+											<h3 class="alley-drawer-subhead">Grab the Gear</h3>
+											<ul class="alley-products">
+												{card.products.map((p: any) => (
+													<li>
+														<a class="alley-product" href={`/product/${p.slug}`}>
+															{p.image && <img src={p.image} alt="" width="200" height="200" loading="lazy" />}
+															<span class="alley-product-name">{p.name}</span>
+														</a>
+													</li>
+												))}
+											</ul>
+										</div>
+									)}
+								</div>
+							</div>
+						</dialog>
+					))}
+				</section>
+			</>
+		)}
+
+		{books.length > 0 && (
+			<>
+				<SectionDivider variant="spray" flip={true} />
+
+				<section id="books" class="section books-section">
+					<div class="container">
+						<div class="books-grid-wrap">
+							<div class="books-text">
+								<p class="squad-eyebrow">The Books</p>
+								<h2 class="section-title glow-text">Chaos, Claws, and Crack-Pipe Capers – The Ultimate Alley Adventure!</h2>
+								{anyBookPending ? (
+									<p>The crew are getting a book series. They hustle, brawl and outsmart their rivals in Meowtown's darkest corners, and it doesn't get any nicer in print. Get on the list and you'll hear the second the first one lands.</p>
+								) : (
+									<p>Dive into the gritty, hilarious world of <em>Cats on Crack</em>! This action-packed book series follows a crew of unpredictable alley cats as they hustle, brawl, and outsmart their rivals in the city's darkest corners. Fast-paced, wild, and full of twists—once you start, you won't stop!</p>
+								)}
+								{anyBookPending && (
+									<a href="#newsletter" class="cta-button secondary">Put me on the list</a>
+								)}
+							</div>
+							<ul class="book-grid">
+								{books.map((book) => (
+									<li class="book-item">
+										<div class="book-cover-wrap">
+											{book.cover
+												? <img src={book.cover} alt={`${book.title} cover`} width="360" height="540" loading="lazy" class="book-cover" />
+												: <div class="book-cover book-cover--blank" aria-hidden="true"></div>}
+											{book.comingSoon && <span class="book-badge">Coming soon</span>}
+										</div>
+										<p class="book-title">{book.title}</p>
+										{book.buyUrl && (
+											<a href={book.buyUrl} target="_blank" rel="noopener noreferrer" class="book-buy">Get the book<span class="visually-hidden"> — {book.title}</span></a>
+										)}
+									</li>
+								))}
+							</ul>
+						</div>
+					</div>
+				</section>
+			</>
+		)}
+
+		<SectionDivider variant="spray" />
 
 		<MerchPromo
 			accent="#ff00ff"
@@ -268,7 +574,7 @@ import SectionDivider from '../components/SectionDivider.astro';
 						/>
 					</div>
 					<div class="newsletter-text">
-						<h2 class="glow-text">Exclusive Alley Secrets, Sneaky Schemes & Feline Mayhem Delivered Weekly!</h2>
+						<h2 class="glow-text">Hear It From the Alley Before the Pigeon Does</h2>
 						<p class="subtitle">Subscribe to our newsletter</p>
 						<form class="newsletter-form" id="newsletterForm">
 							<input
@@ -475,7 +781,9 @@ import SectionDivider from '../components/SectionDivider.astro';
 	.books-section {
 		background: #181b22;
 	}
-	.characters-section {
+	.series-section,
+	.squad-section,
+	.alley-section {
 		background: #181b22;
 	}
 	.newsletter-section {
@@ -986,32 +1294,6 @@ import SectionDivider from '../components/SectionDivider.astro';
 		text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
 	}
 
-	.content-split {
-		display: flex;
-		flex-direction: column;
-		gap: 40px;
-		align-items: center;
-		max-width: 900px;
-		margin: 0 auto;
-	}
-
-	.content-split.reverse {
-		direction: ltr;
-	}
-
-	.content-split.reverse > * {
-		direction: ltr;
-	}
-
-	.content-split .image-side {
-		width: 100%;
-	}
-
-	.content-split .text-side {
-		text-align: center;
-		width: 100%;
-	}
-
 	.section-title {
 		font-size: clamp(2rem, 4vw, 3rem);
 		margin-bottom: 25px;
@@ -1019,32 +1301,687 @@ import SectionDivider from '../components/SectionDivider.astro';
 		color: var(--primary);
 	}
 
-	.text-side p {
-		font-size: 1.1rem;
-		line-height: 1.8;
-		color: var(--text-secondary);
-		margin-bottom: 30px;
+	.visually-hidden {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip: rect(0, 0, 0, 0);
+		white-space: nowrap;
+		border: 0;
 	}
 
-	.image-card {
+	.hero-positioning {
+		font-size: 1.2rem;
+		line-height: 1.6;
+		color: #fff;
+		margin: -8px 0 18px;
+		max-width: 480px;
+	}
+
+	/* ── Series (trailer or "on the way") ───────────────────── */
+	.series-grid {
+		display: grid;
+		grid-template-columns: 1.1fr 1fr;
+		gap: 56px;
+		align-items: center;
+	}
+
+	.series-media {
 		position: relative;
+		width: 100%;
+		aspect-ratio: 16 / 9;
 		border-radius: 12px;
 		overflow: hidden;
-		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
-		transition: transform 0.3s ease, box-shadow 0.3s ease;
 		border: 2px solid rgba(255, 0, 255, 0.2);
+		box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+		background: #000;
 	}
 
-	.image-card:hover {
-		transform: translateY(-10px);
-		box-shadow: 0 20px 60px rgba(255, 0, 255, 0.4);
+	#seriesTrailer {
+		cursor: pointer;
+	}
+
+	.series-media-img {
+		position: absolute;
+		inset: 0;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		transition: transform 0.4s ease, filter 0.3s ease;
+	}
+
+	#seriesTrailer:hover .series-media-img {
+		transform: scale(1.03);
+		filter: brightness(0.8);
+	}
+
+	.series-scanlines {
+		position: absolute;
+		inset: 0;
+		background: repeating-linear-gradient(to bottom, transparent, transparent 2px, rgba(0, 0, 0, 0.15) 2px, rgba(0, 0, 0, 0.15) 3px);
+		pointer-events: none;
+		z-index: 1;
+	}
+
+	.series-play-btn {
+		position: absolute;
+		top: 50%;
+		left: 50%;
+		transform: translate(-50%, -50%);
+		z-index: 2;
+		width: 68px;
+		height: 68px;
+		border-radius: 50%;
+		background: rgba(0, 0, 0, 0.6);
+		border: 2px solid rgba(255, 255, 255, 0.85);
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		padding: 0;
+	}
+
+	.series-play-btn svg {
+		margin-left: 4px;
+	}
+
+	#seriesTrailer:hover .series-play-btn,
+	.series-play-btn:focus-visible {
+		background: rgba(255, 0, 255, 0.85);
+		border-color: #fff;
+		transform: translate(-50%, -50%) scale(1.08);
+	}
+
+	.series-play-btn:focus-visible {
+		outline: 3px solid #fff;
+		outline-offset: 3px;
+	}
+
+	.video-note {
+		margin: 10px 0 0;
+		font-size: 0.78rem;
+		color: rgba(255, 255, 255, 0.55);
+		text-align: center;
+	}
+
+	.series-eyebrow,
+	.squad-eyebrow {
+		font-family: 'Inter', sans-serif;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 4px;
+		text-transform: uppercase;
+		color: var(--primary);
+		margin-bottom: 14px;
+	}
+
+	.series-heading {
+		font-size: clamp(2.2rem, 4vw, 3.2rem);
+		color: #fff;
+		line-height: 1.05;
+		letter-spacing: 2px;
+		margin-bottom: 18px;
+	}
+
+	.series-body {
+		font-size: 1.05rem;
+		line-height: 1.8;
+		color: var(--text-secondary);
+		margin-bottom: 28px;
+	}
+
+	.series-ctas {
+		display: flex;
+		gap: 16px;
+		flex-wrap: wrap;
+	}
+
+	/* ── Squad grid (the wider crew) ────────────────────────── */
+	.squad-header,
+	.alley-header {
+		text-align: center;
+		max-width: 720px;
+		margin: 0 auto 48px;
+	}
+
+	.squad-intro,
+	.alley-body {
+		font-size: 1.05rem;
+		line-height: 1.8;
+		color: var(--text-secondary);
+		margin: 0;
+	}
+
+	.squad-grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 24px;
+	}
+
+	.squad-card {
+		height: 100%;
+		display: flex;
+		flex-direction: column;
+		background: var(--bg-card);
+		border: 1px solid rgba(255, 255, 255, 0.08);
+		border-radius: 12px;
+		overflow: hidden;
+		text-decoration: none;
+		transition: transform 0.3s ease, box-shadow 0.3s ease, border-color 0.3s ease;
+	}
+
+	.squad-card:hover,
+	.squad-card:focus-visible {
+		border-color: var(--primary);
+		transform: translateY(-4px);
+		box-shadow: 0 8px 28px rgba(255, 0, 255, 0.2);
+		text-shadow: none;
+	}
+
+	.squad-card:focus-visible {
+		outline: 3px solid #fff;
+		outline-offset: 3px;
+	}
+
+	.squad-card-img-wrap {
+		aspect-ratio: 2 / 3;
+		overflow: hidden;
+		background: var(--bg-darker, #0d0f14);
+	}
+
+	.squad-card-img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		object-position: top center;
+		display: block;
+		transition: transform 0.3s ease;
+	}
+
+	.squad-card:hover .squad-card-img {
+		transform: scale(1.03);
+	}
+
+	.squad-card-body {
+		padding: 20px;
+	}
+
+	.squad-card-role {
+		font-size: 0.72rem;
+		font-weight: 700;
+		letter-spacing: 3px;
+		text-transform: uppercase;
+		color: var(--primary);
+		margin-bottom: 6px;
+	}
+
+	.squad-card-name {
+		font-family: 'Bebas Neue', 'Impact', sans-serif;
+		font-size: 1.7rem;
+		letter-spacing: 2px;
+		color: #fff;
+		line-height: 1;
+		margin-bottom: 10px;
+	}
+
+	.squad-card-line {
+		font-size: 0.9rem;
+		font-style: italic;
+		line-height: 1.5;
+		color: rgba(255, 255, 255, 0.6);
+		margin: 0;
+	}
+
+	.squad-footnote {
+		color: var(--text-secondary);
+		font-size: 1rem;
+		text-align: center;
+		margin: 40px 0 0;
+	}
+
+	.squad-cta {
+		text-align: center;
+	}
+
+	/* ── The Alley: location cards + drawer ─────────────────── */
+	.alley-location-grid {
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 20px;
+	}
+
+	.location-card {
+		position: relative;
+		display: flex;
+		flex-direction: column;
+		justify-content: flex-end;
+		min-height: 240px;
+		padding: 36px 28px 32px;
+		background-color: var(--bg-card);
+		background-size: cover;
+		background-position: center;
+		border: 1px solid rgba(255, 0, 255, 0.35);
+		border-radius: 12px;
+		overflow: hidden;
+		transition: border-color 0.25s ease, transform 0.25s ease, box-shadow 0.25s ease;
+	}
+
+	.location-card:hover {
+		border-color: var(--primary);
+		transform: translateY(-4px);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.35);
+	}
+
+	.location-card-overlay {
+		position: absolute;
+		inset: 0;
+		display: block;
+		background: linear-gradient(180deg, rgba(24, 27, 34, 0.3) 0%, rgba(24, 27, 34, 0.92) 100%);
+		pointer-events: none;
+	}
+
+	.location-card-marker {
+		position: absolute;
+		top: 14px;
+		right: 18px;
+		z-index: 2;
+		font-family: 'Bebas Neue', 'Impact', sans-serif;
+		font-size: 1.8rem;
+		line-height: 1;
+		color: rgba(255, 255, 255, 0.9);
+		text-shadow: 0 1px 3px rgba(0, 0, 0, 0.6);
+	}
+
+	.location-card-content {
+		position: relative;
+		z-index: 2;
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.location-card-name {
+		font-family: 'Bebas Neue', 'Impact', sans-serif;
+		font-size: 1.6rem;
+		letter-spacing: 2px;
+		color: #fff;
+		line-height: 1;
+	}
+
+	.location-card-tagline {
+		font-size: 0.9rem;
+		line-height: 1.45;
+		color: rgba(255, 255, 255, 0.82);
+	}
+
+	.location-card--button {
+		width: 100%;
+		font: inherit;
+		color: inherit;
+		text-align: left;
+		cursor: pointer;
+	}
+
+	.location-card--button:focus-visible {
+		outline: 3px solid #fff;
+		outline-offset: 3px;
 		border-color: var(--primary);
 	}
 
-	.image-card img {
+	.alley-drawer {
+		padding: 0;
+		border: none;
+		background: transparent;
+		color: #fff;
+		/* Right-hand panel on wide screens, full width on phones. */
+		margin: 0 0 0 auto;
+		width: min(480px, 100%);
+		max-width: 100%;
+		height: 100dvh;
+		max-height: 100dvh;
+		overflow: hidden;
+	}
+
+	.alley-drawer::backdrop {
+		background: rgba(0, 0, 0, 0.6);
+	}
+
+	.alley-drawer[open] .alley-drawer-panel {
+		animation: alley-drawer-in 0.28s ease-out;
+	}
+
+	.alley-drawer[open]::backdrop {
+		animation: alley-backdrop-in 0.28s ease-out;
+	}
+
+	@keyframes alley-drawer-in {
+		from { transform: translateX(100%); }
+		to { transform: translateX(0); }
+	}
+
+	@keyframes alley-backdrop-in {
+		from { opacity: 0; }
+		to { opacity: 1; }
+	}
+
+	.alley-drawer-panel {
+		position: relative;
+		height: 100%;
+		overflow-y: auto;
+		overscroll-behavior: contain;
+		background: var(--bg-card);
+		border-left: 3px solid var(--primary);
+		box-shadow: -12px 0 40px rgba(0, 0, 0, 0.45);
+	}
+
+	.alley-drawer-close {
+		position: absolute;
+		top: 12px;
+		right: 12px;
+		z-index: 2;
+		width: 44px;
+		height: 44px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		border-radius: 50%;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		background: rgba(24, 27, 34, 0.85);
+		color: #fff;
+	}
+
+	.alley-drawer-close:hover {
+		background: var(--primary);
+		border-color: var(--primary);
+	}
+
+	.alley-drawer-close:focus-visible {
+		outline: 3px solid #fff;
+		outline-offset: 2px;
+	}
+
+	.alley-drawer-img {
+		display: block;
 		width: 100%;
 		height: auto;
+		aspect-ratio: 960 / 544;
+		object-fit: cover;
+	}
+
+	.alley-drawer-body {
+		padding: 24px 28px 40px;
+	}
+
+	.alley-drawer-title {
+		font-size: clamp(2rem, 5vw, 2.6rem);
+		line-height: 1;
+		letter-spacing: 2px;
+		color: #fff;
+		margin: 0 0 8px;
+	}
+
+	.alley-drawer-tagline {
+		font-style: italic;
+		color: var(--primary);
+		margin: 0 0 20px;
+	}
+
+	.alley-drawer-desc :global(p) {
+		color: rgba(255, 255, 255, 0.78);
+		font-size: 1rem;
+		line-height: 1.7;
+		margin: 0 0 14px;
+	}
+
+	.alley-drawer-group {
+		margin-top: 28px;
+	}
+
+	.alley-drawer-subhead {
+		font-family: 'Inter', sans-serif;
+		font-size: 0.75rem;
+		font-weight: 700;
+		letter-spacing: 3px;
+		text-transform: uppercase;
+		color: rgba(255, 255, 255, 0.6);
+		margin: 0 0 12px;
+	}
+
+	.alley-chips {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.alley-chip {
+		display: inline-flex;
+		align-items: center;
+		min-height: 36px;
+		padding: 6px 14px;
+		border-radius: 999px;
+		border: 1px solid rgba(255, 0, 255, 0.6);
+		background: rgba(255, 0, 255, 0.12);
+		color: #fff;
+		font-size: 0.8rem;
+		font-weight: 700;
+		letter-spacing: 1px;
+		text-transform: uppercase;
+	}
+
+	.alley-products {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(2, 1fr);
+		gap: 12px;
+	}
+
+	.alley-product {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+		height: 100%;
+		padding: 10px;
+		border: 1px solid rgba(255, 255, 255, 0.1);
+		border-radius: 8px;
+		background: var(--black);
+		color: #fff;
+	}
+
+	.alley-product img {
+		width: 100%;
+		height: auto;
+		aspect-ratio: 1;
+		object-fit: cover;
+		border-radius: 4px;
+		background: #fff;
+	}
+
+	.alley-product-name {
+		font-size: 0.85rem;
+		font-weight: 700;
+		line-height: 1.2;
+	}
+
+	.alley-chip:hover,
+	.alley-chip:focus-visible {
+		background: var(--primary);
+		border-color: var(--primary);
+		color: #fff;
+		text-shadow: none;
+	}
+
+	.alley-product:hover,
+	.alley-product:focus-visible {
+		border-color: var(--primary);
+		color: #fff;
+		text-shadow: none;
+	}
+
+	.alley-chip:focus-visible,
+	.alley-product:focus-visible {
+		outline: 3px solid #fff;
+		outline-offset: 2px;
+	}
+
+	/* ── Books (from Sanity book docs) ──────────────────────── */
+	.books-grid-wrap {
+		display: grid;
+		grid-template-columns: 1fr 1.1fr;
+		gap: 56px;
+		align-items: center;
+	}
+
+	.books-text p {
+		font-size: 1.1rem;
+		line-height: 1.8;
+		color: var(--text-secondary);
+		margin-bottom: 10px;
+	}
+
+	.book-grid {
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		display: grid;
+		grid-template-columns: repeat(3, 1fr);
+		gap: 18px;
+	}
+
+	.book-item {
+		display: flex;
+		flex-direction: column;
+		gap: 8px;
+	}
+
+	.book-cover-wrap {
+		position: relative;
+	}
+
+	.book-cover {
 		display: block;
+		width: 100%;
+		height: auto;
+		aspect-ratio: 2 / 3;
+		object-fit: cover;
+		border-radius: 6px;
+		border: 1px solid rgba(255, 0, 255, 0.2);
+		box-shadow: 0 10px 32px rgba(0, 0, 0, 0.45);
+	}
+
+	.book-cover--blank {
+		background: var(--bg-card);
+	}
+
+	.book-badge {
+		position: absolute;
+		top: 10px;
+		left: 10px;
+		background: var(--primary);
+		color: #fff;
+		font-size: 0.62rem;
+		font-weight: 700;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		padding: 4px 9px;
+		border-radius: 3px;
+		box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+	}
+
+	.book-title {
+		margin: 0;
+		font-family: 'Bebas Neue', 'Impact', sans-serif;
+		font-size: 1.15rem;
+		letter-spacing: 1px;
+		color: #fff;
+		line-height: 1.1;
+	}
+
+	.book-buy {
+		align-self: flex-start;
+		font-size: 0.78rem;
+		font-weight: 700;
+		letter-spacing: 2px;
+		text-transform: uppercase;
+		color: #fff;
+		border-bottom: 2px solid var(--primary);
+	}
+
+	@media (max-width: 1024px) {
+		.squad-grid,
+		.alley-location-grid {
+			grid-template-columns: repeat(2, 1fr);
+		}
+	}
+
+	@media (max-width: 900px) {
+		.series-grid,
+		.books-grid-wrap {
+			grid-template-columns: 1fr;
+			gap: 32px;
+		}
+
+		.series-text-col,
+		.books-text {
+			text-align: center;
+		}
+
+		.series-ctas {
+			justify-content: center;
+		}
+	}
+
+	@media (max-width: 600px) {
+		.squad-grid,
+		.alley-location-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.location-card {
+			min-height: 180px;
+		}
+
+		.book-grid {
+			gap: 10px;
+		}
+
+		.alley-drawer-panel {
+			border-left: none;
+		}
+
+		.alley-drawer-body {
+			padding: 20px 18px 32px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.alley-drawer[open] .alley-drawer-panel,
+		.alley-drawer[open]::backdrop {
+			animation: none;
+		}
+
+		.location-card,
+		.location-card:hover,
+		.squad-card,
+		.squad-card:hover,
+		.squad-card:focus-visible,
+		.squad-card-img,
+		.squad-card:hover .squad-card-img,
+		.series-media-img,
+		#seriesTrailer:hover .series-media-img {
+			transition: none;
+			transform: none;
+		}
 	}
 
 	.newsletter-section {
@@ -1391,4 +2328,82 @@ import SectionDivider from '../components/SectionDivider.astro';
 
 		startTimer();
 	})();
+
+	// ── The Alley drawer ─────────────────────────────────────
+	// Only cards with a description render as buttons (and get a <dialog>); with
+	// none, this finds nothing. The whole section is absent until a location
+	// is featured on the homepage with an image.
+	const ALLEY_HASH = '#the-alley/';
+	const alleyDialogs = new Map<string, HTMLDialogElement>();
+	document.querySelectorAll<HTMLDialogElement>('dialog[data-alley-drawer]').forEach((d) => {
+		alleyDialogs.set(d.dataset.alleyDrawer!, d);
+	});
+	let alleyOpener: HTMLElement | null = null;
+	let alleyOpenSlug: string | null = null;
+
+	function alleyCardFor(slug: string) {
+		return document.querySelector<HTMLElement>(`[data-alley-open="${CSS.escape(slug)}"]`);
+	}
+
+	function openAlley(slug: string, opener: HTMLElement | null) {
+		const dialog = alleyDialogs.get(slug);
+		if (!dialog || dialog.open) return;
+		alleyDialogs.forEach((d, s) => { if (d.open) closeAlley(d, s); });
+		alleyOpener = opener ?? alleyCardFor(slug);
+		alleyOpenSlug = slug;
+		dialog.showModal();
+		dialog.querySelector<HTMLElement>('[data-alley-close]')?.focus();
+		if (location.hash !== ALLEY_HASH + slug) {
+			history.replaceState(null, '', ALLEY_HASH + slug);
+		}
+	}
+
+	// Tidy up synchronously rather than waiting for the dialog's async 'close'
+	// event (which a browser may defer, e.g. in a background tab); 'close' still
+	// calls this as a fallback, so it must be safe to run twice.
+	function closeAlley(dialog: HTMLDialogElement, slug: string) {
+		if (dialog.open) dialog.close();
+		if (alleyOpenSlug !== slug) return;
+		alleyOpenSlug = null;
+		if (location.hash === ALLEY_HASH + slug) {
+			history.replaceState(null, '', location.pathname + location.search);
+		}
+		(alleyOpener ?? alleyCardFor(slug))?.focus();
+		alleyOpener = null;
+	}
+
+	alleyDialogs.forEach((dialog, slug) => {
+		dialog.addEventListener('close', () => closeAlley(dialog, slug));
+		// Esc
+		dialog.addEventListener('cancel', (e) => { e.preventDefault(); closeAlley(dialog, slug); });
+		// A click on the dialog box itself (not the panel) is a backdrop click.
+		dialog.addEventListener('click', (e) => { if (e.target === dialog) closeAlley(dialog, slug); });
+		dialog.querySelector('[data-alley-close]')?.addEventListener('click', () => closeAlley(dialog, slug));
+		dialog.addEventListener('keydown', (e) => {
+			// Esc is handled here too, so closing never depends on the native 'cancel'.
+			if (e.key === 'Escape') { e.preventDefault(); closeAlley(dialog, slug); return; }
+			// Keep Tab inside the drawer.
+			if (e.key !== 'Tab') return;
+			const focusable = Array.from(dialog.querySelectorAll<HTMLElement>('a[href], button:not([disabled])'));
+			if (!focusable.length) return;
+			const first = focusable[0];
+			const last = focusable[focusable.length - 1];
+			if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+			else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+		});
+	});
+
+	document.querySelectorAll<HTMLElement>('[data-alley-open]').forEach((card) => {
+		card.addEventListener('click', () => openAlley(card.dataset.alleyOpen!, card));
+	});
+
+	function openAlleyFromHash() {
+		if (!location.hash.startsWith(ALLEY_HASH)) return;
+		const slug = decodeURIComponent(location.hash.slice(ALLEY_HASH.length));
+		if (!alleyDialogs.has(slug)) return;
+		alleyCardFor(slug)?.scrollIntoView({ block: 'center' });
+		openAlley(slug, null);
+	}
+	window.addEventListener('hashchange', openAlleyFromHash);
+	openAlleyFromHash();
 </script>

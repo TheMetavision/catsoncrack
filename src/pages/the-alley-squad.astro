@@ -15,6 +15,7 @@ const client = createClient({
 const allCharacters = await client.fetch(`
 	*[_type == "character"] | order(sortOrder asc) {
 		name,
+		"slug": slug.current,
 		role,
 		bio,
 		tagline,
@@ -50,7 +51,7 @@ const shortNames: Record<string, string> = {
 	"Fido the Fence": "Fido",
 };
 
-const characters = allCharacters.map((char: any) => {
+const characters = allCharacters.map((char: any, i: number) => {
 	const accent = char.accent || '#ff8c00';
 	const r = parseInt(accent.slice(1, 3), 16);
 	const g = parseInt(accent.slice(3, 5), 16);
@@ -68,6 +69,8 @@ const characters = allCharacters.map((char: any) => {
 		bio: char.bio || '',
 		realImage: char.imageUrl || char.externalImageUrl || null,
 		shortName: shortNames[char.name] || char.name.split(' ')[0],
+		// Anchor id, so links like /the-alley-squad#jinx land on the right profile.
+		anchor: char.slug || `char-${i}`,
 	};
 });
 ---
@@ -98,7 +101,7 @@ const characters = allCharacters.map((char: any) => {
 					<div class="intro-art-block">
 						<div class="squad-mosaic">
 							{characters.map((c: any, i: number) => (
-								<a href={`#char-${i}`} class="mosaic-tile" style={`--accent: ${c.accent}; --accent-dim: ${c.accentDim}; --delay: ${i * 0.04}s`} title={c.name}>
+								<a href={`#${c.anchor}`} class="mosaic-tile" style={`--accent: ${c.accent}; --accent-dim: ${c.accentDim}; --delay: ${i * 0.04}s`} title={c.name}>
 									{c.realImage ? (
 										<img src={sanityImg(c.realImage, 200, { h: 260 })} width="200" height="260" alt={c.name} class="mosaic-img" loading="lazy" />
 									) : (
@@ -133,7 +136,7 @@ const characters = allCharacters.map((char: any) => {
 				<div class="character-profiles">
 					{characters.map((char: any, i: number) => (
 						<article
-							id={`char-${i}`}
+							id={char.anchor}
 							class={`character-profile fade-in ${i % 2 === 1 ? 'reverse' : ''}`}
 							style={`--char-accent: ${char.accent}; --char-dim: ${char.accentDim}; --char-glow: ${char.accentGlow}`}
 						>
@@ -244,6 +247,8 @@ const characters = allCharacters.map((char: any) => {
 	.characters-section { background: var(--bg-dark); }
 	.character-profiles { display: flex; flex-direction: column; gap: 60px; }
 	.character-profile { display: grid; grid-template-columns: 380px 1fr; gap: 50px; align-items: start; padding: 40px; background: var(--bg-card); border-radius: 16px; border: 1px solid rgba(255, 255, 255, 0.07); transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); position: relative; overflow: hidden; }
+	/* Clears the fixed nav when a #slug link lands on a profile. */
+	.character-profile { scroll-margin-top: 120px; }
 	.character-profile::before { content: ''; position: absolute; inset: 0; border-radius: 16px; border: 2px solid transparent; background: linear-gradient(135deg, var(--char-accent), transparent 60%) border-box; -webkit-mask: linear-gradient(#fff 0 0) padding-box, linear-gradient(#fff 0 0); -webkit-mask-composite: destination-out; mask-composite: exclude; opacity: 0; transition: opacity 0.4s ease; }
 	.character-profile::after { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 3px; background: linear-gradient(90deg, transparent, var(--char-accent), transparent); opacity: 0; transition: opacity 0.4s ease; border-radius: 16px 16px 0 0; }
 	.character-profile:hover { transform: translateY(-6px); border-color: var(--char-glow); box-shadow: 0 20px 50px rgba(0, 0, 0, 0.4), 0 0 30px var(--char-glow), 0 0 60px rgba(0, 0, 0, 0.2); }

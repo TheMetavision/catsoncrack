@@ -76,9 +76,14 @@ export async function getAllBooks() {
     *[_type == "book" && ${NOT_DRAFT}] | order(seriesOrder asc, _createdAt asc) {
       _id, title, "slug": slug.current,
       description, coverImage,
-      seriesOrder, format, status, orderUrl, publishedAt
+      seriesOrder, format, status, orderUrl, buyUrl, publishedAt
     }
   `);
+}
+
+/** A book's buy link, only once it is out: buyUrl set and status not coming-soon. */
+export function bookBuyUrl(book: any): string | null {
+  return book?.status !== 'coming-soon' && book?.buyUrl ? book.buyUrl : null;
 }
 
 // ─── Blog Posts (Alleyway Gazette) ────────────────────────────
@@ -243,12 +248,98 @@ export async function getPageBySlug(slug: string) {
 // ─── Site Settings ────────────────────────────────────────────
 export async function getSiteSettings() {
   return client.fetch(`
-    *[_type == "siteSettings" && ${NOT_DRAFT}][0] {
+    *[_type == "siteSettings" && _id == "siteSettings"][0] {
       siteName, tagline, siteDescription, contactEmail, youtubeChannel,
       socialLinks, announcementBar, logo, footerLogo, footerText,
       newsletterHeadline, newsletterSubtext
     }
   `);
+}
+
+// ─── Homepage ─────────────────────────────────────────────────
+// Pinned to the canonical singleton (`_id == "siteSettings"`), like getThemeAudio.
+export async function getHomeSettings() {
+  return client.fetch(`
+    *[_type == "siteSettings" && _id == "siteSettings"][0]{
+      positioningLine,
+      trailerYoutubeId,
+      "youtubeChannelUrl": coalesce(youtubeChannelUrl, youtubeChannel)
+    }
+  `);
+}
+
+/**
+ * True once any episode is marked Live. An episode with no status counts as
+ * coming soon. Fetched once per build: the footer asks on every page.
+ */
+let liveEpisodePromise: Promise<boolean> | null = null;
+export function hasLiveEpisode(): Promise<boolean> {
+  liveEpisodePromise ??= client
+    .fetch(`count(*[_type == "episode" && status == "live" && ${NOT_DRAFT}])`)
+    .then((n: number) => n > 0);
+  return liveEpisodePromise;
+}
+
+export async function getCharacterCount(): Promise<number> {
+  return client.fetch(`count(*[_type == "character" && ${NOT_DRAFT}])`);
+}
+
+/**
+ * The wider crew for the homepage squad grid: characters not in the hero
+ * carousel (coreSix, or one of the `exclude` slugs), by displayOrder then name.
+ */
+export async function getSquadCharacters(exclude: string[], limit = 6) {
+  return client.fetch(`
+    *[_type == "character" && coreSix != true && defined(slug.current) && !(slug.current in $exclude) && ${NOT_DRAFT}]
+      | order(coalesce(displayOrder, 9999) asc, name asc)[0...$limit] {
+      name, "slug": slug.current, role, quote, tagline, "imageUrl": image.asset->url
+    }
+  `, { exclude, limit });
+}
+
+/**
+ * Locations for the homepage Alley section: only ones flagged for the homepage
+ * that have an image. The section renders nothing while this is empty.
+ */
+export async function getHomeWorldLocations() {
+  return client.fetch(`
+    *[_type == "worldLocation" && featuredOnHomepage == true && defined(image.asset) && ${NOT_DRAFT}] | order(order asc) {
+      title,
+      "slug": slug.current,
+      tagline,
+      "imageUrl": image.asset->url,
+      "alt": image.alt,
+      description,
+      "residents": residents[]->{ name, "slug": slug.current }[defined(slug)][0...4],
+      "featuredProducts": featuredProducts[]->{
+        name,
+        "slug": slug.current,
+        active,
+        "heroImageUrl": heroImage.asset->url,
+        "imageUrl": variants[0].colourImages[0].imageUrl
+      }[active == true && defined(slug)][0...2]
+    }
+  `);
+}
+
+// ─── Social links (footer) ────────────────────────────────────
+// Platform values are stored in mixed case ("YouTube" / "youtube"), so they are
+// lower-cased here and returned in a fixed display order.
+export const SOCIAL_ORDER = ['youtube', 'tiktok', 'instagram', 'x', 'facebook'] as const;
+export type SocialPlatform = (typeof SOCIAL_ORDER)[number];
+
+let socialLinksPromise: Promise<{ platform: SocialPlatform; url: string }[]> | null = null;
+
+export function getSocialLinks() {
+  socialLinksPromise ??= client
+    .fetch(`*[_type == "siteSettings" && _id == "siteSettings"][0].socialLinks[]{ platform, url }`)
+    .then((links: any[] | null) =>
+      SOCIAL_ORDER.flatMap((platform) => {
+        const link = (links ?? []).find((l) => l?.url && String(l.platform).toLowerCase() === platform);
+        return link ? [{ platform, url: link.url as string }] : [];
+      })
+    );
+  return socialLinksPromise;
 }
 
 // ─── Theme audio (added 2026-04-30 for the IP brand theme-tune feature build #4/4 — FINAL) ───

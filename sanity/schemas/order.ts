@@ -96,6 +96,11 @@ export default defineType({
     defineField({ name: 'shippedAt', title: 'Shipped At', type: 'datetime' }),
     defineField({ name: 'failureReason', title: 'Printful Failure Reason', type: 'string',
       description: 'Why Printful didn’t take or make the order: Printful’s reason, a variant that isn’t in this store, or a note on a record that isn’t this brand’s.' }),
+    // ── Written by stripe-webhook for wall-art (in-house) lines; were in no deployed schema ──
+    defineField({ name: 'hasInhouse', title: 'Has in-house items', type: 'boolean' }),
+    defineField({ name: 'inhouseStatus', title: 'In-house status', type: 'string',
+      description: 'Progress on the wall-art items made in-house. The webhook sets "to-make" once and never overwrites it.' }),
+    defineField({ name: 'legacyId', title: 'Legacy ID', type: 'string', hidden: true }),
   ],
   orderings: [
     { title: 'Newest first', name: 'placedAtDesc', by: [{ field: 'placedAt', direction: 'desc' }] },

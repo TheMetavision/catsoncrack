@@ -59,6 +59,12 @@ export default {
       validation: (Rule) => Rule.required(),
     },
     { name: 'tagline', type: 'string' },
+    {
+      name: 'positioningLine',
+      title: 'Positioning line',
+      type: 'string',
+      description: 'One plain line under the homepage headline saying what Cats On Crack is. Leave empty to use the built-in line.',
+    },
     { name: 'siteDescription', title: 'Default Site Description', type: 'text' },
     { name: 'logo', title: 'Site Logo', type: 'image' },
     { name: 'favicon', type: 'image' },
@@ -83,7 +89,12 @@ export default {
       validation: (Rule) =>
         Rule.uri({ scheme: ['http', 'https'], allowRelative: false }),
     },
-    { name: 'trailerYoutubeId', title: 'Trailer YouTube Embed ID', type: 'string' },
+    {
+      name: 'trailerYoutubeId',
+      title: 'Trailer YouTube Embed ID',
+      type: 'string',
+      description: 'Video ID only (e.g. ay215yKvntY). When set, the homepage shows the click-to-load trailer and a "Watch Our Trailer" button. Put a matching thumbnail at public/video-thumbs/<id>.jpg; without one the trailer uses a generic alley still.',
+    },
     {
       name: 'socialLinks',
       title: 'Social Media Links',
@@ -174,6 +185,20 @@ export default {
       },
       readOnly: true,
     },
+
+    // ── Data-only fields (2026-10-20) ────────────────────────────────────────
+    // On the live siteSettings document but in no deployed schema. Declared here
+    // so Studio shows them instead of "unknown field". youtubeChannel holds the
+    // real channel URL and the homepage falls back to it; the rest are Legacy.
+    {
+      name: 'youtubeChannel',
+      title: 'YouTube Channel (old field)',
+      type: 'url',
+      description: 'Read by the homepage when "YouTube Channel URL" above is empty.',
+    },
+    { name: 'footerText', title: 'Footer Text', type: 'string', description: 'Legacy', hidden: false },
+    { name: 'newsletterHeadline', title: 'Newsletter Headline', type: 'string', description: 'Legacy', hidden: false },
+    { name: 'newsletterSubtext', title: 'Newsletter Subtext', type: 'text', rows: 2, description: 'Legacy', hidden: false },
   ],
   __experimental_actions: ['update', 'publish'],
 };

@@ -88,6 +88,12 @@ export default defineType({
       type: 'string',
       description: 'e.g. "2 min read"',
     }),
+
+    // ─── Data-only fields (2026-10-20) ───────────────────────────────
+    // On live posts but in no deployed schema; the Gazette pages read all three.
+    defineField({ name: 'category', title: 'Category (old field)', type: 'string', description: 'Legacy. The Gazette uses this before Tag / Category.', hidden: false }),
+    defineField({ name: 'seoTitle', title: 'SEO Title', type: 'string' }),
+    defineField({ name: 'seoDescription', title: 'SEO Description', type: 'text', rows: 2 }),
   ],
   preview: {
     select: {
