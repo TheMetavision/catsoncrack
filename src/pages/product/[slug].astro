@@ -360,13 +360,14 @@ const productJsonLd = {
         main.addEventListener('mouseenter', () => {
           if (hero.dataset.full === hero.dataset.orig) return;
           const orig = hero.dataset.orig;
-          withFull((full) => { hero.removeAttribute('srcset'); hero.src = full; hero.dataset.full = orig; });
+          withFull((full, w) => { hero.removeAttribute('srcset'); hero.src = full; hero.dataset.full = orig; hero.dataset.fullw = String(w); });
         });
         main.addEventListener('mousemove', (e) => {
           const r = main.getBoundingClientRect();
           const x = ((e.clientX - r.left) / r.width) * 100;
           const y = ((e.clientY - r.top) / r.height) * 100;
-          const s = sharpCap(hero.naturalWidth, r.width);
+          // after the full picture is in, use its real width (Chrome may keep the old srcset density in naturalWidth)
+          const s = sharpCap(hero.dataset.full === hero.dataset.orig ? Number(hero.dataset.fullw) : hero.naturalWidth, r.width);
           hero.style.transformOrigin = `${x}% ${y}%`;
           hero.style.transform = `scale(${s})`;
         });
@@ -402,7 +403,7 @@ const productJsonLd = {
         const full = fullSrc(orig);
         if (!full) return;
         const pre = new Image();
-        pre.onload = () => { if ((hero.dataset.orig || '') === orig) cb(full); };
+        pre.onload = () => { if ((hero.dataset.orig || '') === orig) cb(full, pre.naturalWidth); };
         pre.src = full;
       }
       let zoomed = false, panX = 0, panY = 0, startX = 0, startY = 0, dragging = false, moved = false;
