@@ -141,6 +141,8 @@ export default defineType({
     defineField({ name: 'sortOrder', title: 'Sort Order', type: 'number', initialValue: 0 }),
     defineField({ name: 'seoTitle', title: 'SEO Title', type: 'string' }),
     defineField({ name: 'seoDescription', title: 'SEO Description', type: 'text', rows: 2 }),
+    // Data-only (2026-10-20): on 10 product documents but in no deployed schema.
+    defineField({ name: 'description', title: 'Description (old field)', type: 'text', rows: 3, description: 'Legacy', hidden: false }),
   ],
   orderings: [
     { title: 'Sort Order', name: 'sortOrder', by: [{ field: 'sortOrder', direction: 'asc' }] },

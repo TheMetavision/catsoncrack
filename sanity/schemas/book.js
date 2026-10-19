@@ -61,7 +61,14 @@ export default defineType({
       name: 'orderUrl',
       title: 'Order URL',
       type: 'url',
-      description: 'Link to Amazon, shop page, or other purchase URL',
+      description: 'Read by the /media page (shown when status is Available). The homepage reads Buy URL below.',
+      validation: (rule) => rule.uri({scheme: ['http', 'https']}),
+    }),
+    defineField({
+      name: 'buyUrl',
+      title: 'Buy URL',
+      type: 'url',
+      description: 'Where to buy the book. The homepage shows a "Get the book" button only when this is set and the status is not Coming Soon.',
       validation: (rule) => rule.uri({scheme: ['http', 'https']}),
     }),
     defineField({

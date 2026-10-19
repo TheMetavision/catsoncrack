@@ -109,6 +109,16 @@ export default defineType({
       type: 'number',
       description: 'Controls sort order on characters page and carousels',
     }),
+
+    // ─── Data-only fields (2026-10-20) ───────────────────────────────
+    // On 20-21 character documents from the original import but in no deployed
+    // schema. Declared so Studio shows them rather than as unknown fields.
+    // /the-alley-squad still reads accent, initials, externalImageUrl and sortOrder.
+    defineField({ name: 'accent', title: 'Accent (old field)', type: 'string', description: 'Legacy. /the-alley-squad uses Accent Colour first, then this.', hidden: false }),
+    defineField({ name: 'initials', title: 'Initials', type: 'string', description: 'Legacy. Shown on /the-alley-squad when there is no image.', hidden: false }),
+    defineField({ name: 'sortOrder', title: 'Sort Order (old field)', type: 'number', description: 'Legacy. /the-alley-squad sorts by this.', hidden: false }),
+    defineField({ name: 'tag', title: 'Tag', type: 'string', description: 'Legacy', hidden: false }),
+    defineField({ name: 'externalImageUrl', title: 'External Image URL', type: 'url', description: 'Legacy. /the-alley-squad uses it only when there is no Character Image.', hidden: false }),
   ],
   preview: {
     select: {

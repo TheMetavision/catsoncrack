@@ -56,6 +56,20 @@ export default defineType({
       initialValue: false,
     }),
     defineField({
+      name: 'status',
+      title: 'Status',
+      type: 'string',
+      description: 'The homepage says "Watch now" once any episode is Live. Empty counts as Coming Soon.',
+      options: {
+        list: [
+          {title: 'Coming Soon', value: 'coming-soon'},
+          {title: 'Live', value: 'live'},
+        ],
+        layout: 'radio',
+      },
+      initialValue: 'coming-soon',
+    }),
+    defineField({
       name: 'publishedAt',
       title: 'Published Date',
       type: 'datetime',
