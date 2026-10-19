@@ -151,6 +151,27 @@ Steps done (18 Oct 2026):
 7. Production env: `PRINTFUL_AUTO_CONFIRM=true` (production context only) makes live orders confirmed; without it they are
    Printful drafts to confirm by hand. Previews never confirm (test-mode payments are always drafts).
 
+### Launch record (19 Oct 2026, Alan's approval)
+
+1. **Merged** PR #2 (`dbd4e22`); Netlify production deploy of it ready. Live between merge and publish: old catalogue
+   (£22.50 tumbler, can glass, Badges tab) with the new checkout rules (no country → 400), as planned.
+2. **Studio schema deployed** from a clean worktree of `main` (`npx sanity schema deploy`, `npx sanity deploy` →
+   https://catsoncrack.sanity.studio/), so the uncommitted local `character.js` change was not deployed. The deployed
+   schema's `order` type has the `other-brand` status and the `test` flag (checked through the Sanity MCP).
+3. **Drafts published** (`publish-drafts.mjs catsoncrack`): 50 (46 designs, 4 inactive pin sets). Published: 46 with the
+   #585 tumbler at £32.95 and the mug, 0 with a can glass, 0 active pin sets.
+4. **Production rebuilt** (Netlify build of `main`) and checked live: merch tabs tumbler and mug, no can glass or badges;
+   Tiny Terror tumbler £32.95 Black/White with Left / both sides / Right, mug £12.95; badge set pages 404, stickers 200;
+   checkout refuses no country (400), Brazil (422), an unknown country (400); a UK basket shows £6.95 and the right total.
+   A live Stripe Checkout page was opened once from the basket to see it; it autofilled the owner's Link details, so it
+   was closed without any input (no order logged, nothing charged). **Never open a live Checkout page for checks.**
+5. **Old products deleted** (`delete-old-products.mjs catsoncrack`, dry run then `--apply`; it matches exact external ids,
+   checks each is on #909 / #690 / #660, and refuses while any Printful order is unfinished — there were none): 46 #909
+   tumblers, 46 #690 can glasses, 4 pin sets (441991684, 441991714, 441991759, 441991789). Store 428 → 332 products.
+   `store-check.mjs`: 0 tumbler (#909), 0 glass, 0 pin; 46 tumbler585, 46 mug. `check-live-ids.mjs catsoncrack`: all
+   12,706 variant ids on the 51 active products are live.
+6. The 4 `product-badge-set-*` docs stay in Sanity, inactive.
+
 ### After every preview test payment
 
 Test-mode orders reach Printful as **drafts** (never confirmed) and the Sanity log as `test: true`. Delete them after each test:
