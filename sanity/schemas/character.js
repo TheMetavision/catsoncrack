@@ -1,5 +1,5 @@
-import {defineType, defineField} from 'sanity'
-import {UserIcon} from '@sanity/icons'
+import { defineType, defineField } from 'sanity'
+import { UserIcon } from '@sanity/icons'
 
 export default defineType({
   name: 'character',
@@ -15,7 +15,7 @@ export default defineType({
     defineField({
       name: 'slug',
       type: 'slug',
-      options: {source: 'name', maxLength: 96},
+      options: { source: 'name', maxLength: 96 },
       validation: (rule) => rule.required(),
     }),
     defineField({
@@ -50,14 +50,22 @@ export default defineType({
       name: 'traits',
       title: 'Character Traits',
       type: 'array',
-      of: [{type: 'string'}],
+      of: [{ type: 'string' }],
       description: 'e.g. ["Chaotic", "Magnetic", "Reckless"]',
     }),
     defineField({
       name: 'image',
       title: 'Character Image',
       type: 'image',
-      options: {hotspot: true},
+      options: { hotspot: true },
+    }),
+    defineField({
+      name: 'characterSheet',
+      title: 'Character Sheet / Turnaround',
+      type: 'image',
+      options: { hotspot: true },
+      description:
+        'Multi-angle turnaround or model sheet. Used alongside the character image to build this character\u2019s Higgsfield reference element. Production reference only: not shown on the site.',
     }),
     defineField({
       name: 'characterType',
@@ -65,10 +73,10 @@ export default defineType({
       description: 'Used for filtering on characters page',
       options: {
         list: [
-          {title: 'Hero', value: 'hero'},
-          {title: 'Villain', value: 'villain'},
-          {title: 'Creature', value: 'creature'},
-          {title: 'Rival', value: 'rival'},
+          { title: 'Hero', value: 'hero' },
+          { title: 'Villain', value: 'villain' },
+          { title: 'Creature', value: 'creature' },
+          { title: 'Rival', value: 'rival' },
         ],
       },
     }),
@@ -78,8 +86,8 @@ export default defineType({
       description: 'Biker Babies: separates heroes from rivals',
       options: {
         list: [
-          {title: 'Heroes', value: 'heroes'},
-          {title: 'Villains', value: 'villains'},
+          { title: 'Heroes', value: 'heroes' },
+          { title: 'Villains', value: 'villains' },
         ],
       },
     }),
