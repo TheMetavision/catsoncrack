@@ -132,12 +132,12 @@ test('inactive product is rejected; active items still resolve', () => {
 
 /* ── handler (Stripe and Sanity stubbed) ───────────────────────────────── */
 
-async function post(items, products = PRODUCTS) {
+async function post(items, products = PRODUCTS, country = 'GB') {
   sessionParams = null;
   const realFetch = globalThis.fetch;
   globalThis.fetch = async () => ({ ok: true, json: async () => ({ result: products }) });
   try {
-    const res = await handler({ httpMethod: 'POST', body: JSON.stringify({ items }) });
+    const res = await handler({ httpMethod: 'POST', body: JSON.stringify({ items, country }) });
     return { status: res.statusCode, body: JSON.parse(res.body || '{}') };
   } finally {
     globalThis.fetch = realFetch;
@@ -197,20 +197,20 @@ test('handler: valid GA ids are stored on the session; invalid ones are dropped'
   globalThis.fetch = async () => ({ ok: true, json: async () => ({ result: PRODUCTS }) });
   const postGa = async (ga) => {
     sessionParams = null;
-    await handler({ httpMethod: 'POST', body: JSON.stringify({ items: [tee('M', 25)], ga }) });
+    await handler({ httpMethod: 'POST', body: JSON.stringify({ items: [tee('M', 25)], ga, country: 'GB' }) });
     return sessionParams.metadata;
   };
+  const base = { source: 'catsoncrack-web', brand: 'catsoncrack', delivery_country: 'GB' };
   try {
     assert.deepEqual(await postGa({ client_id: '123.456', session_id: '1727000000' }),
-      { source: 'catsoncrack-web', brand: 'catsoncrack', ga_client_id: '123.456', ga_session_id: '1727000000' });
+      { ...base, ga_client_id: '123.456', ga_session_id: '1727000000' });
     // A session id only alongside a valid client id.
-    assert.deepEqual(await postGa({ client_id: 'GA1.1.123.456', session_id: '1727000000' }),
-      { source: 'catsoncrack-web', brand: 'catsoncrack' });
+    assert.deepEqual(await postGa({ client_id: 'GA1.1.123.456', session_id: '1727000000' }), base);
     assert.deepEqual(await postGa({ client_id: '123.456', session_id: '12.5' }),
-      { source: 'catsoncrack-web', brand: 'catsoncrack', ga_client_id: '123.456' });
+      { ...base, ga_client_id: '123.456' });
     assert.deepEqual(await postGa({ client_id: '123.456', session_id: '1'.repeat(21) }),
-      { source: 'catsoncrack-web', brand: 'catsoncrack', ga_client_id: '123.456' });
-    assert.deepEqual(await postGa(undefined), { source: 'catsoncrack-web', brand: 'catsoncrack' });
+      { ...base, ga_client_id: '123.456' });
+    assert.deepEqual(await postGa(undefined), base);
   } finally {
     globalThis.fetch = realFetch;
   }
