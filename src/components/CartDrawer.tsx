@@ -381,6 +381,14 @@ export default function CartDrawer() {
           <div style={styles.footer}>
             <div style={styles.countryRow}>
               <label style={styles.countryLabel} htmlFor="coc-delivery-country">Delivering to</label>
+              {/* The open list is drawn natively (white on Chrome/Edge for Windows) and the
+                  options inherit the light text, so colour them explicitly. */}
+              <style>{`
+                #coc-delivery-country { color-scheme: dark; }
+                #coc-delivery-country optgroup { background: ${bg}; color: ${accent}; font-weight: 700; font-style: normal; }
+                #coc-delivery-country option { background: ${bg}; color: ${text}; font-weight: 400; }
+                #coc-delivery-country option:checked { background: ${accent}; color: #000000; font-weight: 700; }
+              `}</style>
               <select
                 id="coc-delivery-country"
                 style={styles.countrySelect}
