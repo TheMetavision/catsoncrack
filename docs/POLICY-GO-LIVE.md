@@ -6,16 +6,6 @@ Why a file and not a Sanity draft: a document has only one draft, and the Group 
 
 ⚠ Legal wording. Check it yourself before publishing.
 
-## Group A: fix now, NOT yet drafted (MCP write was blocked)
-
-Document `legalPage.shipping-policy` (project `8ksun996`). Apply these three edits together and publish:
-
-1. **Intro paragraph:** the bold "catsoncrack" becomes **catsoncrack.co.uk**.
-2. **§10 Damaged in transit:** the bold "7 days of delivery" becomes **30 days of delivery** (matches Returns §5).
-3. **After the paragraph under "2. Production time"**, add a normal paragraph (first sentence bold):
-
-> **Wall art we print ourselves.** Our posters and canvases are printed, finished and packed by us in the UK, not by our print partner. Posters are rolled and sent in a protective tube, or a single small poster may travel flat in a hard-backed envelope, and each canvas is boxed on its own. UK orders go by a tracked service, and we email you the tracking number as soon as your wall art is on its way. If your order also includes clothing or other merchandise, that is made and sent separately by our print partner, with its own tracking email.
-
 ## Group B, 1: Privacy Policy, delivery and returns
 
 Document `legalPage.privacy-policy`, section **"4. Who we share it with"**.
