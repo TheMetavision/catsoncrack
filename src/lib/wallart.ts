@@ -10,6 +10,8 @@
 // the single source of truth shared with the Netlify functions.
 // -----------------------------------------------------------------------------
 
+import { orientationFromDimensions } from './artwork-pricing.mjs';
+
 const PROJECT_ID = import.meta.env.PUBLIC_SANITY_PROJECT_ID || '8ksun996';
 const DATASET = import.meta.env.PUBLIC_SANITY_DATASET || 'production';
 const API_VER = '2024-01-01';
@@ -27,6 +29,11 @@ export interface WallArtPiece {
   accent?: string;
   featured?: boolean;
   imageUrl: string;
+  /** Pixel size of the master image (image.asset metadata); null when Sanity has none. */
+  imageWidth?: number | null;
+  imageHeight?: number | null;
+  /** From imageWidth vs imageHeight (artwork-pricing.mjs); landscape when unknown. */
+  orientation: 'landscape' | 'portrait';
   posterMockupUrl?: string;
   roomMockupUrl?: string;
   studioMockupUrl?: string;
@@ -42,6 +49,8 @@ const QUERY = `*[_type == "wallArt" && active == true] | order(coalesce(sortOrde
   accent,
   featured,
   "imageUrl": image.asset->url,
+  "imageWidth": image.asset->metadata.dimensions.width,
+  "imageHeight": image.asset->metadata.dimensions.height,
   "posterMockupUrl": posterMockup.asset->url,
   "roomMockupUrl": roomMockup.asset->url,
   "studioMockupUrl": studioMockup.asset->url,
@@ -64,5 +73,11 @@ async function runQuery<T>(query: string): Promise<T> {
 export async function getAllWallArt(): Promise<WallArtPiece[]> {
   const result = await runQuery<WallArtPiece[]>(QUERY);
   return result.filter((p) => p && p.slug && p.imageUrl)
-    .map((p) => ({ ...p, mockups: (p.mockups || []).filter((m) => m && m.url) }));
+    .map((p) => ({
+      ...p,
+      mockups: (p.mockups || []).filter((m) => m && m.url),
+      // Orientation drives the size labels (12x18 vs 18x12) on the page, in the feed and JSON-LD.
+      orientation: orientationFromDimensions(p.imageWidth, p.imageHeight, () =>
+        console.warn(`[wallart] ${p.slug}: master image has no dimensions in Sanity; labelling it landscape`)),
+    }));
 }
