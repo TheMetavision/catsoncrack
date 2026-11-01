@@ -41,6 +41,15 @@ export const NEVER_BUILD = ['contactSubmission', 'order', 'lineItem', 'category'
 /** Sanity's own documents (assets, AI Assist status, …) and system docs. */
 export const NEVER_BUILD_PREFIXES = ['sanity.', 'system.'];
 
+/**
+ * Operational types the rebuild webhook's filter does NOT keep out (it was
+ * left untouched when Sendcloud shipping was added, 1 Nov 2026), so the code
+ * ignores them instead: each write costs one "Ignored" call, never a build.
+ * Move a type into NEVER_BUILD once the webhook filter lists it (the test
+ * below checks the two agree).
+ */
+export const IGNORED_NOT_FILTERED = ['returnRequest'];
+
 /** The Sanity webhook's filter, kept here so the test can check the two agree. */
 export const WEBHOOK_FILTER =
   `!(_type match "sanity.*") && !(_type match "system.*") && !(_type in [${NEVER_BUILD.map((t) => `"${t}"`).join(',')}])`;
@@ -89,7 +98,7 @@ export function classify(payload) {
   const type = typeof payload?._type === 'string' ? payload._type : '';
   if (id.startsWith('drafts.') || id.startsWith('versions.')) return { build: false, reason: 'draft or version' };
   if (type && NEVER_BUILD_PREFIXES.some((p) => type.startsWith(p))) return { build: false, reason: `system type ${type}` };
-  if (type && NEVER_BUILD.includes(type)) return { build: false, reason: `operational type ${type}` };
+  if (type && (NEVER_BUILD.includes(type) || IGNORED_NOT_FILTERED.includes(type))) return { build: false, reason: `operational type ${type}` };
   // No _type: the signed request came through the filter (a delete whose
   // projection lost its type still counts).
   return { build: true, type: type || 'unknown' };

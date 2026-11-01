@@ -29,7 +29,7 @@ export default defineConfig({
   integrations: [
     react(),
     // Transactional pages (noindex) stay out of the sitemap.
-    sitemap({ serialize: withBlogLastmod, filter: (page) => !/\/order-success\/?$/.test(new URL(page).pathname) }),
+    sitemap({ serialize: withBlogLastmod, filter: (page) => !/\/(order-success|returns)\/?$/.test(new URL(page).pathname) }),
   ],
   vite: { ssr: { noExternal: ['@sanity/client', '@sanity/image-url'] } }
 });

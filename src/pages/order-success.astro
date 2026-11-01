@@ -17,6 +17,20 @@ import Layout from '../layouts/Layout.astro';
       try { localStorage.removeItem('coc-cart-v1'); } catch (e) {}
     }
   </script>
+  {/* The order reference: "#" + the last 8 characters of the session id,
+      upper-cased, as in the confirmation email and the Sanity order. It is
+      what /returns asks for. Shown once the page has loaded. */}
+  <script is:inline>
+    document.addEventListener('DOMContentLoaded', function () {
+      var id = new URLSearchParams(window.location.search).get('session_id') || '';
+      var box = document.getElementById('order-ref');
+      var code = document.getElementById('order-ref-code');
+      if (box && code && /^cs_[A-Za-z0-9_]{8,}$/.test(id)) {
+        code.textContent = '#' + id.slice(-8).toUpperCase();
+        box.hidden = false;
+      }
+    });
+  </script>
 
   <section style={`
     min-height: 70vh;
@@ -40,6 +54,8 @@ import Layout from '../layouts/Layout.astro';
         letter-spacing: 3px;
         margin: 0 0 16px;
       `}>Order Snagged</h1>
+
+      <p id="order-ref" hidden style="margin: 0 0 16px; font-size: 15px; color: #ccc;">Order ref <strong id="order-ref-code" style="color: #FF00FF; letter-spacing: 1px; font-size: 18px;"></strong></p>
 
       <p style={`
         font-size: 16px;

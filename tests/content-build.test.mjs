@@ -172,6 +172,10 @@ test('classify: drafts, versions, Sanity/system docs and operational types never
   ]) assert.equal(classify(p).build, false, JSON.stringify(p));
 });
 
+test('a return request (shipping) never starts a build, though the webhook filter lets it through', () => {
+  assert.deepEqual(classify({ _id: 'returnRequest.ret-1', _type: 'returnRequest' }), { build: false, reason: 'operational type returnRequest' });
+});
+
 test('classify: published content builds, including types added later', () => {
   assert.deepEqual(classify({ _id: 'product-x', _type: 'product' }), { build: true, type: 'product' });
   assert.deepEqual(classify({ _id: 'x', _type: 'character' }), { build: true, type: 'character' });

@@ -85,7 +85,13 @@ async function sanityQuery(groq, params) {
   return (await res.json()).result ?? null;
 }
 
-const ORDER_FIELDS = '{ _id, _rev, orderRef, status, trackingNumber, failureReason, customerName, customerEmail }';
+const ORDER_FIELDS = '{ _id, _rev, orderRef, status, trackingNumber, failureReason, customerName, customerEmail, hasInhouse }';
+// On an order that also has wall art (made and posted by us, through the
+// Sendcloud flow), this email covers Printful's parcel only: it says the wall
+// art travels separately, so the two emails never contradict each other. The
+// wall-art email (netlify/functions/_shared/dispatch-email.mjs) says the same
+// the other way round. The only change made to this file for shipping.
+export const WALL_ART_NOTE = 'Your wall art is made by us and ships separately, with its own tracking email.';
 
 async function findOrder(printfulOrderId, externalId) {
   if (printfulOrderId != null && printfulOrderId !== '') {
@@ -149,6 +155,7 @@ function buildShippedEmailHtml(order, shipment, b = brand()) {
           <p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#b8b5ad;">
             Your gear's left the alley and is on its way${num ? ` via ${carrier}` : ''}.
           </p>
+          ${order.hasInhouse ? `<p style="margin:0 0 16px;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#b8b5ad;">${esc(WALL_ART_NOTE)}</p>` : ''}
           ${num ? `<p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:11px;letter-spacing:1px;color:#8a8880;text-transform:uppercase;">Tracking number</p>
           <p style="margin:0 0 12px;font-family:Arial,Helvetica,sans-serif;font-size:16px;color:#F0EDE8;font-weight:700;">${num}</p>` : ''}
           ${trackBtn}

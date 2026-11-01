@@ -1,6 +1,7 @@
 import { defineConfig } from 'sanity';
 import { structureTool } from 'sanity/structure';
 import { schemaTypes } from './schemas';
+import { shippingDeskItems, shippingTemplates, shippingActions } from './lib/shipping-desk';
 export default defineConfig({
   name: 'catsoncrack',
   title: 'Cats On Crack CMS',
@@ -42,8 +43,11 @@ export default defineConfig({
                   .title('Orders')
                   .defaultOrdering([{ field: 'placedAt', direction: 'desc' }])
               ),
+            // Sendcloud wall art: only with SANITY_STUDIO_SHIPPING_ENABLED=true (lib/shipping-desk.js).
+            ...shippingDeskItems(S),
           ]),
     }),
   ],
-  schema: { types: schemaTypes },
+  schema: { types: schemaTypes, templates: shippingTemplates },
+  document: { actions: shippingActions },
 });

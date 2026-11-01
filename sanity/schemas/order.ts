@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity';
+import { shippingFields, wallArtDispatchFields } from './shippingFields';
 
 /**
  * Order — a read-only record written by the Stripe webhook on a completed
@@ -8,13 +9,23 @@ import { defineType, defineField } from 'sanity';
  * Deploy like product.ts: drop into sanity/schemas/, register in schemas/index.js,
  * then `npx sanity deploy` + `npx sanity schema deploy` from the Studio folder.
  */
+/* Wall-art shipping (feat/sendcloud-dispatch). The whole document used to be
+   readOnly, which also locked In-house Status, so wall art could not be marked
+   Dispatched in the Studio. Now every field written by the webhooks stays
+   read-only (lockWebhookFields), and only Alan's fields are editable: In-house
+   Status, the wall-art carrier / tracking number (wallArtDispatchFields) and
+   the Sendcloud shipment switch and parcel plan (shippingFields). The Printful
+   fields stay Printful's. */
+const EDITABLE = new Set(['inhouseStatus']);
+const lockWebhookFields = (fields) =>
+  fields.map((f) => (EDITABLE.has(f.name) || f.readOnly !== undefined ? f : { ...f, readOnly: true }));
+
 export default defineType({
   name: 'order',
   title: 'Order',
   type: 'document',
-  readOnly: true,
   icon: () => '🧾',
-  fields: [
+  fields: lockWebhookFields([
     defineField({ name: 'orderRef', title: 'Order Ref', type: 'string' }),
     defineField({ name: 'placedAt', title: 'Placed At', type: 'datetime' }),
     defineField({
@@ -45,6 +56,8 @@ export default defineType({
           { name: 'colour', title: 'Colour', type: 'string' },
           { name: 'size', title: 'Size', type: 'string' },
           { name: 'quantity', title: 'Qty', type: 'number' },
+          // Written by stripe-webhook since wall art launched; now declared.
+          { name: 'fulfilment', title: 'Fulfilment', type: 'string', options: { list: ['printful', 'inhouse'] } },
           { name: 'price', title: 'Line Total (£)', type: 'number' },
         ],
         preview: {
@@ -99,9 +112,17 @@ export default defineType({
     // ── Written by stripe-webhook for wall-art (in-house) lines; were in no deployed schema ──
     defineField({ name: 'hasInhouse', title: 'Has in-house items', type: 'boolean' }),
     defineField({ name: 'inhouseStatus', title: 'In-house status', type: 'string',
-      description: 'Progress on the wall-art items made in-house. The webhook sets "to-make" once and never overwrites it.' }),
+      description: 'Progress on the wall-art items made in-house. The webhook sets "to-make" once and never overwrites it.',
+      hidden: ({ document }) => !document?.hasInhouse,
+      options: { list: [
+        { title: 'To make', value: 'to-make' },
+        { title: 'Made', value: 'made' },
+        { title: 'Dispatched', value: 'dispatched' },
+      ] } }),
+    ...wallArtDispatchFields(),
+    ...shippingFields(),
     defineField({ name: 'legacyId', title: 'Legacy ID', type: 'string', hidden: true }),
-  ],
+  ]),
   orderings: [
     { title: 'Newest first', name: 'placedAtDesc', by: [{ field: 'placedAt', direction: 'desc' }] },
   ],
