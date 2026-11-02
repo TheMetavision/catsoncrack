@@ -34,11 +34,17 @@ export const SITE_CONFIG = Object.freeze({
   // In email subjects: "Your Labrats wall art is on its way".
   BRAND_SHORT: 'Cats On Crack',
 
-  // Customer emails come from the same sender as Printful's "It's shipped"
-  // email (NOTIFICATION_FROM in Netlify); replies go to the address the
-  // Returns & Refunds policy gives.
+  // EVERY customer email sent through Resend (order confirmation, Printful's
+  // "it's shipped", wall-art dispatch, returns, referral thank-you, contact-form
+  // acknowledgement, newsletter confirmation and any other) comes from, and
+  // takes replies at, the brand's own address. Nothing else may set a
+  // customer sender: no hard-coded address, no other environment variable.
   EMAIL_FROM: 'Cats On Crack <meow@catsoncrack.co.uk>',
-  EMAIL_REPLY_TO: 'contact@themetavision.co.uk',
+  EMAIL_REPLY_TO: 'meow@catsoncrack.co.uk',
+  // The team's own emails (shipping-emails.mjs toTeam) keep the sender they
+  // had before the customer emails moved to the brand address.
+  TEAM_EMAIL_FROM: 'Cats On Crack <meow@catsoncrack.co.uk>',
+  TEAM_EMAIL_REPLY_TO: 'contact@themetavision.co.uk',
   // Shipping, returns and alert emails to the team (NOTIFICATION_TO).
   TEAM_EMAIL: 'contact@themetavision.co.uk',
   // The address the policies tell customers to write to.

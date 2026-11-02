@@ -135,7 +135,8 @@ test('shipped email: sent once, branded, with carrier, tracking number and link'
   assert.equal(res.status, 200);
   assert.equal(emails().length, 1);
   const [mail] = emails();
-  assert.equal(mail.from, 'Cats On Crack <meow@catsoncrack.co.uk>');
+  assert.equal(mail.from, "Cats On Crack <meow@catsoncrack.co.uk>");
+  assert.equal(mail.reply_to, "meow@catsoncrack.co.uk");
   assert.equal(mail.to, 'tom@example.com');
   assert.equal(mail.subject, 'Your Cats On Crack order #M3N4O5P6 has shipped');
   assert.match(mail.html, /It's shipped/);
@@ -393,4 +394,17 @@ test('other events, bad method and bad JSON', async () => {
   assert.equal((await handler(req('{not json'))).status, 400);
   assert.equal((await handler(req(null, { method: 'GET' }))).status, 405);
   assert.equal(calls.length, 0);
+});
+
+test('sender and reply-to: the brand address from site-config; ORDER_EMAIL_FROM and NOTIFICATION_FROM are ignored', async () => {
+  process.env.ORDER_EMAIL_FROM = 'Not us <orders@themetavision.co.uk>';
+  process.env.NOTIFICATION_FROM = 'Not us <contact@themetavision.co.uk>';
+  try {
+    await handler(req(shipped()));
+    assert.equal(emails()[0].from, "Cats On Crack <meow@catsoncrack.co.uk>");
+    assert.equal(emails()[0].reply_to, "meow@catsoncrack.co.uk");
+  } finally {
+    delete process.env.ORDER_EMAIL_FROM;
+    delete process.env.NOTIFICATION_FROM;
+  }
 });

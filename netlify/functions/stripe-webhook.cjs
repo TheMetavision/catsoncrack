@@ -27,7 +27,8 @@
  *   PRINTFUL_AUTO_CONFIRM — 'true' (production context only) confirms live orders;
  *                           anything else, and every test-mode payment, makes a draft
  *   RESEND_API_KEY        — Resend key (FROM domain must be verified in it)
- *   ORDER_EMAIL_FROM      — optional; default "Cats On Crack <orders@catsoncrack.co.uk>"
+ *   (the customer's sender and reply-to are EMAIL_FROM / EMAIL_REPLY_TO in
+ *   _shared/site-config.mjs; ORDER_EMAIL_FROM is no longer read)
  *   SANITY_API_TOKEN      — Sanity *write* (Editor) token for the order log
  *                           (SANITY_TOKEN still works as a fallback)
  *   SANITY_PROJECT_ID     — optional; default 8ksun996
@@ -42,11 +43,12 @@ const BRAND_KEY = 'catsoncrack';
 const PRINTFUL_ORDERS_URL = 'https://api.printful.com/orders';
 const PRINTFUL_STORE_VARIANTS_URL = 'https://api.printful.com/store/variants';
 const RESEND_URL = 'https://api.resend.com/emails';
-const FROM = process.env.ORDER_EMAIL_FROM || 'Cats On Crack <orders@catsoncrack.co.uk>';
+// The customer's sender and reply-to: the brand's own address (site-config).
+const { setting } = require('./_shared/site-config.mjs');
 const LOGO_URL = process.env.LOGO_URL || '';
 const HEADER_BG = process.env.EMAIL_HEADER_BG || '#181B22';
 const MERCHANT_TO = process.env.ORDER_NOTIFICATION_TO || process.env.NOTIFICATION_TO || '';
-const MERCHANT_FROM = process.env.NOTIFICATION_FROM || 'Cats On Crack <meow@catsoncrack.co.uk>';
+const MERCHANT_FROM = process.env.NOTIFICATION_FROM || setting('TEAM_EMAIL_FROM');
 const SANITY_PROJECT_ID = process.env.SANITY_PROJECT_ID || '8ksun996';
 const SANITY_DATASET = process.env.SANITY_DATASET || 'production';
 const SANITY_API_VER = '2024-01-01';
@@ -226,7 +228,8 @@ async function sendCustomerEmail(session, lineItems, promo) {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + process.env.RESEND_API_KEY },
       body: JSON.stringify({
-        from: FROM,
+        from: setting('EMAIL_FROM'),
+        reply_to: setting('EMAIL_REPLY_TO'),
         to,
         subject: 'Your Cats On Crack order is locked in',
         html: buildOrderEmailHtml(session, lineItems, promo),

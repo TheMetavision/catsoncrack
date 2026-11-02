@@ -37,7 +37,7 @@
  *   SANITY_DATASET          — optional; default production
  *   PRINTFUL_WEBHOOK_SECRET — optional; if set, the request must include ?key=<secret>
  *   RESEND_API_KEY          — optional; without it the tracking email is skipped
- *   NOTIFICATION_FROM       — optional; default "Cats On Crack <meow@catsoncrack.co.uk>"
+ *   (sender and reply-to: EMAIL_FROM / EMAIL_REPLY_TO in _shared/site-config.mjs)
  *   BRAND_NAME              — optional; default "Cats On Crack"
  *   BRAND_ACCENT            — optional; default #FF00FF
  *   EMAIL_HEADER_BG         — optional; default #181B22
@@ -50,6 +50,7 @@
  */
 import { timingSafeEqual } from 'node:crypto';
 import { createClient } from '@sanity/client';
+import { setting } from './_shared/site-config.mjs';
 import { findPrintfulOrder, recordShipped, recordFailed } from './_shared/printful-shipped.mjs';
 import { startPostDelivery } from './_shared/post-delivery.mjs';
 
@@ -66,7 +67,8 @@ const brand = () => ({
   accent: process.env.BRAND_ACCENT || '#FF00FF',
   headerBg: process.env.EMAIL_HEADER_BG || '#181B22',
   logoUrl: process.env.LOGO_URL || '',
-  from: process.env.NOTIFICATION_FROM || 'Cats On Crack <meow@catsoncrack.co.uk>',
+  from: setting('EMAIL_FROM'),
+  replyTo: setting('EMAIL_REPLY_TO'),
 });
 
 const esc = (s) =>
@@ -143,6 +145,7 @@ async function sendShippedEmail(order, shipment) {
       headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + process.env.RESEND_API_KEY },
       body: JSON.stringify({
         from: b.from,
+        reply_to: b.replyTo,
         to: order.customerEmail,
         subject: `Your ${b.name} order #${ref} has shipped`,
         html: buildShippedEmailHtml(order, shipment, b),

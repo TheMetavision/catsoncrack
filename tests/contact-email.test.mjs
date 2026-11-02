@@ -71,6 +71,10 @@ test('acknowledgement email: preheader, subject and text carry no HTML entities'
 
   const ack = sent.find((m) => m.to === 'audit@example.com');
   assert.ok(ack, 'acknowledgement sent to the visitor');
+  assert.equal(ack.from, "Cats On Crack <meow@catsoncrack.co.uk>", 'the brand address, never NOTIFICATION_FROM');
+  assert.equal(ack.replyTo, "meow@catsoncrack.co.uk", 'replies to the brand, not the team inbox');
+  const team = sent.find((m) => m.to === 'team@example.com');
+  assert.equal(team.from, 'Brand <hello@example.com>', 'the team notification keeps NOTIFICATION_FROM');
 
   const preheader = preheaderOf(ack.html);
   assert.equal(preheader, 'We’ve received your message — Test Brand');
