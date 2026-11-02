@@ -84,6 +84,21 @@ export const SITE_CONFIG = Object.freeze({
   RETURN_POINT_INPOST: 'InPost locker, 59 West Road, Shoeburyness',
   RETURN_POINT_EVRI: 'ASDA Shoebury, North Shoebury Road',
   RETURN_POINT_UPS: 'Skanda, 93-95 West Road, Shoeburyness',
+
+  // ── Post-delivery sequence and referral programme (post-delivery.mjs,
+  // referral.mjs). BRAND_KEY is the metadata.brand create-checkout stamps on
+  // every session (the stripe-webhook brand guard); every referral code and
+  // coupon carries it too. Coupons are created in Stripe on first use.
+  BRAND_KEY: 'catsoncrack',
+  REFERRAL_FRIEND_PREFIX: 'MEOW',
+  REFERRAL_REWARD_PREFIX: 'COCTHX',
+  REFERRAL_FRIEND_COUPON_ID: 'coc-referral-friend-10',
+  REFERRAL_REWARD_COUPON_ID: 'coc-referral-reward-10',
+  // MailerLite "COC - Customers" (existing group); its automation sends the
+  // post-delivery emails. Only coc_-prefixed fields are written.
+  MAILERLITE_CUSTOMERS_GROUP: 'COC - Customers',
+  MAILERLITE_CUSTOMERS_GROUP_ID: '200065134059587076',
+  MAILERLITE_FIELD_PREFIX: 'coc',
 });
 
 /**

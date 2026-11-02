@@ -1,5 +1,6 @@
 import { defineType, defineField } from 'sanity';
 import { shippingFields, wallArtDispatchFields } from './shippingFields';
+import { postDeliveryFields } from './postDeliveryFields';
 
 /**
  * Order — a read-only record written by the Stripe webhook on a completed
@@ -109,6 +110,8 @@ export default defineType({
     defineField({ name: 'shippedAt', title: 'Shipped At', type: 'datetime' }),
     defineField({ name: 'failureReason', title: 'Printful Failure Reason', type: 'string',
       description: 'Why Printful didn’t take or make the order: Printful’s reason, a variant that isn’t in this store, or a note on a record that isn’t this brand’s.' }),
+    // Consent, referral programme, post-delivery sequence, Printful packages (all server-written).
+    ...postDeliveryFields(),
     // ── Written by stripe-webhook for wall-art (in-house) lines; were in no deployed schema ──
     defineField({ name: 'hasInhouse', title: 'Has in-house items', type: 'boolean' }),
     defineField({ name: 'inhouseStatus', title: 'In-house status', type: 'string',

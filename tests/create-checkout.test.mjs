@@ -200,7 +200,7 @@ test('handler: valid GA ids are stored on the session; invalid ones are dropped'
     await handler({ httpMethod: 'POST', body: JSON.stringify({ items: [tee('M', 25)], ga, country: 'GB' }) });
     return sessionParams.metadata;
   };
-  const base = { source: 'catsoncrack-web', brand: 'catsoncrack', delivery_country: 'GB' };
+  const base = { source: 'catsoncrack-web', brand: 'catsoncrack', delivery_country: 'GB', marketing_opt_out: 'false' };
   try {
     assert.deepEqual(await postGa({ client_id: '123.456', session_id: '1727000000' }),
       { ...base, ga_client_id: '123.456', ga_session_id: '1727000000' });
@@ -221,4 +221,26 @@ test('POD line items carry the slug and product type for GA4', () => {
   const meta = r.line_items[0].price_data.product_data.metadata;
   assert.equal(meta.coc_slug, 'actually-everyone-move');
   assert.equal(meta.coc_type, 'tshirt');
+});
+
+/* ── Marketing opt-out (cart drawer box) ──────────────────────────────── */
+
+test('handler: stamps metadata.marketing_opt_out — "true" only when the box was ticked', async () => {
+  const realFetch = globalThis.fetch;
+  globalThis.fetch = async () => ({ ok: true, json: async () => ({ result: PRODUCTS }) });
+  const optOut = async (extra) => {
+    sessionParams = null;
+    await handler({ httpMethod: 'POST', body: JSON.stringify({ items: [tee('M', 25)], country: 'GB', ...extra }) });
+    return sessionParams.metadata.marketing_opt_out;
+  };
+  try {
+    assert.equal(await optOut({ marketingOptOut: true }), 'true');
+    assert.equal(await optOut({ marketingOptOut: false }), 'false');
+    assert.equal(await optOut({}), 'false');
+    // Only a literal true counts.
+    assert.equal(await optOut({ marketingOptOut: 'true' }), 'false');
+    assert.equal(await optOut({ marketingOptOut: 1 }), 'false');
+  } finally {
+    globalThis.fetch = realFetch;
+  }
 });

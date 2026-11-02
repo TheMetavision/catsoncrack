@@ -344,13 +344,16 @@ async function sendMerchantEmail(session, lineItems, status, printfulOrderId, pr
    in the log gets neither the alert nor the GA4 purchase again. The GA4 step
    is time-limited and never throws (src/lib/ga4-purchase.cjs). */
 async function finalize(session, lineItems, status, printfulOrderId, alreadyRecorded, promo) {
-  await saveOrder(session, lineItems, status, printfulOrderId, promo);
+  const orderId = await saveOrder(session, lineItems, status, printfulOrderId, promo);
   if (alreadyRecorded) {
     console.log(`[MERCHANT-SKIP] session ${session.id}: order already in the Sanity log (Stripe retry) — alert not resent.`);
   } else {
     await sendMerchantEmail(session, lineItems, status, printfulOrderId, promo);
   }
   await sendGa4Purchase(session, { lineItems, stripe, alreadyRecorded });
+  // The referral thank-you, after every email above and on a checkout's first
+  // delivery only. Never throws.
+  if (!alreadyRecorded && orderId) await rewardStep(session, orderId, promo);
 }
 
 /* True if this session's order is already in the Sanity log — i.e. this is a
@@ -479,6 +482,11 @@ async function saveOrder(session, lineItems, status, printfulOrderId, promo = {}
   }
   if (promo.repeatWelcomeCode) payment.repeatWelcomeCode = promo.repeatWelcomeCode;
   if (promo.crossBrandCode) payment.crossBrandCode = promo.crossBrandCode;
+  // The "Don't send me offers or referral emails" box in the cart drawer,
+  // stamped by create-checkout as metadata.marketing_opt_out. Same rule as
+  // _shared/marketing-consent.mjs consentFromSession. 'refused' = no referral
+  // code and never added to MailerLite (_shared/post-delivery.mjs).
+  payment.marketingConsent = session.metadata && session.metadata.marketing_opt_out === 'true' ? 'refused' : 'not_asked';
   // Why it wasn't sent to Printful (ownStoreCheck), in the field Studio already shows.
   if (promo.fulfilmentAlert) payment.failureReason = promo.fulfilmentAlert;
   // A Stripe test-mode payment (a preview with test keys): flagged so it's never mistaken for a sale.
@@ -513,9 +521,54 @@ async function saveOrder(session, lineItems, status, printfulOrderId, promo = {}
       console.error(`[ORDER-SAVE-FAIL] session ${session.id}: Sanity ${res.status} — ${t}`);
     } else {
       console.log(`[ORDER-SAVED] session ${session.id}: ${payment.orderRef} (${status}).`);
+      return orderId;
     }
   } catch (err) {
     console.error(`[ORDER-SAVE-FAIL] session ${session.id}:`, err && err.message ? err.message : err);
+  }
+}
+
+/* Referral thank-you (netlify/functions/_shared/referral-reward.mjs): when
+   this checkout used one of THIS brand's friend codes, the referrer gets a
+   single-use 10% code by email. Another brand's friend code is accepted by
+   Stripe and flagged by promoFor (crossBrandCode), but earns nothing here.
+   The shared module claims the order (referredBy, ifRevisionId) before
+   creating anything, so a racing duplicate delivery can't issue two codes.
+   Writes go through server-patch.mjs (draft mirrored), which needs
+   @sanity/client. Never throws; a failure lands in referralError.
+   `deps` is for tests. */
+async function rewardStep(session, orderId, promo, deps = {}) {
+  if (!promo || !promo.promos || !promo.promos.length) return { rewarded: false };
+  try {
+    const { rewardReferrer } = await import('./_shared/referral-reward.mjs');
+    const sanity = deps.sanity || require('@sanity/client').createClient({
+      projectId: SANITY_PROJECT_ID, dataset: SANITY_DATASET, apiVersion: '2026-04-14',
+      token: sanityWriteToken(), useCdn: false,
+    });
+    // Resend over fetch, like every other email this webhook sends.
+    const resend = deps.resend !== undefined ? deps.resend : (!process.env.RESEND_API_KEY ? null : {
+      emails: {
+        async send(msg) {
+          const res = await fetch(RESEND_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + process.env.RESEND_API_KEY },
+            body: JSON.stringify(msg),
+          });
+          return res.ok ? { data: await res.json().catch(() => ({})), error: null }
+            : { error: { name: `Resend ${res.status}`, message: await res.text().catch(() => '') } };
+        },
+      },
+    });
+    return await rewardReferrer({
+      stripe: deps.stripe || stripe, sanity, resend, docId: orderId,
+      ref: `#${String(session.id).slice(-8).toUpperCase()}`,
+      promos: promo.promos,
+      buyerEmail: (session.customer_details && session.customer_details.email) || '',
+      log: console,
+    });
+  } catch (err) {
+    console.error(`[REFERRAL] session ${session.id}: reward step failed:`, err && err.message ? err.message : err);
+    return { rewarded: false, error: err && err.message };
   }
 }
 
@@ -696,3 +749,6 @@ exports.handler = async (event) => {
 exports.isCatsOnCrackSession = isCatsOnCrackSession;
 exports.printfulConfirm = printfulConfirm;
 exports.inhouseLineLabel = inhouseLineLabel;
+// For tests: the Sanity order-log write (returns the order id).
+exports.saveOrder = saveOrder;
+exports.rewardStep = rewardStep;
