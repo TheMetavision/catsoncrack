@@ -45,7 +45,8 @@ const { createPrintfulOrder, checkStoreVariants, printfulDeadline } = require('.
 const RESEND_URL = 'https://api.resend.com/emails';
 // The customer's sender and reply-to: the brand's own address (site-config).
 const { setting } = require('./_shared/site-config.mjs');
-const LOGO_URL = process.env.LOGO_URL || '';
+// site-config's logo unless LOGO_URL is set, so a missing env var can't drop it.
+const LOGO_URL = setting('LOGO_URL');
 const HEADER_BG = process.env.EMAIL_HEADER_BG || '#181B22';
 const MERCHANT_TO = process.env.ORDER_NOTIFICATION_TO || process.env.NOTIFICATION_TO || '';
 const MERCHANT_FROM = process.env.NOTIFICATION_FROM || setting('TEAM_EMAIL_FROM');
@@ -161,7 +162,7 @@ function buildOrderEmailHtml(session, lineItems, promo = {}) {
       <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#181B22;border:1px solid #FF00FF;">
         <tr><td style="background:${HEADER_BG};padding:22px 28px;text-align:center;">
           ${LOGO_URL
-            ? `<img src="${LOGO_URL}" alt="Cats On Crack" width="240" style="max-width:240px;width:240px;height:auto;display:inline-block;border:0;" />`
+            ? `<img src="${esc(LOGO_URL)}" alt="Cats On Crack" width="240" style="max-width:240px;width:240px;height:auto;display:inline-block;border:0;" />`
             : `<span style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:800;letter-spacing:3px;color:#FF00FF;text-transform:uppercase;">Cats On Crack</span>`}
         </td></tr>
         <tr><td style="padding:32px 28px 8px;">
@@ -239,6 +240,12 @@ async function sendCustomerEmail(session, lineItems, promo) {
   }
 }
 
+/* The brand's logo (site-config) in a small bar of its email header colour,
+   so the logo, drawn for that dark header, stays legible on the white alert. */
+function merchantLogoBar() {
+  return `<div style="background:${esc(setting('EMAIL_HEADER_BG'))};border-radius:6px;padding:12px 16px;margin:0 0 16px;text-align:center;"><img src="${esc(LOGO_URL)}" alt="${esc(setting('BRAND_NAME'))}" width="160" style="max-width:160px;width:160px;height:auto;display:inline-block;border:0;" /></div>`;
+}
+
 /* Internal heads-up to the shop owner. Fulfilment-aware: shouts loudly when an
    order did NOT reach Printful so it can be placed manually. Never fatal. */
 async function sendMerchantEmail(session, lineItems, status, printfulOrderId, promo = {}) {
@@ -290,6 +297,7 @@ async function sendMerchantEmail(session, lineItems, status, printfulOrderId, pr
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0"><tr><td align="center">
       <table role="presentation" width="560" cellpadding="0" cellspacing="0" style="max-width:560px;width:100%;background:#fff;border-radius:8px;padding:28px;">
         <tr><td>
+          ${merchantLogoBar()}
           <h1 style="margin:0 0 4px;font-size:20px;">New order #${ref}</h1>
           <p style="margin:0 0 16px;color:#666;font-size:13px;">Cats On Crack &middot; ${esc(new Date().toLocaleString('en-GB'))}</p>
           ${banner}
@@ -782,3 +790,4 @@ exports.saveOrder = saveOrder;
 exports.rewardStep = rewardStep;
 exports.referralCheckStep = referralCheckStep;
 exports.sendMerchantEmail = sendMerchantEmail;
+exports.buildOrderEmailHtml = buildOrderEmailHtml;

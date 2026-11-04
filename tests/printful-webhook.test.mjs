@@ -302,12 +302,14 @@ test('Resend failure: 200, order still shipped, and a repeat does not retry the 
   assert.equal(emails().length, 1);
 });
 
-test('without LOGO_URL the header is a text wordmark; non-http tracking links are dropped', async () => {
+test("without LOGO_URL the header keeps site-config's logo; non-http tracking links are dropped", async () => {
   delete process.env.LOGO_URL;
   await handler(req(shipped({ tracking_url: 'javascript:alert(1)' })));
   const { html } = emails()[0];
-  assert.doesNotMatch(html, /<img/);
-  assert.match(html, />Cats On Crack<\/span>/);
+  const { SITE_CONFIG } = await import('../netlify/functions/_shared/site-config.mjs');
+  const escaped = SITE_CONFIG.LOGO_URL.replace(/&/g, '&amp;');
+  assert.ok(html.includes(`<img src="${escaped}"`), 'site-config logo');
+  assert.doesNotMatch(html, /<\/span>/);
   assert.doesNotMatch(html, /javascript:/);
   assert.doesNotMatch(html, /Track your order/);
 });
