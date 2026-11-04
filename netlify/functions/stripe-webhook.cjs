@@ -47,7 +47,12 @@ const RESEND_URL = 'https://api.resend.com/emails';
 const { setting } = require('./_shared/site-config.mjs');
 // site-config's logo unless LOGO_URL is set, so a missing env var can't drop it.
 const LOGO_URL = setting('LOGO_URL');
-const HEADER_BG = process.env.EMAIL_HEADER_BG || '#181B22';
+const { readableOn } = require('./_shared/readable-colour.mjs');
+// Brand colours through site-config (the env var if set, else the committed
+// value), read per call. The accent is drawn as text on the card in the
+// nearest shade that reads there (readable-colour.mjs).
+const headerBg = () => setting('EMAIL_HEADER_BG');
+const CARD_BG = '#181B22';
 const MERCHANT_TO = process.env.ORDER_NOTIFICATION_TO || process.env.NOTIFICATION_TO || '';
 const MERCHANT_FROM = process.env.NOTIFICATION_FROM || setting('TEAM_EMAIL_FROM');
 const SANITY_PROJECT_ID = process.env.SANITY_PROJECT_ID || '8ksun996';
@@ -145,12 +150,15 @@ function buildOrderEmailHtml(session, lineItems, promo = {}) {
     ? [ship.name, a.line1, a.line2, a.city, [a.state, a.postal_code].filter(Boolean).join(' '), a.country]
         .filter(Boolean).map(esc).join('<br>')
     : 'On file with your payment';
+  const accent = setting('BRAND_ACCENT');
+  const accentText = readableOn(accent, CARD_BG);
+  const hb = headerBg();
 
   const rows = (lineItems.data || []).map((li) => `
     <tr>
       <td style="padding:12px 0;border-bottom:1px solid #2a2f3d;color:#F0EDE8;font-size:14px;">${esc(li.description)}</td>
       <td style="padding:12px 0;border-bottom:1px solid #2a2f3d;color:#8a8880;font-size:14px;text-align:center;">${li.quantity || 1}</td>
-      <td style="padding:12px 0;border-bottom:1px solid #2a2f3d;color:#FF00FF;font-size:14px;text-align:right;font-weight:700;">${gbp(lineSubtotal(li))}</td>
+      <td style="padding:12px 0;border-bottom:1px solid #2a2f3d;color:${accentText};font-size:14px;text-align:right;font-weight:700;">${gbp(lineSubtotal(li))}</td>
     </tr>`).join('');
 
   const shipCost = session.shipping_cost ? gbp(session.shipping_cost.amount_total) : null;
@@ -159,15 +167,15 @@ function buildOrderEmailHtml(session, lineItems, promo = {}) {
 <html><body style="margin:0;padding:0;background:#11131a;">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#11131a;padding:32px 16px;">
     <tr><td align="center">
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#181B22;border:1px solid #FF00FF;">
-        <tr><td style="background:${HEADER_BG};padding:22px 28px;text-align:center;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:${CARD_BG};border:1px solid ${accent};">
+        <tr><td style="background:${hb};padding:22px 28px;text-align:center;">
           ${LOGO_URL
             ? `<img src="${esc(LOGO_URL)}" alt="Cats On Crack" width="240" style="max-width:240px;width:240px;height:auto;display:inline-block;border:0;" />`
-            : `<span style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:800;letter-spacing:3px;color:#FF00FF;text-transform:uppercase;">Cats On Crack</span>`}
+            : `<span style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:800;letter-spacing:3px;color:${readableOn(accent, hb)};text-transform:uppercase;">Cats On Crack</span>`}
         </td></tr>
         <tr><td style="padding:32px 28px 8px;">
           <h1 style="margin:0 0 6px;font-family:Arial,Helvetica,sans-serif;font-size:24px;letter-spacing:1px;color:#F0EDE8;text-transform:uppercase;">Order locked in</h1>
-          <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#8a8880;">Order ref <strong style="color:#FF00FF;">#${ref}</strong></p>
+          <p style="margin:0 0 4px;font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#8a8880;">Order ref <strong style="color:${accentText};">#${ref}</strong></p>
           <p style="margin:0 0 20px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.6;color:#b8b5ad;">
             Thanks for repping the alley. Your gear's heading into production — we'll email tracking the moment it ships.
           </p>
@@ -188,7 +196,7 @@ function buildOrderEmailHtml(session, lineItems, promo = {}) {
             ${shipCost ? `<tr><td style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#8a8880;padding:4px 0;">Shipping</td><td align="right" style="font-family:Arial,Helvetica,sans-serif;font-size:14px;color:#F0EDE8;padding:4px 0;">${shipCost}</td></tr>` : ''}
             <tr>
               <td style="font-family:Arial,Helvetica,sans-serif;font-size:16px;font-weight:800;color:#F0EDE8;text-transform:uppercase;letter-spacing:1px;padding:10px 0 0;">Total</td>
-              <td align="right" style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:800;color:#FF00FF;padding:10px 0 0;">${gbp(session.amount_total)}</td>
+              <td align="right" style="font-family:Arial,Helvetica,sans-serif;font-size:20px;font-weight:800;color:${accentText};padding:10px 0 0;">${gbp(session.amount_total)}</td>
             </tr>
           </table>
         </td></tr>
@@ -197,7 +205,7 @@ function buildOrderEmailHtml(session, lineItems, promo = {}) {
           <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:14px;line-height:1.6;color:#F0EDE8;">${addrLines}</p>
         </td></tr>
         <tr><td style="padding:28px;">
-          <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#6f6d66;border-top:1px solid #2a2f3d;padding-top:16px;">
+          <p style="margin:0;font-family:Arial,Helvetica,sans-serif;font-size:12px;line-height:1.6;color:#8a8880;border-top:1px solid #2a2f3d;padding-top:16px;">
             Cats On Crack — printed &amp; shipped on demand. Questions? Just reply to this email.
           </p>
         </td></tr>
@@ -287,7 +295,7 @@ async function sendMerchantEmail(session, lineItems, status, printfulOrderId, pr
           <div style="margin:0 0 16px;border:2px solid #1d4ed8;border-radius:8px;padding:14px 16px;">
             <p style="margin:0 0 8px;font-size:13px;font-weight:700;color:#1d4ed8;text-transform:uppercase;letter-spacing:.04em;">&#128230; Make &amp; dispatch in-house</p>
             <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-              <tr><th align="left" style="font-size:11px;color:#888;text-transform:uppercase;padding-bottom:4px;">Piece / spec</th><th style="font-size:11px;color:#888;text-transform:uppercase;padding-bottom:4px;">Qty</th></tr>
+              <tr><th align="left" style="font-size:11px;color:#666;text-transform:uppercase;padding-bottom:4px;">Piece / spec</th><th style="font-size:11px;color:#666;text-transform:uppercase;padding-bottom:4px;">Qty</th></tr>
               ${inhouseRows}
             </table>
             <p style="margin:8px 0 0;font-size:12px;color:#555;">Print, frame and post to the address below. These are NOT in Printful.</p>
@@ -308,9 +316,9 @@ async function sendMerchantEmail(session, lineItems, status, printfulOrderId, pr
           ${promo.referralNote ? `<p style="background:#fff4e5;color:#8a4b00;padding:12px 16px;border-radius:6px;font-size:14px;margin:0 0 16px;"><strong>&#9888; FRIEND CODE &mdash; NO REWARD</strong><br>${esc(promo.referralNote)}</p>` : ''}
           <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 16px;">
             <tr>
-              <th align="left" style="font-size:11px;color:#888;text-transform:uppercase;padding-bottom:4px;">Item</th>
-              <th style="font-size:11px;color:#888;text-transform:uppercase;padding-bottom:4px;">Qty</th>
-              <th align="right" style="font-size:11px;color:#888;text-transform:uppercase;padding-bottom:4px;">Price</th>
+              <th align="left" style="font-size:11px;color:#666;text-transform:uppercase;padding-bottom:4px;">Item</th>
+              <th style="font-size:11px;color:#666;text-transform:uppercase;padding-bottom:4px;">Qty</th>
+              <th align="right" style="font-size:11px;color:#666;text-transform:uppercase;padding-bottom:4px;">Price</th>
             </tr>
             ${rows}
             ${promo.amountPence ? `<tr><td style="padding:8px 0;font-size:14px;color:#666;">${esc(discountLabel(promo.codes))}</td><td></td><td style="padding:8px 0;font-size:14px;text-align:right;color:#666;">&minus;${gbp(promo.amountPence)}</td></tr>` : ''}
@@ -318,9 +326,9 @@ async function sendMerchantEmail(session, lineItems, status, printfulOrderId, pr
             <tr><td style="padding:10px 0 0;font-size:15px;font-weight:700;">Total</td><td></td><td style="padding:10px 0 0;font-size:15px;font-weight:700;text-align:right;">${gbp(session.amount_total)}</td></tr>
           </table>
           ${inhouseSection}
-          <p style="margin:0 0 4px;font-size:11px;color:#888;text-transform:uppercase;">Customer</p>
+          <p style="margin:0 0 4px;font-size:11px;color:#666;text-transform:uppercase;">Customer</p>
           <p style="margin:0 0 16px;font-size:14px;">${esc(cust.name || '\u2014')}<br><a href="mailto:${esc(cust.email || '')}">${esc(cust.email || '\u2014')}</a></p>
-          <p style="margin:0 0 4px;font-size:11px;color:#888;text-transform:uppercase;">Ship to</p>
+          <p style="margin:0 0 4px;font-size:11px;color:#666;text-transform:uppercase;">Ship to</p>
           <p style="margin:0;font-size:14px;line-height:1.6;">${addrLines}</p>
         </td></tr>
       </table>
