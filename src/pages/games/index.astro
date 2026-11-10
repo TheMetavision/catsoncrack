@@ -1,0 +1,214 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import Navigation from '../../components/Navigation.astro';
+import Footer from '../../components/Footer.astro';
+
+// The games hub, modelled on thefuglys.com/games/ (same card and Play button),
+// in Cats On Crack colours. Static games are served from public/games/<slug>/
+// as full-screen pages with no Astro wrapper.
+const games = [
+  {
+    href: '/games/dogcatcher-dash/',
+    image: '/games/dogcatcher-dash/tex/dd_card.jpg',
+    width: 1344,
+    height: 752,
+    title: 'Dogcatcher Dash',
+    blurb: 'Outrun Duke the Dogcatcher. The furthest run each month wins a Cats On Crack T-shirt.',
+  },
+];
+---
+
+<Layout title="Games | Cats On Crack" description="Free games from Cats On Crack. Outrun Duke the Dogcatcher in Dogcatcher Dash: free to play in your browser, no sign-up.">
+  <Navigation />
+
+  <main>
+    <section class="page-hero">
+      <div class="container">
+        <div class="section-eyebrow">Games</div>
+        <h1 class="page-title">Play in the Alley</h1>
+        <div class="heading-rule"></div>
+        <p class="page-intro">Free games starring the Alley Squad. Play in your browser, no sign-up.</p>
+      </div>
+    </section>
+
+    <section class="section games-section">
+      <div class="container">
+        <div class="games-grid">
+          {games.map((game) => (
+            <a href={game.href} class="game-card">
+              <div class="game-img-wrap">
+                <img src={game.image} width={game.width} height={game.height} alt="" class="game-img" loading="lazy" />
+                <div class="game-img-overlay"></div>
+                <span class="badge-free">Free to play</span>
+              </div>
+              <div class="game-body">
+                <h2 class="game-title">{game.title}</h2>
+                <p class="game-desc">{game.blurb}</p>
+                <span class="btn-play game-cta">Play now →</span>
+              </div>
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <Footer />
+</Layout>
+
+<style>
+  .page-hero {
+    padding: 9rem 0 3rem;
+    background: var(--charcoal);
+    text-align: center;
+  }
+
+  .section-eyebrow {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.9rem;
+    letter-spacing: 5px;
+    text-transform: uppercase;
+    color: var(--amber);
+    margin-bottom: 10px;
+  }
+
+  .page-title {
+    font-size: clamp(2.6rem, 6vw, 4.5rem);
+    color: #fff;
+    text-transform: uppercase;
+    text-shadow: 0 0 10px rgba(255,0,255,0.6), 0 0 22px rgba(255,0,255,0.35);
+  }
+
+  .heading-rule {
+    width: 80px;
+    height: 3px;
+    margin: 18px auto;
+    background: var(--neon);
+    box-shadow: var(--neon-glow);
+  }
+
+  .page-intro {
+    color: var(--text-secondary);
+    font-size: 1.1rem;
+    max-width: 620px;
+    margin: 0 auto;
+  }
+
+  .games-section {
+    background: var(--bg-dark);
+    padding-top: 60px;
+  }
+
+  .games-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 28px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .game-card {
+    display: block;
+    color: inherit;
+    text-decoration: none;
+    background: var(--bg-card);
+    border: 1px solid rgba(255,0,255,0.18);
+    border-radius: 8px;
+    overflow: hidden;
+    transition: all 0.3s ease;
+  }
+
+  .game-card:hover,
+  .game-card:focus-visible {
+    transform: translateY(-4px);
+    border-color: rgba(255,0,255,0.6);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35), var(--glow);
+    text-shadow: none;
+  }
+
+  .game-img-wrap {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .game-img {
+    width: 100%;
+    height: auto;
+    display: block;
+    aspect-ratio: 16/9;
+    object-fit: cover;
+    transition: transform 0.5s ease;
+  }
+
+  .game-card:hover .game-img {
+    transform: scale(1.04);
+  }
+
+  .game-img-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to bottom, transparent 50%, rgba(24,27,34,0.65) 100%);
+  }
+
+  .badge-free {
+    position: absolute;
+    top: 12px;
+    left: 12px;
+    background: rgba(255,140,0,0.92);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    color: #181b22;
+    padding: 4px 10px;
+    border-radius: 3px;
+  }
+
+  .game-body {
+    padding: 22px 24px 26px;
+  }
+
+  .game-title {
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+    color: #fff;
+    margin-bottom: 8px;
+  }
+
+  .game-desc {
+    color: #d0d0d0;
+    line-height: 1.6;
+    margin: 0 0 18px;
+  }
+
+  /* The Play button: a span inside the card link, so it also lights up when
+     the card is hovered or focused, and the card gets a visible focus ring. */
+  .btn-play {
+    display: inline-block;
+    padding: 12px 28px;
+    background: var(--neon);
+    color: #181b22;   /* dark on magenta: about 5.5:1 (white would be about 3:1) */
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 1.15rem;
+    letter-spacing: 0.1em;
+    border-radius: 4px;
+    transition: all 0.3s ease;
+  }
+
+  .game-card:hover .game-cta,
+  .game-card:focus-visible .game-cta {
+    background: var(--amber);
+    color: #181b22;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  }
+
+  .game-card:focus-visible {
+    outline: 3px solid var(--amber);
+    outline-offset: 3px;
+  }
+
+  @media (max-width: 768px) {
+    .games-grid { grid-template-columns: 1fr; }
+    .page-hero { padding: 7rem 16px 2rem; }
+  }
+</style>
