@@ -113,6 +113,12 @@ export const SITE_CONFIG = Object.freeze({
   MAILERLITE_CUSTOMERS_GROUP: 'COC - Customers',
   MAILERLITE_CUSTOMERS_GROUP_ID: '200065134059587076',
   MAILERLITE_FIELD_PREFIX: 'coc',
+
+  // ── Dogcatcher Dash prize (netlify/lib/dd-prize.mjs). The prize is created in
+  // Printful as a DRAFT; the team email links here to confirm it. If the
+  // value contains {id} it is replaced with the Printful order id (set a
+  // per-order link once its exact format has been checked in the dashboard).
+  PRINTFUL_ORDERS_URL: 'https://www.printful.com/dashboard/default/orders',
 });
 
 /**
