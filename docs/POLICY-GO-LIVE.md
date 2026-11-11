@@ -90,9 +90,15 @@ Codes, for reference (no need to name them in the policy): friend codes start ME
 
 Added 2026-11-10 on branch `feature/dogcatcher-dash`. **Nothing here is applied.** Publish it in the Studio (Legal Pages → Privacy Policy, document `legalPage.privacy-policy`) **before** Dogcatcher Dash goes live on catsoncrack.co.uk, because the leaderboard starts collecting runs as soon as the game is public. Adapted from The Fuglys' Group D for Scrap Dash (and the Labrats section for Vent Runner), which run the same leaderboard.
 
-⚠ Legal wording. Check it yourself before publishing. The contact address is `meow@catsoncrack.co.uk` (confirmed; it is also where month-end summaries and prize claims are emailed). [Alan to confirm] The policy's "4. Who we share it with" doesn't name Printful today; this section names it as the printing partner for prizes. Decide whether Printful should also get its own bullet in section 4.
+⚠ Legal wording. Check it yourself before publishing. The contact address is `meow@catsoncrack.co.uk` (confirmed; it is also where month-end summaries and prize claims are emailed).
 
-Add a new section (after "6. How long we keep it", or as the last numbered section) headed **"Games and the Dogcatcher Dash leaderboard"**:
+Two changes:
+
+**a) "4. Who we share it with":** add this bullet (confirmed by Alan, 2026-11-11):
+
+> Printful — printing and delivering prizes to leaderboard winners: name and delivery address only.
+
+**b)** Add a new section (after "6. How long we keep it", or as the last numbered section) headed **"Games and the Dogcatcher Dash leaderboard"**:
 
 > You don't need to give us any personal information to play our games.
 
