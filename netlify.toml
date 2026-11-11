@@ -32,6 +32,43 @@
     # challenges.cloudflare.com: Cloudflare Turnstile on /returns (wall-art returns).
     Content-Security-Policy-Report-Only = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cdn.sanity.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com; font-src 'self'; connect-src 'self' https://cdn.sanity.io https://*.api.sanity.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com; media-src 'self' https://cdn.sanity.io; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
 
+# Dogcatcher Dash (public/games/dogcatcher-dash/): a static full-screen game page.
+# The same rules as Scrap Dash on thefuglys.com. Its GLTFLoader fetches textures
+# from blob: URLs, so connect-src adds blob:; its meshopt decoder compiles
+# WebAssembly, so script-src adds 'wasm-unsafe-eval' (WebAssembly only, not
+# eval()). Otherwise the site-wide policy above. The page also calls the
+# leaderboard (/api/dd-*, same origin, already allowed by connect-src 'self')
+# and uses crypto.subtle (needs no CSP change).
+[[headers]]
+  for = "/games/dogcatcher-dash/*"
+  [headers.values]
+    Content-Security-Policy-Report-Only = "default-src 'self'; script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval' https://www.googletagmanager.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cdn.sanity.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com; font-src 'self'; connect-src 'self' blob: https://cdn.sanity.io https://*.api.sanity.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com; media-src 'self' https://cdn.sanity.io; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+
+# Assets keep their filenames between releases (no content hash), so every
+# game file is revalidated on each visit (max-age=0, must-revalidate: the
+# browser sends its ETag and gets a 304 if nothing changed), and an updated
+# model, texture, track or font is picked up at once.
+[[headers]]
+  for = "/games/dogcatcher-dash/models/*"
+  [headers.values]
+    Content-Type = "model/gltf-binary"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/games/dogcatcher-dash/tex/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/games/dogcatcher-dash/audio/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/games/dogcatcher-dash/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 # Route /api/* requests to Netlify Functions.
 # Required for the contact form (src/pages/contact.astro POSTs to /api/contact
 # which gets rewritten to /.netlify/functions/contact).

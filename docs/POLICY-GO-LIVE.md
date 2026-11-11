@@ -85,3 +85,25 @@ The MailerLite bullet ("MailerLite — newsletter and marketing email delivery (
 > object to our customer emails at any time (unsubscribe link, or email us), after which we stop.
 
 Codes, for reference (no need to name them in the policy): friend codes start MEOW-, thank-you codes COCTHX-.
+
+## Group D: Privacy Policy, games and the Dogcatcher Dash leaderboard
+
+Added 2026-11-10 on branch `feature/dogcatcher-dash`. **Nothing here is applied.** Publish it in the Studio (Legal Pages → Privacy Policy, document `legalPage.privacy-policy`) **before** Dogcatcher Dash goes live on catsoncrack.co.uk, because the leaderboard starts collecting runs as soon as the game is public. Adapted from The Fuglys' Group D for Scrap Dash (and the Labrats section for Vent Runner), which run the same leaderboard.
+
+⚠ Legal wording. Check it yourself before publishing. The contact address is `meow@catsoncrack.co.uk` (confirmed; it is also where month-end summaries and prize claims are emailed).
+
+Two changes:
+
+**a) "4. Who we share it with":** add this bullet (confirmed by Alan, 2026-11-11):
+
+> Printful — printing and delivering prizes to leaderboard winners: name and delivery address only.
+
+**b)** Add a new section (after "6. How long we keep it", or as the last numbered section) headed **"Games and the Dogcatcher Dash leaderboard"**:
+
+> You don't need to give us any personal information to play our games.
+
+> When a run of Dogcatcher Dash ends, the game sends us the distance, score, stage and runner, together with a randomly created racing name and a random code stored on your device. We use the device code only to recognise a device that has won a prize, including one that passes down to it, and show it the prize message. We don't use it to track anyone, and it isn't linked to any personal information. We keep each month's leaderboard for 24 months, then delete it. We keep a record of each month's top 10 racing names and distances, so that a prize can pass down the list, and of who won, as our prize history. These records contain no personal information.
+
+> To claim a prize, the winner (if they're 18 or over) or their parent or guardian gives us their name, email address and delivery address, says which of the two they are, and chooses the T-shirt. We use these details only to send the prize and to contact them about it. To make and post the T-shirt, we pass the name and delivery address (not the email address) to our printing partner, Printful, who uses them only for that order and keeps its order records under its own privacy policy. We don't add claimants to any mailing list or send them offers, referral codes or marketing unless they separately ask to join our newsletter, and we delete our copy of their details once the prize has been sent (and within 90 days at most). If a prize passes to the next player, we don't share anything about the earlier winner with them.
+
+> Our lawful basis for running the leaderboard is our legitimate interest in running a fair game. For prize claims it is to send the prize the claimant has asked for. To ask about or delete leaderboard data, email meow@catsoncrack.co.uk. The full rules are at [catsoncrack.co.uk/games/leaderboard-terms/](https://catsoncrack.co.uk/games/leaderboard-terms/).

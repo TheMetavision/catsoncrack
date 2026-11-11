@@ -28,8 +28,8 @@ export default defineConfig({
   output: 'static',
   integrations: [
     react(),
-    // Transactional pages (noindex) stay out of the sitemap.
-    sitemap({ serialize: withBlogLastmod, filter: (page) => !/\/(order-success|returns)\/?$/.test(new URL(page).pathname) }),
+    // Transactional pages (noindex) stay out of the sitemap, as does the game-prize claim form.
+    sitemap({ serialize: withBlogLastmod, filter: (page) => !/\/(order-success|returns|games\/claim)\/?$/.test(new URL(page).pathname) }),
   ],
   vite: { ssr: { noExternal: ['@sanity/client', '@sanity/image-url'] } }
 });
