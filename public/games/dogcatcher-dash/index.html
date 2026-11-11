@@ -8,7 +8,7 @@
 <link rel="canonical" href="https://catsoncrack.co.uk/games/dogcatcher-dash/">
 <meta property="og:title" content="Dogcatcher Dash | Cats On Crack">
 <meta property="og:description" content="A free Cats On Crack endless runner. The furthest run each month wins a Cats On Crack T-shirt.">
-<meta property="og:image" content="https://catsoncrack.co.uk/games/dogcatcher-dash/tex/dd_card.jpg">
+<meta property="og:image" content="https://catsoncrack.co.uk/games/dogcatcher-dash/tex/title_card.jpg">
 <meta name="theme-color" content="#181b22">
 <link rel="stylesheet" href="fonts/fonts.css">
 <style>
@@ -874,6 +874,9 @@ const KIT = window.KIT = {
     const add = o => { o.userData.dress = true; s.add(o); return o; };
     const rnd = Math.random, edge = X.TRACK_W / 2;
     s.children.forEach(c => { if (c.userData.track) c.material = st.id === 'canal' ? MT.cobble : (st.id === 'warehouse' ? MT.concrete : MT.tarmac); });
+    // gutters: close the gap between the road edge and the walls, so the sky and fog never show through at the wall foot
+    if (!G.gutter) { G.gutter = new THREE.BoxGeometry(0.62, 0.24, X.SEG_L); MT.gutter = X.std({ color: 0x1d1a22, roughness: 0.55, metalness: 0.08 }); MT.gutterW = X.std({ color: 0x3a3630, roughness: 0.6 }); }
+    [-1, 1].forEach(sd => { if (st.id === 'canal' && sd < 0) return; const gm = add(new THREE.Mesh(G.gutter, st.id === 'warehouse' ? MT.gutterW : MT.gutter)); gm.position.set(sd * (edge + 0.3), -0.13, 0); });
     const brickWall = sd => { const w = add(new THREE.Mesh(G.wall, rnd() < 0.12 ? MT.bricks[0] : (rnd() < 0.15 ? MT.bricks[1] : MT.bricks[2 + (rnd() * 2 | 0)]))); w.position.set(sd * (edge + 0.5), 4.5, 0);
       const win = add(new THREE.Mesh(new THREE.PlaneGeometry(X.SEG_L, 5), MT.windows)); win.rotation.y = -sd * Math.PI / 2; win.position.set(sd * (edge + 0.29), 5.4, 0); win.material.map.offset.x = rnd();
       if (MT.graf && rnd() < 0.32) { const k = rnd() * 6 | 0, gw = 1.2 + rnd() * 0.9, gh = gw * KIT._grafAsp[k], d = add(new THREE.Mesh(new THREE.PlaneGeometry(gw, gh), MT.graf[k])); d.rotation.y = -sd * Math.PI / 2; d.position.set(sd * (edge + 0.285), 0.7 + gh / 2 + rnd() * 0.9, (rnd() - 0.5) * (X.SEG_L - gw - 1)); } };
