@@ -340,9 +340,11 @@ const currentPath = Astro.url.pathname;
 			font-size: 0.85rem;
 		}
 
+		/* Between 769px and 980px the links, social icons and cart don't fit on
+		   one row (the cart was pushed off-screen), so the social icons hide here.
+		   They are still in the mobile menu and on wider screens. */
 		.nav-socials {
-			gap: 6px;
-			padding-left: 14px;
+			display: none;
 		}
 	}
 
