@@ -429,7 +429,7 @@
 <script src="vendor/meshopt_decoder.js"></script>
 
 <script>
-window.__TX={"dd_ground_alley": "/games/dogcatcher-dash/tex/dd_ground_alley.webp", "dd_ground_ware": "/games/dogcatcher-dash/tex/dd_ground_ware.webp", "dd_brick": "/games/dogcatcher-dash/tex/dd_brick.webp", "dd_corr": "/games/dogcatcher-dash/tex/dd_corr.webp", "dd_ground_canal": "/games/dogcatcher-dash/tex/dd_ground_canal.webp", "dd_crate": "/games/dogcatcher-dash/tex/dd_crate.webp", "dd_pano_alley": "/games/dogcatcher-dash/tex/dd_pano_alley.webp", "dd_pano_canal": "/games/dogcatcher-dash/tex/dd_pano_canal.webp", "dd_pano_ware": "/games/dogcatcher-dash/tex/dd_pano_ware.webp", "dd_card": "/games/dogcatcher-dash/tex/dd_card.jpg", "dd_sign0": "/games/dogcatcher-dash/tex/dd_sign0.webp", "dd_sign1": "/games/dogcatcher-dash/tex/dd_sign1.webp", "dd_sign2": "/games/dogcatcher-dash/tex/dd_sign2.webp", "dd_sign3": "/games/dogcatcher-dash/tex/dd_sign3.webp", "dd_sign4": "/games/dogcatcher-dash/tex/dd_sign4.webp", "dd_sign5": "/games/dogcatcher-dash/tex/dd_sign5.webp", "dd_graf0": "/games/dogcatcher-dash/tex/dd_graf0.webp", "dd_graf1": "/games/dogcatcher-dash/tex/dd_graf1.webp", "dd_graf2": "/games/dogcatcher-dash/tex/dd_graf2.webp", "dd_graf3": "/games/dogcatcher-dash/tex/dd_graf3.webp", "dd_graf4": "/games/dogcatcher-dash/tex/dd_graf4.webp", "dd_graf5": "/games/dogcatcher-dash/tex/dd_graf5.webp"};
+window.__TX={"dd_card_alley": "/games/dogcatcher-dash/tex/dd_card_alley.jpg", "dd_card_canal": "/games/dogcatcher-dash/tex/dd_card_canal.jpg", "dd_card_warehouse": "/games/dogcatcher-dash/tex/dd_card_warehouse.jpg", "dd_ground_alley": "/games/dogcatcher-dash/tex/dd_ground_alley.webp", "dd_ground_ware": "/games/dogcatcher-dash/tex/dd_ground_ware.webp", "dd_brick": "/games/dogcatcher-dash/tex/dd_brick.webp", "dd_corr": "/games/dogcatcher-dash/tex/dd_corr.webp", "dd_ground_canal": "/games/dogcatcher-dash/tex/dd_ground_canal.webp", "dd_crate": "/games/dogcatcher-dash/tex/dd_crate.webp", "dd_pano_alley": "/games/dogcatcher-dash/tex/dd_pano_alley.webp", "dd_pano_canal": "/games/dogcatcher-dash/tex/dd_pano_canal.webp", "dd_pano_ware": "/games/dogcatcher-dash/tex/dd_pano_ware.webp", "dd_card": "/games/dogcatcher-dash/tex/dd_card.jpg", "dd_sign0": "/games/dogcatcher-dash/tex/dd_sign0.webp", "dd_sign1": "/games/dogcatcher-dash/tex/dd_sign1.webp", "dd_sign2": "/games/dogcatcher-dash/tex/dd_sign2.webp", "dd_sign3": "/games/dogcatcher-dash/tex/dd_sign3.webp", "dd_sign4": "/games/dogcatcher-dash/tex/dd_sign4.webp", "dd_sign5": "/games/dogcatcher-dash/tex/dd_sign5.webp", "dd_graf0": "/games/dogcatcher-dash/tex/dd_graf0.webp", "dd_graf1": "/games/dogcatcher-dash/tex/dd_graf1.webp", "dd_graf2": "/games/dogcatcher-dash/tex/dd_graf2.webp", "dd_graf3": "/games/dogcatcher-dash/tex/dd_graf3.webp", "dd_graf4": "/games/dogcatcher-dash/tex/dd_graf4.webp", "dd_graf5": "/games/dogcatcher-dash/tex/dd_graf5.webp"};
 /* Shared stand-in builders used by every brand kit.
    All characters face down the track (-z). Each returns { root, animate(dt, a) }. */
 window.RG = (() => {
@@ -731,14 +731,14 @@ const KIT = window.KIT = {
   },
   board: { name: 'Bin Lid', short: 'Lid', css: '#c9d3dc', hex: 0xc9d3dc, dur: 30, key: 'boardT', lift: 0.08 },
   stages: [
-    { id: 'alley', card: 'dd_card', name: 'The Alley', blurb: 'Where the cats make the rules', goal: 1000,
+    { id: 'alley', card: 'dd_card_alley', name: 'The Alley', blurb: 'Where the cats make the rules', goal: 1000,
       chaser: 'duke', chaserName: 'Duke the Dogcatcher',
       crash: ['Ran face-first into a dumpster', 'Dumpsters need a lane change, or Alley Springs to clear them.'],
       sections: [
         { name: 'The Alley', light: [3.2, 0.2, 3.2], fog: 0x1a0f24, sky: [0x05030f, 0x2a1640, 0x120a18], hemi: [0x7a6aaa, 0x1a1020, 0.55], sun: 0x9ab0ff, sunI: 0.35, ui: '#ff33ff' },
         { name: "Behind Fishbone's Diner", light: [3.4, 1.6, 0.2], fog: 0x24140a, sky: [0x06040c, 0x3a200e, 0x160c08], hemi: [0xaa8a6a, 0x201008, 0.55], sun: 0xffc080, sunI: 0.3, ui: '#ffaa33' },
         { name: 'The Dumpster Throne', light: [1.0, 3.2, 0.6], fog: 0x0e1a10, sky: [0x03060a, 0x14301a, 0x08120a], hemi: [0x7aaa7a, 0x0a1a0e, 0.5], sun: 0xb0ffb0, sunI: 0.3, ui: '#7dff6a' } ] },
-    { id: 'canal', card: 'dd_card', name: 'The Canal Stretch', blurb: 'The water remembers what the streets forget', goal: 1250,
+    { id: 'canal', card: 'dd_card_canal', name: 'The Canal Stretch', blurb: 'The water remembers what the streets forget', goal: 1250,
       chaser: 'snips', chaserName: 'Mr. Snips', unlockNote: 'Clear The Canal Stretch to unlock Slinky',
       caught: ['Snatched by Mr. Snips', 'Two slip-ups in a row and the gull had you.'],
       crash: ['Ran face-first into a dumpster', 'Dumpsters need a lane change, or Alley Springs to clear them.'],
@@ -746,7 +746,7 @@ const KIT = window.KIT = {
         { name: 'The Canal Stretch', light: [0.4, 1.6, 3.4], fog: 0x0c1424, sky: [0x03050e, 0x1a2a48, 0x0a1018], hemi: [0x6a8acc, 0x0a1018, 0.6], sun: 0xb0c8ff, sunI: 0.45, sunDisc: 0xc8d8ff, sunDir: [0.4, 0.3, -1], ui: '#5ec8ff' },
         { name: 'Under the Iron Bridge', light: [3.2, 0.2, 3.2], fog: 0x1a0f24, sky: [0x05030f, 0x2a1640, 0x120a18], hemi: [0x7a6aaa, 0x1a1020, 0.55], sun: 0x9ab0ff, sunI: 0.35, ui: '#ff33ff' },
         { name: 'The Lock Gates', light: [3.4, 1.6, 0.2], fog: 0x1c120a, sky: [0x06040c, 0x3a200e, 0x160c08], hemi: [0xaa8a6a, 0x201008, 0.55], sun: 0xffc080, sunI: 0.3, ui: '#ffaa33' } ] },
-    { id: 'warehouse', card: 'dd_card', name: 'Warehouse 9', blurb: 'The night nobody saw a thing', goal: 1500,
+    { id: 'warehouse', card: 'dd_card_warehouse', name: 'Warehouse 9', blurb: 'The night nobody saw a thing', goal: 1500,
       chaser: 'king', chaserName: 'The Alley Cat King',
       caught: ['Cornered by The Alley Cat King', 'Two slip-ups in a row. The King does not forgive.'],
       crash: ['Ran into a crate stack', 'Crate stacks need a lane change, or Alley Springs to clear them.'],
