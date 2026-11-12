@@ -1,6 +1,6 @@
 // POST /api/dd-submit  { token, nick, dist, score }  ->  { ok, monthRank, allRank } or { ok:false, reason }
 // Checks the ticket signature, that it is used once, and that the distance was physically reachable in the real time since the ticket was issued.
-import { ddStore, readTicket, plausibility, validNick, addToBoard, monthId, json, readJson, rateLimited, MIN_BOARD_DIST } from '../lib/dd-shared.mjs';
+import { ddStore, readTicket, plausibility, validNick, addToBoard, monthId, json, readJson, rateLimited, MIN_BOARD_DIST, STRONG, newId, stillOurs } from '../lib/dd-shared.mjs';
 
 export default async (req, context) => {
   if (req.method !== 'POST') return json({ error: 'method' }, 405);
@@ -18,8 +18,12 @@ export default async (req, context) => {
   if (!p.ok) return json({ ok: false, reason: 'impossible' }, 400);
   if (dist < MIN_BOARD_DIST) return json({ ok: true, monthRank: null, allRank: null, short: true });
   // each ticket counts once
-  const used = await store.setJSON(`used/${monthId(new Date(ticket.t))}/${ticket.rid}`, { at: now }, { onlyIfNew: true });
-  if (used && used.modified === false) return json({ ok: false, reason: 'used' }, 409);
+  const usedKey = `used/${monthId(new Date(ticket.t))}/${ticket.rid}`, usedRes = () => json({ ok: false, reason: 'used' }, 409);
+  if (await store.get(usedKey, STRONG)) return usedRes();           // interim guard: read first (dd-shared.mjs)
+  const writeId = newId();
+  const used = await store.setJSON(usedKey, { at: now, writeId }, { onlyIfNew: true });
+  if (used && used.modified === false) return usedRes();
+  if (!(await stillOurs(store, usedKey, writeId))) return usedRes(); // interim guard: a replay marked it first
   const entry = { rid: ticket.rid, nick: body.nick, dist, score, stage: ticket.stage, runner: ticket.runner, dev: ticket.dev, at: now, secs: Math.round(elapsed), flag: !!p.flag };
   const month = monthId(new Date(now));
   const monthRank = await addToBoard(store, `board/${month}`, entry);

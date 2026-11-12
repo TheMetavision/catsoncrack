@@ -11,11 +11,33 @@ export const CONTACT_EMAIL = 'meow@catsoncrack.co.uk';   // month-end summary an
 
 /* ---------- storage ---------- */
 let storeOverride = null;               // tests inject an in-memory store
-export function setStoreForTests(s) { storeOverride = s; }
+export function setStoreForTests(s) { storeOverride = s; settle = 0; }
 export async function ddStore() {
   if (storeOverride) return storeOverride;
   const { getStore } = await import('@netlify/blobs');
   return getStore({ name: 'dogcatcher-dash', consistency: 'strong' });
+}
+
+/* ---------- interim guard: Netlify Blobs ignoring onlyIfNew / onlyIfMatch ----------
+   November 2026: Netlify Blobs was confirmed (from a deployed function) to ignore conditional writes on our
+   sites; a support ticket is open. Every onlyIfNew / onlyIfMatch call is kept exactly as it was, so the real
+   protection comes back by itself once Netlify fixes it. Until then each guarded write also:
+     1. reads the key first with strong consistency and refuses if it already exists (or has moved on), and
+     2. stamps the value with a random writeId, reads it back, and treats a different writeId as a clash
+        (someone else's write landed): refuse, or re-read and decide again.
+   This narrows the race a lost conditional write opens; it can't close it completely (two writers can still
+   both read back their own copy if their writes don't overlap the other's read-back). SETTLE_MS widens the
+   window for the prize record, where a double win would mean two prizes. Safe to leave in after the fix. */
+export const STRONG = { type: 'json', consistency: 'strong' };
+export const SETTLE_MS = 300;
+let settle = SETTLE_MS;                 // tests run without the pause (setStoreForTests)
+export const settleMs = () => settle;
+const pause = ms => (ms > 0 ? new Promise(r => setTimeout(r, ms)) : null);
+/** After a write stamped with `writeId`: wait `ms`, read `key` back (strong) and say whether our write is the one stored. */
+export async function stillOurs(store, key, writeId, ms = 0) {
+  await pause(ms);
+  const back = await store.get(key, STRONG);
+  return !!back && back.writeId === writeId;
 }
 
 /* ---------- secrets and signing ---------- */
@@ -87,7 +109,7 @@ export const monthName = id => new Date(Date.UTC(+id.slice(0, 4), +id.slice(5) -
 /* ---------- boards: best run per device, sorted by distance ---------- */
 export async function addToBoard(store, key, entry) {
   for (let attempt = 0; attempt < 6; attempt++) {
-    const cur = await store.getWithMetadata(key, { type: 'json' });
+    const cur = await store.getWithMetadata(key, STRONG);   // read first (interim guard: a new board is only created when none exists)
     const entries = cur && cur.data ? cur.data.entries.slice() : [];
     const mine = entries.findIndex(e => e.dev === entry.dev);
     if (mine >= 0 && entries[mine].dist >= entry.dist) return rankOf(entries, entries[mine]);
@@ -96,8 +118,11 @@ export async function addToBoard(store, key, entry) {
     entries.sort((a, b) => b.dist - a.dist || a.at - b.at);
     const kept = entries.slice(0, BOARD_SIZE);
     const opts = cur ? { onlyIfMatch: cur.etag } : { onlyIfNew: true };
-    const res = await store.setJSON(key, { entries: kept, updated: Date.now() }, opts);
-    if (res && res.modified !== false) { const r = kept.indexOf(entry); return r >= 0 ? r + 1 : null; }
+    const writeId = newId();
+    const res = await store.setJSON(key, { entries: kept, updated: Date.now(), writeId }, opts);
+    if (res && res.modified === false) continue;
+    if (!(await stillOurs(store, key, writeId))) continue;     // interim guard: another submit's write replaced ours, so add again
+    const r = kept.indexOf(entry); return r >= 0 ? r + 1 : null;
   }
   throw new Error('board busy');
 }

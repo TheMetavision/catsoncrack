@@ -22,7 +22,9 @@
  *
  * Every change is a conditional write on the record's etag (update()), so the
  * daily check, a claim, a decline and a disqualification can't overwrite each
- * other. A claim in progress holds `offer.claiming` for up to LOCK_MS; nothing
+ * other. While Netlify Blobs ignores conditional writes, update() and
+ * createRecord() also read first and confirm each write by its random writeId
+ * (the interim guard in dd-shared.mjs). A claim in progress holds `offer.claiming` for up to LOCK_MS; nothing
  * else moves the offer while it is held.
  *
  * KEPT APART FROM THE SHOP. Nothing here writes to Sanity (the catalogue is a
@@ -30,7 +32,7 @@
  * shipping, post-delivery, referral or MailerLite step can see it
  * (tests/dd-prize.test.mjs proves it). The Printful order is always a DRAFT.
  */
-import { claimCode, sha256, signText, sameText } from './dd-shared.mjs';
+import { claimCode, sha256, signText, sameText, newId, STRONG, stillOurs, settleMs } from './dd-shared.mjs';
 import { setting } from '../functions/_shared/site-config.mjs';
 
 export const TOP_N = 10;
@@ -130,7 +132,7 @@ async function syncIndex(store, before, after) {
 
 /** { rec, etag } for a month, upgrading a legacy record (and writing it back) first; null if none. */
 export async function readRecord(store, month, tries = 4) {
-  const cur = await store.getWithMetadata(recKey(month), { type: 'json' });
+  const cur = await store.getWithMetadata(recKey(month), STRONG);
   if (!cur || !cur.data) return null;
   if (cur.data.v === 2) return { rec: cur.data, etag: cur.etag };
   const board = await store.get(`board/${month}`, { type: 'json' });
@@ -152,8 +154,12 @@ export async function update(store, month, change) {
     if (!got) return { rec: null, before: null, changed: false };
     const next = change(structuredClone(got.rec));
     if (!next) return { rec: got.rec, before: got.rec, changed: false };
+    next.writeId = newId();
     const res = await store.setJSON(recKey(month), next, { onlyIfMatch: got.etag });
     if (res && res.modified === false) continue;
+    // Interim guard: if another claim, decline or pass-down replaced our write, re-read and decide again
+    // (a second claim then finds the offer held or claimed and is refused as before).
+    if (!(await stillOurs(store, recKey(month), next.writeId, settleMs()))) continue;
     await syncIndex(store, got.rec, next);
     return { rec: next, before: got.rec, changed: true };
   }
@@ -162,8 +168,11 @@ export async function update(store, month, change) {
 
 /** Write a brand-new month (month close). False if it already exists. */
 export async function createRecord(store, rec) {
+  if (await store.get(recKey(rec.month), STRONG)) return false;           // interim guard: read first
+  rec.writeId = newId();
   const res = await store.setJSON(recKey(rec.month), rec, { onlyIfNew: true });
   if (res && res.modified === false) return false;
+  if (!(await stillOurs(store, recKey(rec.month), rec.writeId, settleMs()))) return false;   // another close won
   await syncIndex(store, null, rec);
   return true;
 }
