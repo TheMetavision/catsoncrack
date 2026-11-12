@@ -2051,7 +2051,8 @@ function lbSubmitRun(score) {
 }
 function lbOrdinal(n) { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); }
 let lbPeriod = 'month', lbReturnTo = 'titleScreen';
-const STAGE_SHORT = { boneyard: 'Bone Yard', chopshop: 'Chop Shop', perimeter: 'Perimeter' }, RUNNER_NAME = { trixie: 'Trixie', scrap: 'Scrap' };
+// leaderboard row labels, built from this game's own stages and runners
+const STAGE_SHORT = Object.fromEntries(K.stages.map(s => [s.id, s.name.replace(/^The /, '')])), RUNNER_NAME = Object.fromEntries(K.runners.map(r => [r.id, r.name]));
 async function lbShow(from) {
   lbReturnTo = from; $(from).classList.remove('on'); $('lbScreen').classList.add('on');
   $('lbNick').textContent = lbNick; lbLoad();
