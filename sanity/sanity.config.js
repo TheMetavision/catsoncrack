@@ -32,6 +32,8 @@ export default defineConfig({
             S.documentTypeListItem('merchCategory').title('Merch Categories'),
             S.documentTypeListItem('book').title('Books'),
             S.divider(),
+            S.documentTypeListItem('game').title('Games'),
+            S.divider(),
             S.documentTypeListItem('page').title('Pages'),
             S.documentTypeListItem('legalPage').title('Legal Pages'),
             S.divider(),

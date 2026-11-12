@@ -1,11 +1,13 @@
 import { defineType, defineField } from 'sanity'
 import { UserIcon } from '@sanity/icons'
+import { referenceFieldset, referenceGalleryField } from './galleryImage'
 
 export default defineType({
   name: 'character',
   title: 'Character',
   type: 'document',
   icon: UserIcon,
+  fieldsets: [referenceFieldset],
   fields: [
     defineField({
       name: 'name',
@@ -119,6 +121,9 @@ export default defineType({
     defineField({ name: 'sortOrder', title: 'Sort Order (old field)', type: 'number', description: 'Legacy. /the-alley-squad sorts by this.', hidden: false }),
     defineField({ name: 'tag', title: 'Tag', type: 'string', description: 'Legacy', hidden: false }),
     defineField({ name: 'externalImageUrl', title: 'External Image URL', type: 'url', description: 'Legacy. /the-alley-squad uses it only when there is no Character Image.', hidden: false }),
+
+    // ─── Private reference gallery (2026-11-12) ── never queried by the site ──
+    referenceGalleryField('character'),
   ],
   preview: {
     select: {
