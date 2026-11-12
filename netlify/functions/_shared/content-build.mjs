@@ -48,7 +48,11 @@ export const NEVER_BUILD_PREFIXES = ['sanity.', 'system.'];
  * Move a type into NEVER_BUILD once the webhook filter lists it (the test
  * below checks the two agree).
  */
-export const IGNORED_NOT_FILTERED = ['returnRequest'];
+export const IGNORED_NOT_FILTERED = [
+  'returnRequest',
+  // Studio-only private game records + art (sanity-galleries, 12 Nov 2026): the site never reads them.
+  'game',
+];
 
 /** The Sanity webhook's filter, kept here so the test can check the two agree. */
 export const WEBHOOK_FILTER =

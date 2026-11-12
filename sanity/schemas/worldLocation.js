@@ -1,5 +1,6 @@
 import {defineField, defineType} from 'sanity'
 import {PinIcon} from '@sanity/icons'
+import {referenceFieldset, referenceGalleryField} from './galleryImage'
 
 /**
  * worldLocation
@@ -25,6 +26,7 @@ export default defineType({
   title: 'World Location',
   type: 'document',
   icon: PinIcon,
+  fieldsets: [referenceFieldset],
   fields: [
     defineField({
       name: 'title',
@@ -173,6 +175,9 @@ export default defineType({
       validation: (rule) =>
         rule.max(8).warning('Most locations have ~4 merch concepts.'),
     }),
+
+    // ─── Private reference gallery (2026-11-12) ── never queried by the site ──
+    referenceGalleryField('location'),
   ],
   orderings: [
     {

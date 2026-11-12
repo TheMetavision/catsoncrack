@@ -13,6 +13,8 @@ import worldLocation from './worldLocation';
 import contactSubmission from './contactSubmission';
 import order from './order';
 import returnRequest from './returnRequest';
+import galleryImage from './galleryImage';
+import game from './game';
 
 export const schemaTypes = [
   siteSettings,
@@ -30,4 +32,6 @@ export const schemaTypes = [
   contactSubmission,
   order,
   returnRequest,
+  game,
+  galleryImage,
 ];
