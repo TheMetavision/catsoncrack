@@ -69,6 +69,36 @@
   [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
 
+# Gutter Grand Prix (public/games/gutter-grand-prix/): the kart racer, a static
+# full-screen page on the same engine as Junkyard Racers. Its GLTFLoader fetches
+# textures from blob: URLs, so connect-src adds blob: (no meshopt, so no
+# 'wasm-unsafe-eval'). Free to play: no leaderboard calls.
+[[headers]]
+  for = "/games/gutter-grand-prix/*"
+  [headers.values]
+    Content-Security-Policy-Report-Only = "default-src 'self'; script-src 'self' 'unsafe-inline' https://www.googletagmanager.com https://challenges.cloudflare.com; style-src 'self' 'unsafe-inline'; img-src 'self' data: blob: https://cdn.sanity.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com; font-src 'self'; connect-src 'self' blob: https://cdn.sanity.io https://*.api.sanity.io https://www.googletagmanager.com https://*.google-analytics.com https://*.analytics.google.com; media-src 'self' https://cdn.sanity.io; frame-src https://www.youtube-nocookie.com https://www.youtube.com https://challenges.cloudflare.com; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'"
+
+[[headers]]
+  for = "/games/gutter-grand-prix/models/*"
+  [headers.values]
+    Content-Type = "model/gltf-binary"
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/games/gutter-grand-prix/tex/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/games/gutter-grand-prix/audio/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/games/gutter-grand-prix/fonts/*"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
 # Route /api/* requests to Netlify Functions.
 # Required for the contact form (src/pages/contact.astro POSTs to /api/contact
 # which gets rewritten to /.netlify/functions/contact).
