@@ -891,11 +891,16 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 		pointer-events: auto;
 	}
 
+	/* The frame is exactly as wide as the character image, so the quote, name and role
+	   (all absolutely positioned inside it) stay within the character's box. */
 	.character-frame {
 		position: relative;
 		display: flex;
 		flex-direction: column;
 		align-items: center;
+		width: 100%;
+		max-width: 460px;
+		margin: 0 auto;
 	}
 
 	.hero-character {
@@ -930,8 +935,8 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 	.character-ground-vignette {
 		position: absolute;
 		bottom: 0;
-		left: -10%;
-		right: -10%;
+		left: 0;
+		right: 0;
 		height: 45%;
 		background: linear-gradient(
 			to top,
@@ -947,10 +952,11 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 	.character-nameplate {
 		position: absolute;
 		bottom: 90px;
-		left: 0;
-		right: 0;
+		left: 12px;
+		right: 12px;
 		z-index: 4;
 		text-align: center;
+		overflow-wrap: anywhere;
 	}
 
 	.nameplate-name {
@@ -986,8 +992,8 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 	.character-tagline {
 		position: absolute;
 		top: 30px;
-		left: -20px;
-		right: -20px;
+		left: 18px;
+		right: 18px;
 		z-index: 4;
 		font-family: 'Inter', sans-serif;
 		font-size: 0.82rem;
@@ -2150,12 +2156,25 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 			max-width: 320px;
 		}
 
+		.character-frame {
+			max-width: 320px;
+		}
+
 		.character-nameplate {
 			bottom: 60px;
 		}
 
 		.character-tagline {
 			top: 16px;
+			left: 12px;
+			right: 12px;
+			font-size: 0.74rem;
+			line-height: 1.5;
+		}
+
+		/* dots and Pause sit below the name and role rather than across them */
+		.carousel-dots {
+			bottom: 20px;
 		}
 	}
 
