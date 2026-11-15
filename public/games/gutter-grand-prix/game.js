@@ -39,6 +39,7 @@ const POINTS = [10, 8, 6, 5, 4, 3, 2, 1];
 
 /* ---------------- racers ----------------
    model: GLB in models/ (kart and driver in one). front: which model axis the kart's nose points along.
+   yaw: optional degrees to turn a model that came out skewed on its base, applied before front.
    size: optional scale correction so drivers come out the same size (karts are fitted to KART_LEN, which over/under-scales unusually short or long karts).
    tyre: optional size of the fitted tyres relative to the standard tyre (to match a model's own wheels).
    wheels: add spinning tyres for models whose wheels came out as bare hubs ('front' = front pair only). Racers without a model use
@@ -51,7 +52,7 @@ const RACERS = [
   { id: 'whiskers', name: 'Whiskers McScruff', tag: 'The Leader',          color: '#e08a2a', model: 'whiskers', front: '-x', stats: { speed: 1.05, accel: 1.0,  handling: 0.98, weight: 1.0 },  shout: ['Light the rocket!', 'Follow me, crew!', 'This trolley flies!'] },
   { id: 'oldman',   name: 'Old Man Whiskers', tag: 'The Historian',        color: '#8a8a8a', model: 'oldman',   front: '+z', stats: { speed: 0.97, accel: 1.08, handling: 1.08, weight: 0.85 }, unlock: 'alley', shout: ['Back in my day...', 'Mind the scooter, youngster!', 'Still got it!'] },
   { id: 'chubby',   name: 'Chubby Cheeks',   tag: 'The Muscle',            color: '#b04030', model: 'chubby',   front: '+z', size: 1.05, stats: { speed: 1.01, accel: 0.95, handling: 0.95, weight: 1.4 }, unlock: 'pound', shout: ['Snack break? Later!', 'Coming through!', 'Comfiest ride in town!'] },
-  { id: 'rita',     name: 'Rita the Raccoon', tag: 'The Scavenger',        color: '#4a7a3a', model: 'rita',     front: '-x', stats: { speed: 1.02, accel: 1.06, handling: 1.04, weight: 0.95 }, unlock: 'docks', shout: ['Totally legit!', 'Finders keepers!', 'Bin there, done that!'] },
+  { id: 'rita',     name: 'Rita the Raccoon', tag: 'The Scavenger',        color: '#4a7a3a', model: 'rita',     front: '-x', yaw: -30, stats: { speed: 1.02, accel: 1.06, handling: 1.04, weight: 0.95 }, unlock: 'docks', shout: ['Totally legit!', 'Finders keepers!', 'Bin there, done that!'] },
   { id: 'ratpack',  name: 'The Rat Pack',    tag: 'Underground Getaway Crew', color: '#2a2a2e', model: 'ratpack', front: '-x', size: 1.12, rival: true, stats: { speed: 1.04, accel: 1.0,  handling: 1.02, weight: 1.15 }, shout: ['Step on it, boys!', 'Nothin\' personal, cat.', 'The boss wants this one.'] },
   { id: 'duke',     name: 'Duke the Dogcatcher', tag: 'The Corrupt Official', color: '#4a6a3a', model: 'duke',  front: '-x', size: 1.18, rival: true, stats: { speed: 1.03, accel: 0.97, handling: 0.96, weight: 1.4 }, shout: ['Gotcha now, moggy!', 'Into the van with ya!', 'Rules are rules!'] },
   { id: 'king',     name: 'The Alley Cat King', tag: 'The Tyrant',         color: '#3a3a5a', model: 'king',     front: '+z', size: 1.2, rival: true, stats: { speed: 1.06, accel: 0.98, handling: 1.02, weight: 1.25 }, shout: ['Bow to your king!', 'These streets are MINE!', 'Off my turf!'] },
@@ -520,8 +521,11 @@ class Kart {
   }
   loadModel() {
     loadModel(this.r.model).then(src => {
-      const m = src.clone(true);
-      const box = new THREE.Box3().setFromObject(m), s = box.getSize(new THREE.Vector3());
+      let m = src.clone(true);
+      if (this.r.yaw) {   // model generated turned on its base: square it up before measuring
+        m.rotation.y = this.r.yaw * Math.PI / 180; const w = new THREE.Group(); w.add(m); w.updateMatrixWorld(true); m = w;
+      }
+      const box = new THREE.Box3().setFromObject(m, !!this.r.yaw), s = box.getSize(new THREE.Vector3());
       const lenAxis = (this.r.front === '+x' || this.r.front === '-x') ? s.x : s.z;
       const sz0 = (this.r.size || 1) * (this.r.rival ? 1 : BIKE_SCALE), k = KART_LEN * sz0 / lenAxis; m.scale.setScalar(k);   // size: per-racer correction for unusually tall models
       const ctr = box.getCenter(new THREE.Vector3());
