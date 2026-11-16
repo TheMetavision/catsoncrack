@@ -16,7 +16,6 @@ export function organizationSchema() {
     sameAs: [
       'https://www.youtube.com/@CatsOnCrackMedia',
       'https://www.instagram.com/catsoncrack2025',
-      'https://www.tiktok.com/@catsoncrackmedia',
       'https://x.com/Cats_on_Crack_',
     ],
   };
