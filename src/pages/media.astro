@@ -254,6 +254,10 @@ const breadcrumbLd = {
             {episodeCards.map((ep) => {
               const hasVideo = !!ep.resolvedYoutubeId;
               const thumbSrc = hasVideo ? thumbFor(ep.resolvedYoutubeId) : null;
+              // Sanity key art, used until a self-hosted YouTube thumbnail exists.
+              const artUrl = !thumbSrc && ep.thumbnail?.asset
+                ? (w) => urlFor(ep.thumbnail).width(w).height(Math.round(w * 9 / 16)).fit('crop').auto('format').url()
+                : null;
               return (
                 <article class={`episode-card ${hasVideo ? 'is-playable' : 'is-coming-soon'}`}>
                   <button
@@ -271,6 +275,17 @@ const breadcrumbLd = {
                           srcset={localSrcset(thumbSrc, 480, 1280)}
                           sizes="(min-width: 900px) 480px, 100vw"
                           alt={`${ep.title} thumbnail`}
+                          loading="lazy"
+                          width="480"
+                          height="270"
+                        />
+                      ) : artUrl ? (
+                        <img
+                          class="episode-thumb"
+                          src={artUrl(480)}
+                          srcset={`${artUrl(480)} 480w, ${artUrl(960)} 960w, ${artUrl(1280)} 1280w`}
+                          sizes="(min-width: 900px) 480px, 100vw"
+                          alt={`${ep.title} key art`}
                           loading="lazy"
                           width="480"
                           height="270"

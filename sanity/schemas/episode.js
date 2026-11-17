@@ -49,6 +49,14 @@ export default defineType({
       description: 'Just the video ID for embedding (e.g. "XgwfSjIJre4")',
     }),
     defineField({
+      name: 'thumbnail',
+      title: 'Episode Image',
+      type: 'image',
+      options: {hotspot: true},
+      description:
+        'Key art shown on the episode card. Used until the episode has a self-hosted YouTube thumbnail (public/video-thumbs/<id>.jpg).',
+    }),
+    defineField({
       name: 'featured',
       title: 'Featured?',
       type: 'boolean',
