@@ -358,7 +358,9 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 					const wrap = document.getElementById('seriesTrailer');
 					if (!wrap) return;
 					wrap.addEventListener('click', function () {
-						wrap.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + trailerId + '?autoplay=1&rel=0" title="Cats On Crack trailer" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border-radius:12px;"></iframe>';
+						wrap.innerHTML = '<iframe src="https://www.youtube-nocookie.com/embed/' + trailerId + '?autoplay=1&rel=0&cc_load_policy=0&enablejsapi=1" title="Cats On Crack trailer" frameborder="0" allowfullscreen allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" style="position:absolute;inset:0;width:100%;height:100%;border-radius:12px;"></iframe>';
+						function ytCaptionsOff(f){if(!f)return;var s=function(){try{var w=f.contentWindow;w.postMessage('{"event":"listening","id":1}','*');w.postMessage('{"event":"command","func":"unloadModule","args":["captions"]}','*');w.postMessage('{"event":"command","func":"unloadModule","args":["cc"]}','*');}catch(e){}};f.addEventListener('load',function(){[600,1500,3000,6000].forEach(function(t){setTimeout(s,t)})});}
+						ytCaptionsOff(wrap.querySelector('iframe'));
 						wrap.querySelector('iframe')?.focus();
 					});
 				})();

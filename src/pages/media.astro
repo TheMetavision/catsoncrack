@@ -471,9 +471,13 @@ const breadcrumbLd = {
 
       let lastFocusedTrigger = null;
 
+      // Trailers play with YouTube captions off: cc_load_policy=0 stops them auto-loading, and the captions module is unloaded once the player is ready (needs enablejsapi=1).
+      function ytCaptionsOff(f){if(!f)return;var s=function(){try{var w=f.contentWindow;w.postMessage('{"event":"listening","id":1}','*');w.postMessage('{"event":"command","func":"unloadModule","args":["captions"]}','*');w.postMessage('{"event":"command","func":"unloadModule","args":["cc"]}','*');}catch(e){}};f.addEventListener('load',function(){[600,1500,3000,6000].forEach(function(t){setTimeout(s,t)})});}
+      ytCaptionsOff(iframe);
+
       function openModal(youtubeId, label) {
         if (!youtubeId) return;
-        const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeId)}?autoplay=1&rel=0&modestbranding=1`;
+        const src = `https://www.youtube-nocookie.com/embed/${encodeURIComponent(youtubeId)}?autoplay=1&rel=0&modestbranding=1&cc_load_policy=0&enablejsapi=1`;
         iframe.setAttribute('src', src);
         if (label) titleEl.textContent = label;
         modal.classList.add('is-open');
