@@ -67,7 +67,7 @@ const picks = products.slice(0, count).map((p: any, i: number) => {
 
       <div class="merchpromo-grid">
         {picks.map((item: any) => (
-          <a href={`/products/${item.slug}`} class="merchpromo-card">
+          <a href={`/product/${item.slug}`} class="merchpromo-card">
             <div class="merchpromo-thumb">
               <img src={productImg(item.image, 320)} srcset={productSrcset(item.image, 280)} sizes="(min-width: 900px) 280px, 50vw" {...productDims(item.image, 320)} alt={item.name} loading="lazy" />
               <span class="merchpromo-view">View</span>
