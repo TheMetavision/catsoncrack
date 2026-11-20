@@ -107,3 +107,9 @@
   to = "/.netlify/functions/:splat"
   status = 200
   force = true
+
+# Old home-page promo links used /products/<slug>; product pages live at /product/<slug>.
+[[redirects]]
+  from = "/products/*"
+  to = "/product/:splat"
+  status = 301
