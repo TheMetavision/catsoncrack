@@ -86,8 +86,8 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 						<div class="carousel-slide active" data-index="0">
 							<div class="character-frame">
 								<img
-									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/3c71409cd8f33cb08b4e2d94202ec457db87e021-2764x4096.png", 460)}
-									srcset={sanitySrcset("https://cdn.sanity.io/images/8ksun996/production/3c71409cd8f33cb08b4e2d94202ec457db87e021-2764x4096.png", 460)}
+									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/6ea82b36b644f6617cc75e5730861caa10b58d80-1360x2048.png", 460, { h: 690 })}
+									srcset={[320, 460, 640, 920].map((w) => `${sanityImg("https://cdn.sanity.io/images/8ksun996/production/6ea82b36b644f6617cc75e5730861caa10b58d80-1360x2048.png", w, { h: w * 1.5 })} ${w}w`).join(', ')}
 									sizes="(min-width: 900px) 460px, 320px"
 									width="460"
 									height="690"
