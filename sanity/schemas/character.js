@@ -85,11 +85,12 @@ export default defineType({
     defineField({
       name: 'faction',
       type: 'string',
-      description: 'Biker Babies: separates heroes from rivals',
+      description: 'Which side of the alley they are on. Groups the profiles on /the-alley-squad (blank = Crew).',
       options: {
         list: [
-          { title: 'Heroes', value: 'heroes' },
-          { title: 'Villains', value: 'villains' },
+          { title: 'The Crew', value: 'crew' },
+          { title: 'Allies', value: 'allies' },
+          { title: 'Rivals', value: 'rivals' },
         ],
       },
     }),
