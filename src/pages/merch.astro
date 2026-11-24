@@ -1,6 +1,5 @@
 ---
-import { sanityImg, sanitySrcset, sanityDims, productImg, productSrcset, productDims } from '../lib/sanityImage';
-import { sanityImg, sanitySrcset, sanityDims, localImg, localSrcset, productImg, productSrcset, productDims } from '../lib/sanityImage';
+import { sanityImg, sanitySrcset, sanityDims, localImg, localSrcset, productImg, productSrcset, productDims, socialImg } from '../lib/sanityImage';
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
@@ -86,23 +85,61 @@ const categories = categoryOrder.map((cat) => ({
 })).filter((cat) => cat.items.length > 0);
 
 const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt');
+
+/* Hero: two crew scenes with the gear (2400x1600 webp in /public), crossfading
+   like the Alley Squad hero. The chips under the copy jump to a category tab. */
+const HERO_SLIDES = [
+  { src: '/images/merch/hero-stall.webp', alt: 'Terry running a dodgy pop-up merch stall in the alley while Whiskers tries on a hoodie, Chubby checks a mug and Trixie tags the wall' },
+  { src: '/images/merch/hero-lookbook.webp', alt: 'Mittens, Luna and Gizmo posing for a street-gear photoshoot in front of a graffiti shutter' },
+];
+const HERO_CHIP_KEYS = ['tshirt', 'hoodie', 'mug', 'tumbler', 'socks'];
+const heroChips = [
+  ...categories.filter((c) => HERO_CHIP_KEYS.includes(c.key)).map((c) => ({ key: c.key, label: c.label })),
+];
+const designCount = products.length;
 ---
 
-<Layout title="Merch - Cats On Crack" description="Shop official Cats On Crack merchandise — apparel, accessories, and collectibles featuring your favorite alley cats.">
+<Layout title="Merch - Cats On Crack" description="Shop official Cats On Crack merchandise — apparel, accessories, and collectibles featuring your favorite alley cats." ogImage={socialImg(HERO_SLIDES[0].src)}>
   <Navigation />
 
   <main class="merch-main">
 
-    <section class="hero-banner">
-      <div class="hero-noise"></div>
-      <div class="container hero-inner">
+    <section class="merch-hero" aria-labelledby="merch-title">
+      <div class="hero-slides" aria-hidden="true">
+        {HERO_SLIDES.map((s, i) => (
+          <img
+            class={`hero-slide ${i === 0 ? 'is-active' : ''}`}
+            src={localImg(s.src, 1600)}
+            srcset={localSrcset(s.src, 1920, 2400)}
+            sizes="100vw"
+            width="2400" height="1600"
+            alt={s.alt}
+            loading={i === 0 ? 'eager' : 'lazy'}
+            fetchpriority={i === 0 ? 'high' : 'low'}
+          />
+        ))}
+      </div>
+      <div class="hero-shade"></div>
+      <div class="container hero-content">
         <p class="hero-eyebrow">Official Drop — Season 01</p>
-        <h1 class="hero-title">Street Gear</h1>
+        <h1 id="merch-title" class="hero-title">Street Gear</h1>
         <p class="hero-sub">Rep the alley.</p>
+        <p class="hero-lede">{designCount} designs that definitely did not fall off a truck. Tees, hoodies, mugs and more, each one printed to order.</p>
+        {heroChips.length > 0 && (
+          <ul class="hero-chips">
+            {heroChips.map((c) => (
+              <li><a href="#drop" data-jump={c.key}>{c.label}</a></li>
+            ))}
+          </ul>
+        )}
+        <div class="hero-buttons">
+          <a href="#drop" class="cta-button primary">Shop the drop</a>
+          {wallArt.length > 0 && <a href="#drop" data-jump="wallart" class="cta-button secondary">Wall art</a>}
+        </div>
       </div>
     </section>
 
-    <section class="section products-section">
+    <section class="section products-section" id="drop">
       <div class="container">
         <div class="section-header">
           <div class="header-rule"></div>
@@ -262,16 +299,50 @@ const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt')
 <style>
   .merch-main { background: #181b22; }
 
-  /* ── HERO ── */
-  .hero-banner { position: relative; padding: 150px 0 80px; background: #181b22; text-align: center; overflow: hidden; }
-  .hero-noise { position: absolute; inset: 0; background:
-      radial-gradient(ellipse at 30% 50%, rgba(255,0,255,0.12) 0%, transparent 60%),
-      radial-gradient(ellipse at 70% 30%, rgba(255,0,255,0.06) 0%, transparent 50%); pointer-events: none; }
-  .hero-inner { position: relative; }
-  .hero-eyebrow { font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 5px; color: #ff00ff; text-transform: uppercase; margin-bottom: 12px; opacity: 0.9; }
-  .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(4rem, 10vw, 9rem); color: #fff; line-height: 0.9; letter-spacing: 4px; margin-bottom: 20px;
-      text-shadow: 4px 4px 0 rgba(255,0,255,0.4), 8px 8px 0 rgba(255,0,255,0.15), 0 0 60px rgba(255,0,255,0.2); }
-  .hero-sub { font-size: 1.1rem; color: rgba(255,255,255,0.5); letter-spacing: 2px; text-transform: uppercase; font-family: 'Bebas Neue', sans-serif; }
+  /* ── HERO (crossfading crew scenes, same pattern as the Alley Squad page) ── */
+  .merch-hero { position: relative; min-height: min(84vh, 820px); display: flex; align-items: flex-end; overflow: hidden; background: #181b22; padding: calc(var(--nav-h, 108px) + 40px) 0 70px; }
+  .hero-slides { position: absolute; inset: 0; }
+  .hero-slide { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 45%; opacity: 0; transform: scale(1.04); transition: opacity 1.4s ease, transform 8s ease-out; }
+  .hero-slide.is-active { opacity: 1; transform: scale(1.1); }
+  /* Wide screens: the scene fills the right of the hero so the crew stays clear of the copy. */
+  @media (min-width: 1025px) {
+    .hero-slides { top: var(--nav-h, 108px); left: auto; width: 78%; -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%); mask-image: linear-gradient(90deg, transparent 0%, #000 22%); }
+    .hero-slide { object-position: 50% 15%; transform-origin: 50% 70%; }
+  }
+  .hero-shade { position: absolute; inset: 0; pointer-events: none; background:
+    linear-gradient(90deg, rgba(14,15,20,0.9) 0%, rgba(14,15,20,0.55) 30%, rgba(14,15,20,0.05) 48%, transparent 100%),
+    linear-gradient(0deg, #181b22 0%, rgba(24,27,34,0) 35%),
+    linear-gradient(180deg, rgba(8,8,10,0.6) 0%, transparent 22%); }
+  .hero-content { position: relative; z-index: 2; width: 100%; }
+  .hero-content > * { max-width: 600px; }
+  .hero-eyebrow { font-family: 'Bebas Neue', sans-serif; font-size: 0.9rem; letter-spacing: 5px; color: #ff00ff; text-transform: uppercase; margin-bottom: 10px; }
+  .hero-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(4rem, 10vw, 8.5rem); color: #fff; line-height: 0.88; letter-spacing: 4px; margin-bottom: 14px;
+    text-shadow: 4px 4px 0 rgba(255,0,255,0.45), 0 0 50px rgba(255,0,255,0.25); max-width: none; }
+  .hero-sub { font-family: 'Bebas Neue', sans-serif; font-size: 1.35rem; color: #fff; letter-spacing: 2px; text-transform: uppercase; margin-bottom: 12px; }
+  .hero-lede { font-size: 1.05rem; line-height: 1.7; color: rgba(225,222,218,0.85); margin-bottom: 22px; }
+  .hero-chips { list-style: none; padding: 0; margin: 0 0 26px; display: flex; flex-wrap: wrap; gap: 10px; }
+  .hero-chips a { display: inline-flex; align-items: baseline; gap: 6px; padding: 7px 14px; border-radius: 999px; background: rgba(14,15,20,0.6); border: 1px solid rgba(255,0,255,0.35); color: rgba(225,222,218,0.9); font-size: 0.8rem; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; backdrop-filter: blur(6px); text-decoration: none; }
+  .hero-chips a:hover { border-color: #ff00ff; color: #fff; }
+  .hero-buttons { display: flex; flex-wrap: wrap; gap: 14px; }
+  .cta-button { display: inline-flex; align-items: center; justify-content: center; gap: 10px; padding: 14px 32px; font-family: 'Bebas Neue', sans-serif; font-size: 1.1rem; letter-spacing: 2px; border-radius: 8px; text-transform: uppercase; transition: all 0.3s ease; text-decoration: none; }
+  .cta-button.primary { background: #ff00ff; color: #fff; box-shadow: 0 4px 20px rgba(255,0,255,0.35); }
+  .cta-button.primary:hover { transform: translateY(-3px); box-shadow: 0 8px 30px rgba(255,0,255,0.5); }
+  .cta-button.secondary { background: rgba(14,15,20,0.5); border: 1px solid rgba(255,255,255,0.25); color: rgba(225,222,218,0.9); }
+  .cta-button.secondary:hover { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.45); color: #fff; transform: translateY(-2px); }
+  .products-section { scroll-margin-top: calc(var(--nav-h, 108px) - 40px); }
+  @media (max-width: 768px) {
+    /* Phones: the scene sits in a clear band under the nav, the copy below it. */
+    .merch-hero { display: block; min-height: 0; padding: var(--nav-h, 84px) 0 40px; }
+    .hero-slides { position: relative; aspect-ratio: 3 / 2; }
+    .hero-slides::after { content: ''; position: absolute; inset: 0; background: linear-gradient(0deg, #181b22 0%, transparent 30%); }
+    .hero-slide { object-position: 50% 50%; }
+    .hero-shade { display: none; }
+    .hero-content { padding-top: 6px; }
+    .hero-title { font-size: clamp(3.2rem, 16vw, 4.6rem); }
+    .hero-lede { font-size: 0.98rem; }
+    .hero-buttons .cta-button { padding: 12px 22px; }
+  }
+  @media (prefers-reduced-motion: reduce) { .hero-slide, .hero-slide.is-active { transition: none; transform: none; } }
 
   /* ── PRODUCTS ── */
   .products-section { background: #181b22; padding: 100px 0; }
@@ -357,6 +428,19 @@ const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt')
 </style>
 
 <script>
+  /* Hero crossfade between the two crew scenes. */
+  const heroSlides = [...document.querySelectorAll<HTMLImageElement>('.hero-slide')];
+  if (heroSlides.length > 1 && !window.matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    let current = 0;
+    setInterval(() => {
+      if (document.hidden) return;
+      heroSlides[current].classList.remove('is-active');
+      current = (current + 1) % heroSlides.length;
+      heroSlides[current].loading = 'eager';
+      heroSlides[current].classList.add('is-active');
+    }, 7000);
+  }
+
   /* Category tab switching */
   const tabs = document.querySelectorAll('.cat-tab');
   const grids = document.querySelectorAll('.products-grid[data-grid]');
@@ -367,6 +451,12 @@ const defaultCat = categories[0]?.key || (wallArt.length ? 'wallart' : 'tshirt')
     tab.classList.add('active');
     tab.setAttribute('aria-pressed', 'true');
     grids.forEach((g) => g.classList.toggle('active', g.getAttribute('data-grid') === cat));
+  }));
+
+  /* Hero chips and the Wall art button open their tab before scrolling to the drop. */
+  document.querySelectorAll<HTMLElement>('[data-jump]').forEach((a) => a.addEventListener('click', () => {
+    const tab = document.querySelector<HTMLElement>(`.cat-tab[data-cat="${a.dataset.jump}"]`);
+    tab?.click();
   }));
 
   /* Newsletter signup — posts to a Netlify function so no API token lives in
