@@ -1,5 +1,8 @@
 ---
-import { localImg, localSrcset } from '../lib/sanityImage';
+import { localImg, localSrcset, socialImg } from '../lib/sanityImage';
+
+// Hero scene, 2400x1600: Madame Meow, Captain Claw, Scratchy and Pixie at the rooftop alley cinema.
+const HERO_IMG = '/images/media/hero-cinema.webp';
 // src/pages/media.astro
 //
 // Cats On Crack — /media page
@@ -155,41 +158,42 @@ const breadcrumbLd = {
   title="Media — Cats On Crack"
   description="Watch the animated series, catch the trailer, and explore the Cats On Crack book series. The Wildest Alley Cats You'll Ever Meet."
   jsonLd={[collectionLd, breadcrumbLd]}
+  ogImage={socialImg(HERO_IMG)}
 >
   <Navigation />
 
   <main class="media-page">
 
     {/* ── HERO ─────────────────────────────────────────────────────────── */}
-    <section class="section media-hero">
-      <div class="container">
-        <div class="media-hero-grid">
-          <div class="media-hero-text fade-right hero-anim-immediate">
-            <div class="eyebrow">Media</div>
-            <h1 class="main-title glow-text">
-              The Stories.<br>The Series.<br>The Mayhem.
-            </h1>
-            <p class="hero-body">
-              Episodes, trailers, and the book series — every scrap of footage
-              the Alleyway Gazette could get its paws on. Pull up a dumpster.
-            </p>
-            <div class="hero-cta-row">
-              <a href="#episodes" class="cta-button primary-cta">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18">
-                  <path d="M8 5v14l11-7z"/>
-                </svg>
-                Watch the Episodes
-              </a>
-              <a href="#books" class="cta-button secondary-cta">
-                See the Books
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
-                  <path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/>
-                </svg>
-              </a>
-            </div>
-          </div>
+    <section class="media-hero" aria-labelledby="media-title">
+      <img class="media-hero__img" src={localImg(HERO_IMG, 1600)} srcset={localSrcset(HERO_IMG, 1920, 2400)} sizes="100vw" width="2400" height="1600"
+        alt="Madame Meow, Captain Claw, Scratchy and Pixie watching a film at a rooftop alley cinema" fetchpriority="high" />
+      <div class="media-hero__shade"></div>
+      <div class="container media-hero__content">
+        <div class="eyebrow">Media</div>
+        <h1 id="media-title" class="main-title glow-text">The Stories.<br>The Series.<br>The Mayhem.</h1>
+        <p class="hero-body">
+          Episodes, trailers, and the book series — every scrap of footage
+          the Alleyway Gazette could get its paws on. Pull up a dumpster.
+        </p>
+        <div class="hero-cta-row">
+          <button type="button" class="cta-button primary-cta" data-youtube-id={heroYoutubeId} data-trigger="open-video-modal" aria-label={`Play: ${heroTitle}`}>
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="18" height="18" aria-hidden="true"><path d="M8 5v14l11-7z"/></svg>
+            Watch the Trailer
+          </button>
+          <a href="#episodes" class="cta-button secondary-cta">Episodes</a>
+          <a href="#books" class="cta-button secondary-cta">
+            See the Books
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" width="16" height="16" aria-hidden="true"><path d="M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z"/></svg>
+          </a>
+        </div>
+      </div>
+    </section>
 
-          <div class="media-hero-trailer fade-left hero-anim-immediate">
+    {/* ── NOW SHOWING (trailer card) ───────────────────────────────────── */}
+    <section class="section media-now-showing">
+      <div class="container">
+          <div class="media-hero-trailer ">
             <button
               type="button"
               class="trailer-card"
@@ -227,7 +231,6 @@ const breadcrumbLd = {
             </button>
             <p class="yt-notice">Plays from YouTube, which may set cookies.</p>
           </div>
-        </div>
       </div>
     </section>
 
@@ -528,7 +531,7 @@ const breadcrumbLd = {
 
   <style>
     .media-page {
-      padding-top: 80px;
+      padding-top: 0;
     }
 
     .media-page .section {
@@ -576,23 +579,30 @@ const breadcrumbLd = {
     }
     .inline-link:hover { color: var(--primary-light); }
 
-    .media-hero {
-      padding-top: 100px;
-      background:
-        radial-gradient(circle at 20% 0%, rgba(255, 0, 255, 0.18), transparent 55%),
-        radial-gradient(circle at 80% 50%, rgba(255, 0, 255, 0.10), transparent 60%),
-        linear-gradient(160deg, #141620, #181b22 40%, #141620);
+    /* Hero: copy left, scene right (same pattern as Merch, Alley Squad, Get In Touch). */
+    .media-page .media-hero { position: relative; min-height: min(80vh, 780px); display: flex; align-items: flex-end; overflow: hidden; background: #181b22; padding: calc(var(--nav-h, 108px) + 40px) 0 64px; }
+    .media-hero__img { position: absolute; top: var(--nav-h, 108px); right: 0; width: 78%; height: calc(100% - var(--nav-h, 108px)); object-fit: cover; object-position: 50% 20%;
+      -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%); mask-image: linear-gradient(90deg, transparent 0%, #000 22%); }
+    .media-hero__shade { position: absolute; inset: 0; pointer-events: none; background:
+      linear-gradient(90deg, rgba(14,15,20,0.9) 0%, rgba(14,15,20,0.55) 30%, rgba(14,15,20,0.05) 48%, transparent 100%),
+      linear-gradient(0deg, #181b22 0%, rgba(24,27,34,0) 30%); }
+    .media-hero__content { position: relative; z-index: 2; width: 100%; }
+    .media-hero__content > * { max-width: 540px; }
+    .media-hero .main-title { font-size: clamp(42px, 5.5vw, 72px); letter-spacing: 0.02em; line-height: 1; color: var(--text-primary); margin-bottom: 24px; text-transform: uppercase; }
+    .media-hero .hero-body { color: rgba(225,222,218,0.85); font-size: 17px; line-height: 1.7; margin-bottom: 32px; }
+    .media-hero button.cta-button { cursor: pointer; border: none; }
+    .media-now-showing .media-hero-trailer { max-width: 760px; margin: 0 auto; }
+    .media-page .media-now-showing { padding-top: 30px; }
+    @media (max-width: 1024px) {
+      .media-hero__img { width: 100%; -webkit-mask-image: none; mask-image: none; }
+      .media-hero__shade { background: linear-gradient(90deg, rgba(14,15,20,0.88) 0%, rgba(14,15,20,0.5) 55%, rgba(14,15,20,0.2) 100%), linear-gradient(0deg, #181b22 0%, rgba(24,27,34,0) 35%); }
     }
-    .media-hero-grid {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 60px;
-      align-items: center;
+    @media (max-width: 768px) {
+      .media-page .media-hero { display: block; min-height: 0; padding: var(--nav-h, 84px) 0 30px; }
+      .media-hero__img { position: relative; top: 0; width: 100%; height: auto; aspect-ratio: 3 / 2; display: block; }
+      .media-hero__shade { top: var(--nav-h, 84px); bottom: auto; aspect-ratio: 3 / 2; background: linear-gradient(0deg, #181b22 0%, transparent 30%); }
+      .media-hero__content { padding-top: 6px; }
     }
-    @media (max-width: 980px) {
-      .media-hero-grid { grid-template-columns: 1fr; gap: 40px; }
-    }
-
     .media-hero-text .main-title {
       font-size: clamp(42px, 5.5vw, 72px);
       letter-spacing: 0.02em;
