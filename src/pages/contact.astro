@@ -2,6 +2,9 @@
 import Layout from '../layouts/Layout.astro';
 import Navigation from '../components/Navigation.astro';
 import Footer from '../components/Footer.astro';
+import { localImg, localSrcset, socialImg } from '../lib/sanityImage';
+
+const HERO_IMG = '/images/contact/hero-hq.webp'; // 2400x1600: Penny, Gizmo, Whiskers and Terry running the message HQ
 
 const infoEmail = 'info@catsoncrack.co.uk';
 const collabEmail = 'collabs@catsoncrack.co.uk';
@@ -31,13 +34,15 @@ const faqs = [
 ];
 ---
 
-<Layout title="Get In Touch - Cats On Crack" description="Get in touch with the Cats On Crack crew. Questions, collaborations, press and merch enquiries — drop us a message.">
+<Layout title="Get In Touch - Cats On Crack" description="Get in touch with the Cats On Crack crew. Questions, collaborations, press and merch enquiries — drop us a message." ogImage={socialImg(HERO_IMG)}>
   <Navigation />
 
   <main class="contact-main">
 
     <section class="contact-hero">
-      <div class="hero-noise"></div>
+      <img class="contact-hero__img" src={localImg(HERO_IMG, 1600)} srcset={localSrcset(HERO_IMG, 1920, 2400)} sizes="100vw" width="2400" height="1600"
+        alt="Penny the Pigeon flying in with a letter while Gizmo works a junk switchboard, Whiskers yells down a payphone and Terry sorts the post" fetchpriority="high" />
+      <div class="hero-shade"></div>
       <div class="container contact-hero__inner">
         <p class="contact-eyebrow">Say Hello</p>
         <h1 class="contact-title">Get In Touch</h1>
@@ -392,15 +397,18 @@ const faqs = [
   .container { max-width: 1180px; margin: 0 auto; padding: 0 24px; }
 
   /* -- HERO -- */
-  .contact-hero { position: relative; padding: 150px 0 70px; background: #181b22; text-align: center; overflow: hidden; }
-  .hero-noise { position: absolute; inset: 0; pointer-events: none; background:
-      radial-gradient(ellipse at 30% 40%, rgba(255,0,255,0.12) 0%, transparent 60%),
-      radial-gradient(ellipse at 70% 30%, rgba(255,0,255,0.06) 0%, transparent 50%); }
-  .contact-hero__inner { position: relative; max-width: 720px; margin: 0 auto; }
+  .contact-hero { position: relative; min-height: min(72vh, 700px); display: flex; align-items: flex-end; padding: calc(var(--nav-h, 108px) + 40px) 0 64px; background: #181b22; overflow: hidden; }
+  .contact-hero__img { position: absolute; top: var(--nav-h, 108px); right: 0; bottom: 0; width: 78%; height: calc(100% - var(--nav-h, 108px)); object-fit: cover; object-position: 50% 20%;
+    -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%); mask-image: linear-gradient(90deg, transparent 0%, #000 22%); }
+  .hero-shade { position: absolute; inset: 0; pointer-events: none; background:
+      linear-gradient(90deg, rgba(14,15,20,0.9) 0%, rgba(14,15,20,0.55) 30%, rgba(14,15,20,0.05) 48%, transparent 100%),
+      linear-gradient(0deg, #181b22 0%, rgba(24,27,34,0) 30%); }
+  .contact-hero__inner { position: relative; z-index: 2; width: 100%; }
+  .contact-hero__inner > * { max-width: 500px; }
   .contact-eyebrow { font-family: 'Bebas Neue', sans-serif; font-size: 0.85rem; letter-spacing: 5px; color: #ff00ff; text-transform: uppercase; margin-bottom: 12px; opacity: 0.9; }
   .contact-title { font-family: 'Bebas Neue', sans-serif; font-size: clamp(3.5rem, 9vw, 7rem); color: #fff; line-height: 0.9; letter-spacing: 3px; margin-bottom: 22px;
       text-shadow: 3px 3px 0 rgba(255,0,255,0.35), 0 0 50px rgba(255,0,255,0.2); }
-  .contact-sub { font-size: 1.05rem; line-height: 1.65; color: rgba(255,255,255,0.62); max-width: 600px; margin: 0 auto; }
+  .contact-sub { font-size: 1.05rem; line-height: 1.65; color: rgba(225,222,218,0.85); }
 
   /* -- FORM + INFO -- */
   .contact-section { background: #181b22; padding: 30px 0 100px; }
@@ -489,8 +497,18 @@ const faqs = [
     .contact-grid { grid-template-columns: 1fr; gap: 40px; }
     .contact-info-col { order: -1; }
   }
+  @media (max-width: 1024px) {
+    .contact-hero__img { width: 100%; -webkit-mask-image: none; mask-image: none; }
+    .hero-shade { background: linear-gradient(90deg, rgba(14,15,20,0.88) 0%, rgba(14,15,20,0.5) 55%, rgba(14,15,20,0.2) 100%), linear-gradient(0deg, #181b22 0%, rgba(24,27,34,0) 35%); }
+  }
+  @media (max-width: 768px) {
+    /* Phones: the scene in a band under the nav, the copy below it. */
+    .contact-hero { display: block; min-height: 0; padding: var(--nav-h, 84px) 0 36px; }
+    .contact-hero__img { position: relative; top: 0; width: 100%; height: auto; aspect-ratio: 3 / 2; display: block; }
+    .hero-shade { top: var(--nav-h, 84px); bottom: auto; aspect-ratio: 3 / 2; background: linear-gradient(0deg, #181b22 0%, transparent 30%); }
+    .contact-hero__inner { padding-top: 6px; }
+  }
   @media (max-width: 600px) {
-    .contact-hero { padding: 120px 0 50px; }
     .crew-form { flex-direction: column; }
     .section-header { gap: 14px; }
   }
