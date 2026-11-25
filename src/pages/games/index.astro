@@ -253,4 +253,10 @@ const games = [
     .page-hero__shade { top: var(--nav-h, 84px); bottom: auto; aspect-ratio: 3 / 2; background: linear-gradient(0deg, #181b22 0%, transparent 30%); }
     .page-hero__content { padding-top: 6px; }
   }
+
+  /* Wide screens: the scene box keeps the art's 3:2 shape (64% wide, height to match), so nothing is cropped off the top or bottom. */
+  @media (min-width: 1025px) {
+    .page-hero { min-height: calc(var(--nav-h, 108px) + min(42.7vw, 780px)); align-items: center; padding-bottom: 40px; }
+    .page-hero__img { width: 64%; object-position: 70% 30%; }
+  }
 </style>
