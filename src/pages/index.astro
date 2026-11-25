@@ -33,8 +33,8 @@ const seriesLive = await hasLiveEpisode();
 
 const characterCount = await getCharacterCount();
 
-// The six characters in the "Meet the crew" band (CREW below). No character has
-// coreSix set in Sanity yet, so the squad grid also skips these by slug.
+// The core six (coreSix in Sanity), shown in the hero scene and the "Meet the
+// crew" band (CREW below). The wider-crew grid skips them by coreSix and by slug.
 const HERO_SLUGS = ['toothless-terry', 'whiskers-mcscruff', 'luna-the-loner', 'chubby-cheeks', 'gizmo-the-genius', 'trixie-the-trickster'];
 const squad = (await getSquadCharacters(HERO_SLUGS, 6)).map((c: any) => ({
 	name: c.name,
@@ -91,12 +91,12 @@ const CREW = [
 			<div class="hero-urban-bg"></div>
 			<img
 				class="hero-scene"
-				src={localImg('/images/home-hero-alley.webp', 1600)}
-				srcset={localSrcset('/images/home-hero-alley.webp', 1920, 2400)}
+				src={localImg('/images/home-hero-core-six.webp', 1600)}
+				srcset={localSrcset('/images/home-hero-core-six.webp', 1920, 2400)}
 				sizes="(min-width: 1025px) 64vw, 100vw"
 				width="2400"
 				height="1620"
-				alt="Whiskers McScruff swaggers down a wet Meowtown alley at night with Luna, Mittens, Trixie, Bubbles and Chubby Cheeks, green glow leaking up through the drain grates"
+				alt="The core six walk a wet Meowtown alley at night: Whiskers McScruff out front with Luna the Loner, Toothless Terry, Gizmo the Genius, Trixie the Trickster and Chubby Cheeks, green glow leaking up through the drain grates"
 				loading="eager"
 				fetchpriority="high"
 			/>
