@@ -512,4 +512,10 @@ const faqs = [
     .crew-form { flex-direction: column; }
     .section-header { gap: 14px; }
   }
+
+  /* Wide screens: the scene box keeps the art's 3:2 shape (64% wide, height to match), so nothing is cropped off the top or bottom. */
+  @media (min-width: 1025px) {
+    .contact-hero { min-height: calc(var(--nav-h, 108px) + min(42.7vw, 780px)); align-items: center; padding-bottom: 40px; }
+    .contact-hero__img { width: 64%; object-position: 50% 40%; }
+  }
 </style>
