@@ -74,8 +74,8 @@ const games = [
 
 <style>
   /* Hero: copy left, scene right (same pattern as Media, Merch, Alley Squad, Get In Touch). */
-  .page-hero { position: relative; min-height: min(72vh, 700px); display: flex; align-items: flex-end; overflow: hidden; background: #181b22; padding: calc(var(--nav-h, 108px) + 40px) 0 64px; text-align: left; }
-  .page-hero__img { position: absolute; top: var(--nav-h, 108px); right: 0; width: 78%; height: calc(100% - var(--nav-h, 108px)); object-fit: cover; object-position: 70% 40%;
+  .page-hero { position: relative; min-height: calc(var(--nav-h, 108px) + clamp(420px, 40vw, 660px)); display: flex; align-items: flex-end; overflow: hidden; background: #181b22; padding: calc(var(--nav-h, 108px) + 40px) 0 64px; text-align: left; }
+  .page-hero__img { position: absolute; top: var(--nav-h, 108px); right: 0; width: 78%; height: calc(100% - var(--nav-h, 108px)); object-fit: cover; object-position: 70% 8%;
     -webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%); mask-image: linear-gradient(90deg, transparent 0%, #000 22%); }
   .page-hero__shade { position: absolute; inset: 0; pointer-events: none; background:
     linear-gradient(90deg, rgba(14,15,20,0.9) 0%, rgba(14,15,20,0.55) 30%, rgba(14,15,20,0.05) 48%, transparent 100%),
