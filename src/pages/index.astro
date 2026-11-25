@@ -33,7 +33,7 @@ const seriesLive = await hasLiveEpisode();
 
 const characterCount = await getCharacterCount();
 
-// The six characters hard-coded in the hero carousel below. No character has
+// The six characters in the "Meet the crew" band (CREW below). No character has
 // coreSix set in Sanity yet, so the squad grid also skips these by slug.
 const HERO_SLUGS = ['toothless-terry', 'whiskers-mcscruff', 'luna-the-loner', 'chubby-cheeks', 'gizmo-the-genius', 'trixie-the-trickster'];
 const squad = (await getSquadCharacters(HERO_SLUGS, 6)).map((c: any) => ({
@@ -69,6 +69,18 @@ const books = (await getAllBooks()).map((b: any) => ({
 	buyUrl: bookBuyUrl(b),
 }));
 const anyBookPending = books.some((b) => !b.buyUrl);
+
+// The core six, shown in the "Meet the crew" band under the hero. Each card
+// links to that character on the Alley Squad page.
+const SAN = 'https://cdn.sanity.io/images/8ksun996/production/';
+const CREW = [
+	{ slug: 'toothless-terry', name: 'Toothless Terry', role: 'The Scheme Engine', img: SAN + '6ea82b36b644f6617cc75e5730861caa10b58d80-1360x2048.png', quote: "Here's the thing about problems, pal — a problem is just a deal that hasn't been structured yet." },
+	{ slug: 'whiskers-mcscruff', name: 'Whiskers McScruff', role: 'The Leader', img: SAN + '9e2b9500ec42627c2eb308e90df43ff29efb3019-1382x2048.png', quote: "Chaos is the cure. I've said it before. I've said it to the bins. The bins agree with me." },
+	{ slug: 'luna-the-loner', name: 'Luna the Loner', role: 'The Ghost', img: SAN + '22e9051a629e1a028cadc5cea55e61cab8d63a09-2764x4096.png', quote: "I don't have opinions about your plan. I have information." },
+	{ slug: 'chubby-cheeks', name: 'Chubby Cheeks', role: 'The Scaredy Cat', img: SAN + '60f12117d6eca0a848c6f81020cb8f1b6e3388c0-2764x4096.png', quote: "I'm not scared. I'm standing behind you in case you need someone standing behind you." },
+	{ slug: 'gizmo-the-genius', name: 'Gizmo the Genius', role: 'The Inventor', img: SAN + '9546e700688a66a42947b6b79a16e78b00f02e86-2764x4096.png', quote: "Now, the beautiful thing about this is — oh, that's interesting. Actually, everyone move." },
+	{ slug: 'trixie-the-trickster', name: 'Trixie the Trickster', role: 'The Artist', img: SAN + '5736fef4e970e07e388db618ec9445ee8daefa1b-2764x4096.png', quote: "I don't make mistakes. I make unexpectedly vivid decisions." },
+];
 ---
 
 <Layout title="Cats On Crack - The Wildest Alley Cats You'll Ever Meet" jsonLd={tvSeriesSchema()}>
@@ -77,155 +89,22 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 	<main>
 		<section class="hero">
 			<div class="hero-urban-bg"></div>
+			<img
+				class="hero-scene"
+				src={localImg('/images/home-hero-alley.webp', 1600)}
+				srcset={localSrcset('/images/home-hero-alley.webp', 1920, 2400)}
+				sizes="(min-width: 1025px) 64vw, 100vw"
+				width="2400"
+				height="1620"
+				alt="Whiskers McScruff swaggers down a wet Meowtown alley at night with Luna, Mittens, Trixie, Bubbles and Chubby Cheeks, green glow leaking up through the drain grates"
+				loading="eager"
+				fetchpriority="high"
+			/>
+			<div class="hero-shade" aria-hidden="true"></div>
 			<div class="hero-grain"></div>
 
 			<div class="hero-split container">
-				<div class="hero-image-col fade-left hero-anim-immediate">
-					<div class="character-carousel" id="heroCarousel">
-
-						<div class="carousel-slide active" data-index="0">
-							<div class="character-frame">
-								<img
-									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/6ea82b36b644f6617cc75e5730861caa10b58d80-1360x2048.png", 460, { h: 690 })}
-									srcset={[320, 460, 640, 920].map((w) => `${sanityImg("https://cdn.sanity.io/images/8ksun996/production/6ea82b36b644f6617cc75e5730861caa10b58d80-1360x2048.png", w, { h: w * 1.5 })} ${w}w`).join(', ')}
-									sizes="(min-width: 900px) 460px, 320px"
-									width="460"
-									height="690"
-									alt="Toothless Terry"
-									class="hero-character"
-									loading="eager"
-									fetchpriority="high"
-								/>
-								<div class="character-ground-vignette"></div>
-								<div class="character-nameplate">
-									<div class="nameplate-name">Toothless Terry</div>
-									<div class="nameplate-role">The Scheme Engine</div>
-								</div>
-								<div class="character-tagline">"Here's the thing about problems, pal — a problem is just a deal that hasn't been structured yet."</div>
-							</div>
-						</div>
-
-						<div class="carousel-slide" data-index="1">
-							<div class="character-frame">
-								<img
-									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/9e2b9500ec42627c2eb308e90df43ff29efb3019-1382x2048.png", 460, { h: 690 })}
-									srcset={[320, 460, 640, 920].map((w) => `${sanityImg("https://cdn.sanity.io/images/8ksun996/production/9e2b9500ec42627c2eb308e90df43ff29efb3019-1382x2048.png", w, { h: w * 1.5 })} ${w}w`).join(', ')}
-									sizes="(min-width: 900px) 460px, 320px"
-									width="460"
-									height="690"
-									alt="Whiskers McScruff"
-									class="hero-character"
-									loading="lazy"
-								/>
-								<div class="character-ground-vignette"></div>
-								<div class="character-nameplate">
-									<div class="nameplate-name">Whiskers McScruff</div>
-									<div class="nameplate-role">The Leader</div>
-								</div>
-								<div class="character-tagline">"Chaos is the cure. I've said it before. I've said it to the bins. The bins agree with me."</div>
-							</div>
-						</div>
-
-						<div class="carousel-slide" data-index="2">
-							<div class="character-frame">
-								<img
-									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/22e9051a629e1a028cadc5cea55e61cab8d63a09-2764x4096.png", 460)}
-									srcset={sanitySrcset("https://cdn.sanity.io/images/8ksun996/production/22e9051a629e1a028cadc5cea55e61cab8d63a09-2764x4096.png", 460)}
-									sizes="(min-width: 900px) 460px, 320px"
-									width="460"
-									height="690"
-									alt="Luna the Loner"
-									class="hero-character"
-									loading="lazy"
-								/>
-								<div class="character-ground-vignette"></div>
-								<div class="character-nameplate">
-									<div class="nameplate-name">Luna the Loner</div>
-									<div class="nameplate-role">The Ghost</div>
-								</div>
-								<div class="character-tagline">"I don't have opinions about your plan. I have information."</div>
-							</div>
-						</div>
-
-						<div class="carousel-slide" data-index="3">
-							<div class="character-frame">
-								<img
-									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/60f12117d6eca0a848c6f81020cb8f1b6e3388c0-2764x4096.png", 460)}
-									srcset={sanitySrcset("https://cdn.sanity.io/images/8ksun996/production/60f12117d6eca0a848c6f81020cb8f1b6e3388c0-2764x4096.png", 460)}
-									sizes="(min-width: 900px) 460px, 320px"
-									width="460"
-									height="690"
-									alt="Chubby Cheeks"
-									class="hero-character"
-									loading="lazy"
-								/>
-								<div class="character-ground-vignette"></div>
-								<div class="character-nameplate">
-									<div class="nameplate-name">Chubby Cheeks</div>
-									<div class="nameplate-role">The Scaredy Cat</div>
-								</div>
-								<div class="character-tagline">"I'm not scared. I'm standing behind you in case you need someone standing behind you."</div>
-							</div>
-						</div>
-
-						<div class="carousel-slide" data-index="4">
-							<div class="character-frame">
-								<img
-									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/9546e700688a66a42947b6b79a16e78b00f02e86-2764x4096.png", 460)}
-									srcset={sanitySrcset("https://cdn.sanity.io/images/8ksun996/production/9546e700688a66a42947b6b79a16e78b00f02e86-2764x4096.png", 460)}
-									sizes="(min-width: 900px) 460px, 320px"
-									width="460"
-									height="690"
-									alt="Gizmo the Genius"
-									class="hero-character"
-									loading="lazy"
-								/>
-								<div class="character-ground-vignette"></div>
-								<div class="character-nameplate">
-									<div class="nameplate-name">Gizmo the Genius</div>
-									<div class="nameplate-role">The Inventor</div>
-								</div>
-								<div class="character-tagline">"Now, the beautiful thing about this is — oh, that's interesting. Actually, everyone move."</div>
-							</div>
-						</div>
-
-						<div class="carousel-slide" data-index="5">
-							<div class="character-frame">
-								<img
-									src={sanityImg("https://cdn.sanity.io/images/8ksun996/production/5736fef4e970e07e388db618ec9445ee8daefa1b-2764x4096.png", 460)}
-									srcset={sanitySrcset("https://cdn.sanity.io/images/8ksun996/production/5736fef4e970e07e388db618ec9445ee8daefa1b-2764x4096.png", 460)}
-									sizes="(min-width: 900px) 460px, 320px"
-									width="460"
-									height="690"
-									alt="Trixie the Trickster"
-									class="hero-character"
-									loading="lazy"
-								/>
-								<div class="character-ground-vignette"></div>
-								<div class="character-nameplate">
-									<div class="nameplate-name">Trixie the Trickster</div>
-									<div class="nameplate-role">The Artist</div>
-								</div>
-								<div class="character-tagline">"I don't make mistakes. I make unexpectedly vivid decisions."</div>
-							</div>
-						</div>
-
-						<button class="carousel-arrow carousel-prev" id="carouselPrev" aria-label="Previous character">&#8592;</button>
-						<button class="carousel-arrow carousel-next" id="carouselNext" aria-label="Next character">&#8594;</button>
-
-						<div class="carousel-dots" id="carouselDots">
-							<button class="carousel-dot active" data-dot="0" aria-label="Slide 1"></button>
-							<button class="carousel-dot" data-dot="1" aria-label="Slide 2"></button>
-							<button class="carousel-dot" data-dot="2" aria-label="Slide 3"></button>
-							<button class="carousel-dot" data-dot="3" aria-label="Slide 4"></button>
-							<button class="carousel-dot" data-dot="4" aria-label="Slide 5"></button>
-							<button class="carousel-dot" data-dot="5" aria-label="Slide 6"></button>
-							<button type="button" class="carousel-pause" id="carouselPause" aria-pressed="false">Pause</button>
-						</div>
-					</div>
-				</div>
-
-				<div class="hero-text-col fade-right hero-anim-immediate">
+				<div class="hero-text-col fade-left hero-anim-immediate">
 					{seriesLive && <div class="eyebrow">Now Streaming</div>}
 					<h1 class="main-title">The Wildest Alley Cats<br>You'll Ever Meet</h1>
 					<p class="hero-positioning">{positioningLine}</p>
@@ -273,8 +152,49 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 					</div>
 				</div>
 			</div>
+		</section>
 
-			<div class="hero-bottom-fade"></div>
+		<section class="crew-band" aria-labelledby="crewBandTitle">
+			<div class="container">
+				<div class="crew-band-head">
+					<div>
+						<p class="crew-band-eyebrow">The Core Six</p>
+						<h2 id="crewBandTitle" class="crew-band-title">Meet the Crew</h2>
+					</div>
+					<div class="crew-controls">
+						<button type="button" class="carousel-arrow" id="carouselPrev" aria-label="Previous character">&#8592;</button>
+						<button type="button" class="carousel-arrow" id="carouselNext" aria-label="Next character">&#8594;</button>
+						<button type="button" class="carousel-pause" id="carouselPause" aria-pressed="false">Pause</button>
+					</div>
+				</div>
+
+				<div class="crew-viewport" id="heroCarousel">
+					<ul class="crew-track">
+						{CREW.map((c) => (
+							<li class="crew-slide">
+								<a href={`/the-alley-squad#${c.slug}`} class="crew-card">
+									<img
+										src={sanityImg(c.img, 400, { h: 600 })}
+										srcset={[280, 400, 600, 800].map((w) => `${sanityImg(c.img, w, { h: w * 1.5 })} ${w}w`).join(', ')}
+										sizes="(min-width: 1100px) 290px, (min-width: 768px) 32vw, (min-width: 560px) 46vw, 88vw"
+										width="400"
+										height="600"
+										alt=""
+										class="crew-card-img"
+										loading="lazy"
+									/>
+									<div class="crew-card-shade" aria-hidden="true"></div>
+									<p class="crew-card-quote">"{c.quote}"</p>
+									<div class="crew-card-plate">
+										<span class="crew-card-name">{c.name}</span>
+										<span class="crew-card-role">{c.role}</span>
+									</div>
+								</a>
+							</li>
+						))}
+					</ul>
+				</div>
+			</div>
 		</section>
 
 		
@@ -616,19 +536,19 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 	.hero-anim-immediate {
 		animation-fill-mode: both;
 	}
-	.hero-image-col.fade-left.hero-anim-immediate {
-		animation: heroSlideLeft 0.9s cubic-bezier(0.22,1,0.36,1) 0.1s both;
-	}
-	.hero-text-col.fade-right.hero-anim-immediate {
-		animation: heroSlideRight 0.9s cubic-bezier(0.22,1,0.36,1) 0.25s both;
+	.hero-text-col.fade-left.hero-anim-immediate {
+		animation: heroSlideLeft 0.9s cubic-bezier(0.22,1,0.36,1) 0.15s both;
 	}
 	@keyframes heroSlideLeft {
 		from { opacity: 0; transform: translateX(-48px); }
 		to   { opacity: 1; transform: translateX(0); }
 	}
-	@keyframes heroSlideRight {
-		from { opacity: 0; transform: translateX(48px); }
-		to   { opacity: 1; transform: translateX(0); }
+
+	/* Reduced motion: no slides and no entrance slide-in. */
+	@media (prefers-reduced-motion: reduce) {
+		.crew-track, .crew-card { transition: none; }
+		.hero-anim-immediate,
+		.hero-text-col.fade-left.hero-anim-immediate { animation: none; opacity: 1; transform: none; }
 	}
 
 	.universe-section {
@@ -793,7 +713,6 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 	}
 
 	.hero {
-		min-height: 100vh;
 		position: relative;
 		display: flex;
 		align-items: center;
@@ -863,227 +782,6 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 		align-items: flex-end;
 	}
 
-	.hero-image-col {
-		position: relative;
-		display: flex;
-		justify-content: center;
-	}
-
-	/* ── CAROUSEL ── */
-	.character-carousel {
-		position: relative;
-		width: 100%;
-		display: flex;
-		justify-content: center;
-	}
-
-	.carousel-slide {
-		position: absolute;
-		top: 0;
-		left: 0;
-		width: 100%;
-		opacity: 0;
-		transition: opacity 0.5s ease;
-		pointer-events: none;
-	}
-
-	.carousel-slide.active {
-		position: relative;
-		opacity: 1;
-		pointer-events: auto;
-	}
-
-	/* The frame is exactly as wide as the character image, so the quote, name and role
-	   (all absolutely positioned inside it) stay within the character's box. */
-	.character-frame {
-		position: relative;
-		display: flex;
-		flex-direction: column;
-		align-items: center;
-		width: 100%;
-		max-width: 460px;
-		margin: 0 auto;
-	}
-
-	.hero-character {
-		position: relative;
-		z-index: 2;
-		width: 100%;
-		max-width: 460px;
-		height: auto;
-		object-fit: contain;
-		filter:
-			drop-shadow(0 0 20px rgba(255, 0, 255, 0.3))
-			drop-shadow(0 0 50px rgba(255, 0, 255, 0.12))
-			drop-shadow(0 20px 40px rgba(0, 0, 0, 0.9));
-	}
-
-	.hero-character-svg {
-		width: 100%;
-		max-width: 460px;
-		aspect-ratio: 0.8;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		filter: none;
-	}
-
-	.char-svg {
-		width: 70%;
-		height: 70%;
-		opacity: 0.85;
-	}
-
-	.character-ground-vignette {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		height: 45%;
-		background: linear-gradient(
-			to top,
-			#181b22 0%,
-			rgba(24, 27, 34, 0.85) 25%,
-			rgba(24, 27, 34, 0.4) 55%,
-			transparent 100%
-		);
-		z-index: 3;
-		pointer-events: none;
-	}
-
-	.character-nameplate {
-		position: absolute;
-		bottom: 90px;
-		left: 12px;
-		right: 12px;
-		z-index: 4;
-		text-align: center;
-		overflow-wrap: anywhere;
-	}
-
-	.nameplate-name {
-		font-family: 'Bebas Neue', 'Impact', sans-serif;
-		font-size: clamp(2rem, 4vw, 3.2rem);
-		letter-spacing: 4px;
-		color: #fff;
-		text-shadow:
-			0 0 20px rgba(255, 0, 255, 0.7),
-			0 0 40px rgba(255, 0, 255, 0.3),
-			2px 2px 0 rgba(0, 0, 0, 0.9),
-			-1px -1px 0 rgba(0, 0, 0, 0.9);
-		line-height: 1;
-		text-transform: uppercase;
-	}
-
-	.nameplate-role {
-		display: inline-block;
-		margin-top: 8px;
-		padding: 4px 16px;
-		background: rgba(255, 0, 255, 0.15);
-		border: 1px solid rgba(255, 0, 255, 0.5);
-		border-radius: 3px;
-		font-family: 'Inter', sans-serif;
-		font-size: 0.75rem;
-		font-weight: 700;
-		letter-spacing: 3px;
-		text-transform: uppercase;
-		color: #ff00ff;
-		text-shadow: 0 0 10px rgba(255, 0, 255, 0.5);
-	}
-
-	.character-tagline {
-		position: absolute;
-		top: 30px;
-		left: 18px;
-		right: 18px;
-		z-index: 4;
-		font-family: 'Inter', sans-serif;
-		font-size: 0.82rem;
-		font-style: italic;
-		color: #ff00ff;
-		text-align: center;
-		line-height: 1.6;
-		letter-spacing: 0.3px;
-		text-shadow: 0 0 12px rgba(255, 0, 255, 0.4), 0 1px 4px rgba(0, 0, 0, 0.9);
-	}
-
-	/* ── CAROUSEL CONTROLS ── */
-	.carousel-arrow {
-		position: absolute;
-		top: 50%;
-		transform: translateY(-50%);
-		z-index: 10;
-		background: rgba(255, 0, 255, 0.1);
-		border: 1px solid rgba(255, 0, 255, 0.35);
-		color: #ff00ff;
-		width: 36px;
-		height: 36px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		font-size: 1.1rem;
-		cursor: pointer;
-		transition: background 0.2s ease, box-shadow 0.2s ease;
-		border-radius: 3px;
-	}
-
-	.carousel-arrow:hover {
-		background: rgba(255, 0, 255, 0.22);
-		box-shadow: 0 0 12px rgba(255, 0, 255, 0.35);
-	}
-
-	.carousel-prev { left: 0; }
-	.carousel-next { right: 0; }
-
-	.carousel-dots {
-		position: absolute;
-		bottom: 60px;
-		left: 0;
-		right: 0;
-		z-index: 10;
-		display: flex;
-		justify-content: center;
-		gap: 8px;
-	}
-
-	.carousel-pause {
-		margin-left: 10px;
-		background: none;
-		border: 1px solid rgba(255, 255, 255, 0.3);
-		border-radius: 999px;
-		color: rgba(255, 255, 255, 0.75);
-		font: inherit;
-		font-size: 0.7rem;
-		letter-spacing: 0.08em;
-		text-transform: uppercase;
-		padding: 2px 10px;
-		cursor: pointer;
-	}
-
-	/* Reduced motion: no slide fades and no entrance slide-ins. */
-	@media (prefers-reduced-motion: reduce) {
-		.carousel-slide, .carousel-dot { transition: none; }
-		.hero-anim-immediate,
-		.hero-image-col.fade-left.hero-anim-immediate,
-		.hero-text-col.fade-right.hero-anim-immediate { animation: none; opacity: 1; transform: none; }
-	}
-
-	.carousel-dot {
-		width: 8px;
-		height: 8px;
-		border-radius: 50%;
-		background: rgba(255, 0, 255, 0.25);
-		border: 1px solid rgba(255, 0, 255, 0.4);
-		cursor: pointer;
-		padding: 0;
-		transition: background 0.2s ease, transform 0.2s ease;
-	}
-
-	.carousel-dot.active {
-		background: #ff00ff;
-		transform: scale(1.25);
-		box-shadow: 0 0 6px rgba(255, 0, 255, 0.6);
-	}
 
 	.hero-text-col {
 		display: flex;
@@ -1230,16 +928,6 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 		background: rgba(255, 255, 255, 0.12);
 	}
 
-	.hero-bottom-fade {
-		position: absolute;
-		bottom: 0;
-		left: 0;
-		right: 0;
-		height: 120px;
-		background: linear-gradient(to top, #181b22 0%, transparent 100%);
-		z-index: 3;
-		pointer-events: none;
-	}
 
 	.description {
 		font-size: 1.1rem;
@@ -2133,51 +1821,7 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 	}
 
 	@media (max-width: 900px) {
-		.hero-split {
-			grid-template-columns: 1fr;
-			align-items: center;
-			gap: 0;
-		}
-
-		.hero-image-col {
-			order: 1;
-		}
-
-		.hero-text-col {
-			order: 2;
-			padding-bottom: 0;
-			padding-top: 16px;
-		}
-
-		.hero-character {
-			max-width: 320px;
-			margin: 0 auto;
-		}
-
-		.hero-character-svg {
-			max-width: 320px;
-		}
-
-		.character-frame {
-			max-width: 320px;
-		}
-
-		.character-nameplate {
-			bottom: 60px;
-		}
-
-		.character-tagline {
-			top: 16px;
-			left: 12px;
-			right: 12px;
-			font-size: 0.74rem;
-			line-height: 1.5;
-		}
-
-		/* dots and Pause sit below the name and role rather than across them */
-		.carousel-dots {
-			bottom: 20px;
-		}
+		.hero-text-col { padding-bottom: 0; }
 	}
 
 	@media (max-width: 968px) {
@@ -2207,11 +1851,6 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 	}
 
 	@media (max-width: 768px) {
-		.hero {
-			padding-top: 110px;
-			padding-bottom: 40px;
-		}
-
 		.hero-ctas {
 			flex-direction: column;
 		}
@@ -2239,6 +1878,203 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 			width: 100%;
 		}
 	}
+	/* ── HERO: copy on the left, the scene on the right ──
+	   Wide screens: the scene box is 64% wide and keeps the art's 3:2 shape (the
+	   section height follows the width), so nothing is cropped. Below 1025px the
+	   scene fills the hero behind a shade; on phones it sits in a band above the copy. */
+	.hero-scene {
+		position: absolute;
+		top: var(--nav-h, 108px);
+		right: 0;
+		width: 64%;
+		height: calc(100% - var(--nav-h, 108px));
+		object-fit: cover;
+		object-position: 50% 45%;
+		z-index: 0;
+		-webkit-mask-image: linear-gradient(90deg, transparent 0%, #000 22%);
+		mask-image: linear-gradient(90deg, transparent 0%, #000 22%);
+	}
+	.hero-shade {
+		position: absolute;
+		inset: 0;
+		z-index: 1;
+		pointer-events: none;
+		background:
+			linear-gradient(90deg, rgba(14,15,20,0.92) 0%, rgba(14,15,20,0.6) 30%, rgba(14,15,20,0.05) 50%, transparent 100%),
+			linear-gradient(0deg, #181b22 0%, rgba(24,27,34,0) 22%);
+	}
+	.hero .hero-split { width: 100%; grid-template-columns: minmax(0, 600px); }
+
+	@media (min-width: 1025px) {
+		.hero {
+			min-height: calc(var(--nav-h, 108px) + min(42.7vw, 780px));
+			padding-top: calc(var(--nav-h, 108px) + 30px);
+			padding-bottom: 40px;
+		}
+	}
+	@media (max-width: 1024px) {
+		.hero-scene { width: 100%; -webkit-mask-image: none; mask-image: none; }
+		.hero-shade {
+			background:
+				linear-gradient(90deg, rgba(14,15,20,0.9) 0%, rgba(14,15,20,0.55) 55%, rgba(14,15,20,0.25) 100%),
+				linear-gradient(0deg, #181b22 0%, rgba(24,27,34,0) 30%);
+		}
+		.hero { min-height: min(86vh, 760px); }
+	}
+	@media (max-width: 768px) {
+		.hero { display: block; min-height: 0; padding: var(--nav-h, 84px) 0 36px; }
+		.hero-scene { position: relative; top: 0; width: 100%; height: auto; aspect-ratio: 3 / 2; display: block; }
+		.hero-shade { top: var(--nav-h, 84px); bottom: auto; aspect-ratio: 3 / 2; background: linear-gradient(0deg, #181b22 0%, transparent 30%); }
+		.hero .hero-split { padding-top: 8px; }
+	}
+
+	/* ── MEET THE CREW band ── */
+	.crew-band {
+		position: relative;
+		background: #181b22;
+		padding: 36px 0 64px;
+	}
+	.crew-band-head {
+		display: flex;
+		align-items: flex-end;
+		justify-content: space-between;
+		gap: 16px;
+		margin-bottom: 22px;
+	}
+	.crew-band-eyebrow {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: 0.85rem;
+		letter-spacing: 5px;
+		color: #ff00ff;
+		text-transform: uppercase;
+		margin-bottom: 6px;
+		opacity: 0.9;
+	}
+	.crew-band-title {
+		font-family: 'Bebas Neue', sans-serif;
+		font-size: clamp(2.2rem, 4vw, 3.2rem);
+		letter-spacing: 3px;
+		line-height: 1;
+		color: #fff;
+		text-shadow: 3px 3px 0 rgba(255,0,255,0.3), 0 0 40px rgba(255,0,255,0.15);
+	}
+	.crew-controls { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
+	.carousel-arrow {
+		background: rgba(255, 0, 255, 0.1);
+		border: 1px solid rgba(255, 0, 255, 0.35);
+		color: #ff00ff;
+		width: 40px;
+		height: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		font-size: 1.1rem;
+		cursor: pointer;
+		border-radius: 3px;
+		transition: background 0.2s ease, box-shadow 0.2s ease;
+	}
+	.carousel-arrow:hover { background: rgba(255, 0, 255, 0.22); box-shadow: 0 0 12px rgba(255, 0, 255, 0.35); }
+	.carousel-pause {
+		margin-left: 6px;
+		background: none;
+		border: 1px solid rgba(255, 255, 255, 0.3);
+		border-radius: 999px;
+		color: rgba(255, 255, 255, 0.75);
+		font: inherit;
+		font-size: 0.7rem;
+		letter-spacing: 0.08em;
+		text-transform: uppercase;
+		padding: 4px 12px;
+		cursor: pointer;
+	}
+	.crew-viewport { overflow: hidden; }
+	.crew-track {
+		--per: 4;
+		--gap: 20px;
+		display: flex;
+		gap: var(--gap);
+		list-style: none;
+		margin: 0;
+		padding: 0;
+		transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+	}
+	.crew-slide { flex: 0 0 calc((100% - (var(--per) - 1) * var(--gap)) / var(--per)); min-width: 0; }
+	.crew-card {
+		position: relative;
+		display: block;
+		aspect-ratio: 2 / 3;
+		border-radius: 10px;
+		overflow: hidden;
+		border: 1px solid rgba(255, 0, 255, 0.18);
+		background: #12141a;
+		text-decoration: none;
+		transition: border-color 0.25s ease, box-shadow 0.25s ease, transform 0.25s ease;
+	}
+	.crew-card:hover, .crew-card:focus-visible {
+		border-color: rgba(255, 0, 255, 0.6);
+		box-shadow: 0 0 24px rgba(255, 0, 255, 0.25);
+		transform: translateY(-3px);
+	}
+	.crew-card-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 50% 20%; }
+	.crew-card-shade {
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(180deg, rgba(14,15,20,0.85) 0%, rgba(14,15,20,0) 30%),
+			linear-gradient(0deg, rgba(14,15,20,0.95) 0%, rgba(14,15,20,0.5) 26%, rgba(14,15,20,0) 48%);
+	}
+	.crew-card-quote {
+		position: absolute;
+		top: 14px;
+		left: 14px;
+		right: 14px;
+		font-size: 0.8rem;
+		font-style: italic;
+		line-height: 1.5;
+		color: #ff00ff;
+		text-align: center;
+		text-shadow: 0 0 12px rgba(255, 0, 255, 0.4), 0 1px 4px rgba(0, 0, 0, 0.9);
+	}
+	.crew-card-plate {
+		position: absolute;
+		left: 12px;
+		right: 12px;
+		bottom: 16px;
+		text-align: center;
+		display: flex;
+		flex-direction: column;
+		align-items: center;
+		gap: 8px;
+	}
+	.crew-card-name {
+		font-family: 'Bebas Neue', 'Impact', sans-serif;
+		font-size: clamp(1.6rem, 2.2vw, 2.1rem);
+		letter-spacing: 3px;
+		line-height: 1;
+		color: #fff;
+		text-transform: uppercase;
+		text-shadow: 0 0 20px rgba(255, 0, 255, 0.7), 2px 2px 0 rgba(0, 0, 0, 0.9);
+	}
+	.crew-card-role {
+		padding: 3px 12px;
+		background: rgba(255, 0, 255, 0.15);
+		border: 1px solid rgba(255, 0, 255, 0.5);
+		border-radius: 3px;
+		font-size: 0.68rem;
+		font-weight: 700;
+		letter-spacing: 3px;
+		text-transform: uppercase;
+		color: #ff00ff;
+	}
+	@media (max-width: 1099px) { .crew-track { --per: 3; } }
+	@media (max-width: 767px) { .crew-track { --per: 2; --gap: 14px; } }
+	@media (max-width: 768px) { .crew-band { padding-top: 8px; } }
+	@media (max-width: 559px) {
+		.crew-track { --per: 1; }
+		.crew-slide { flex-basis: 86%; }
+		.crew-band-head { flex-wrap: wrap; }
+	}
+
 </style>
 
 <script>
@@ -2289,35 +2125,49 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 	if (btn) btn.disabled = false;
 
 	(function() {
-		const carousel = document.getElementById('heroCarousel');
-		if (!carousel) return;
-
-		const slides = carousel.querySelectorAll('.carousel-slide');
-		const dots = carousel.querySelectorAll('.carousel-dot');
+		// "Meet the crew": a track of six cards showing 4 / 3 / 2 / 1 at a time.
+		// Arrows and auto-advance step one card; it wraps from the end back to the start.
+		const viewport = document.getElementById('heroCarousel');
+		if (!viewport) return;
+		const track = viewport.querySelector<HTMLElement>('.crew-track')!;
+		const slides = Array.from(track.querySelectorAll<HTMLElement>('.crew-slide'));
 		const prevBtn = document.getElementById('carouselPrev');
 		const nextBtn = document.getElementById('carouselNext');
+		const pauseBtn = document.getElementById('carouselPause');
 		let current = 0;
 		let timer: ReturnType<typeof setInterval> | undefined;
 		// Stopped by the Pause button, or from the start under reduced motion;
 		// hover and focus pause it only while they last.
 		let stopped = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 		let held = false;
-		const pauseBtn = document.getElementById('carouselPause');
 
-		function goTo(index: number) {
-			slides[current].classList.remove('active');
-			dots[current].classList.remove('active');
-			current = (index + slides.length) % slides.length;
-			slides[current].classList.add('active');
-			dots[current].classList.add('active');
+		// Card positions relative to the first card (offsetLeft is measured from
+		// the nearest positioned ancestor, not the track).
+		const pos = (i: number) => slides[i].offsetLeft - slides[0].offsetLeft;
+		function lastStart() {
+			const vw = viewport!.clientWidth;
+			const end = pos(slides.length - 1) + slides[slides.length - 1].offsetWidth;
+			// the furthest first card that still fills the viewport
+			for (let i = 0; i < slides.length; i++) {
+				if (end - pos(i) <= vw + 2) return i;
+			}
+			return slides.length - 1;
 		}
-
+		function goTo(index: number) {
+			const max = lastStart();
+			current = index > max ? 0 : index < 0 ? max : index;
+			track.style.transform = `translateX(${-pos(current)}px)`;
+			slides.forEach((s, i) => {
+				const visible = i >= current && pos(i) - pos(current) < viewport!.clientWidth - 2;
+				s.toggleAttribute('inert', !visible);
+				s.setAttribute('aria-hidden', String(!visible));
+			});
+		}
 		function startTimer() {
 			clearInterval(timer);
 			if (stopped) return;
 			timer = setInterval(() => { if (!held) goTo(current + 1); }, 4000);
 		}
-
 		function paintPause() {
 			if (!pauseBtn) return;
 			pauseBtn.textContent = stopped ? 'Play' : 'Pause';
@@ -2325,28 +2175,28 @@ const anyBookPending = books.some((b) => !b.buyUrl);
 			pauseBtn.setAttribute('aria-label', stopped ? 'Start the character slideshow' : 'Stop the character slideshow');
 		}
 		pauseBtn?.addEventListener('click', () => { stopped = !stopped; paintPause(); startTimer(); });
-		carousel.addEventListener('mouseenter', () => { held = true; });
-		carousel.addEventListener('mouseleave', () => { held = false; });
-		carousel.addEventListener('focusin', () => { held = true; });
-		carousel.addEventListener('focusout', () => { held = false; });
-		paintPause();
+		viewport.addEventListener('mouseenter', () => { held = true; });
+		viewport.addEventListener('mouseleave', () => { held = false; });
+		viewport.addEventListener('focusin', () => { held = true; });
+		viewport.addEventListener('focusout', () => { held = false; });
+		prevBtn?.addEventListener('click', () => { goTo(current - 1); startTimer(); });
+		nextBtn?.addEventListener('click', () => { goTo(current + 1); startTimer(); });
 
-		function resetTimer() {
-			clearInterval(timer);
-			startTimer();
-		}
-
-		prevBtn?.addEventListener('click', () => { goTo(current - 1); resetTimer(); });
-		nextBtn?.addEventListener('click', () => { goTo(current + 1); resetTimer(); });
-
-		dots.forEach((dot) => {
-			dot.addEventListener('click', () => {
-				const idx = parseInt((dot as HTMLElement).dataset.dot || '0', 10);
-				goTo(idx);
-				resetTimer();
-			});
+		// Touch: swipe left or right to step.
+		let x0: number | null = null;
+		viewport.addEventListener('touchstart', (e) => { x0 = e.touches[0].clientX; held = true; }, { passive: true });
+		viewport.addEventListener('touchend', (e) => {
+			held = false;
+			if (x0 === null) return;
+			const dx = e.changedTouches[0].clientX - x0;
+			x0 = null;
+			if (Math.abs(dx) > 40) { goTo(current + (dx < 0 ? 1 : -1)); startTimer(); }
 		});
+		let rt: ReturnType<typeof setTimeout> | undefined;
+		window.addEventListener('resize', () => { clearTimeout(rt); rt = setTimeout(() => goTo(Math.min(current, lastStart())), 150); });
 
+		paintPause();
+		goTo(0);
 		startTimer();
 	})();
 
