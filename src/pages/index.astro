@@ -71,8 +71,8 @@ const books = (await getAllBooks()).map((b: any) => ({
 const anyBookPending = books.some((b) => !b.buyUrl);
 
 // The core six, shown in the "Meet the crew" band under the hero. Each card
-// links to that character on the Alley Squad page. Trixie's portrait has a lot
-// of empty space round her, so a CDN crop (rect) brings her up to the others' scale.
+// links to that character on the Alley Squad page. Under-filled portraits are
+// cropped tighter centrally (src/lib/characterFraming.ts).
 const SAN = 'https://cdn.sanity.io/images/8ksun996/production/';
 const CREW = [
 	{ slug: 'toothless-terry', name: 'Toothless Terry', role: 'The Scheme Engine', img: SAN + '6ea82b36b644f6617cc75e5730861caa10b58d80-1360x2048.png', quote: "Here's the thing about problems, pal — a problem is just a deal that hasn't been structured yet." },
@@ -80,7 +80,7 @@ const CREW = [
 	{ slug: 'luna-the-loner', name: 'Luna the Loner', role: 'The Ghost', img: SAN + '22e9051a629e1a028cadc5cea55e61cab8d63a09-2764x4096.png', quote: "I don't have opinions about your plan. I have information." },
 	{ slug: 'chubby-cheeks', name: 'Chubby Cheeks', role: 'The Scaredy Cat', img: SAN + '60f12117d6eca0a848c6f81020cb8f1b6e3388c0-2764x4096.png', quote: "I'm not scared. I'm standing behind you in case you need someone standing behind you." },
 	{ slug: 'gizmo-the-genius', name: 'Gizmo the Genius', role: 'The Inventor', img: SAN + '9546e700688a66a42947b6b79a16e78b00f02e86-2764x4096.png', quote: "Now, the beautiful thing about this is — oh, that's interesting. Actually, everyone move." },
-	{ slug: 'trixie-the-trickster', name: 'Trixie the Trickster', role: 'The Artist', img: SAN + '5736fef4e970e07e388db618ec9445ee8daefa1b-2764x4096.png?rect=216,692,2160,3240', quote: "I don't make mistakes. I make unexpectedly vivid decisions." },
+	{ slug: 'trixie-the-trickster', name: 'Trixie the Trickster', role: 'The Artist', img: SAN + '5736fef4e970e07e388db618ec9445ee8daefa1b-2764x4096.png', quote: "I don't make mistakes. I make unexpectedly vivid decisions." },
 ];
 ---
 
