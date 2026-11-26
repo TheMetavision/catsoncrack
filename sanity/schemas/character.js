@@ -108,6 +108,31 @@ export default defineType({
       description: 'COC: per-character hex colour e.g. "#ff8c00"',
     }),
     defineField({
+      name: 'voices',
+      title: 'Voice (canon)',
+      type: 'array',
+      description:
+        'The locked voice master for this character: the WAV is the source of truth for every animation, trailer and game line. One slot per speaking voice (a group like the Rat Pack has one slot per member). Production reference only: not shown on the site.',
+      of: [
+        {
+          type: 'object',
+          name: 'voiceSlot',
+          title: 'Voice slot',
+          fields: [
+            defineField({ name: 'label', title: 'Label', type: 'string', description: 'Usually "Main". For a group, the member name (e.g. "Sal").' }),
+            defineField({ name: 'audio', title: 'Voice master (WAV)', type: 'file', options: { accept: 'audio/*' } }),
+            defineField({ name: 'direction', title: 'Voice direction', type: 'text', rows: 3, description: 'How they sound, in plain words (accent, archetype, delivery).' }),
+            defineField({ name: 'voiceDesignPrompt', title: 'ElevenLabs Voice Design prompt', type: 'text', rows: 4 }),
+            defineField({ name: 'referenceRead', title: 'Reference read (the line spoken in the master)', type: 'text', rows: 4 }),
+            defineField({ name: 'processing', title: 'Processing', type: 'string', description: 'Pitch/formant shift and mastering applied to the take.' }),
+            defineField({ name: 'source', title: 'Source take', type: 'string', description: 'Which generation/take the master came from (file name in Documents\\<brand>\\Voices).' }),
+            defineField({ name: 'lockedAt', title: 'Locked on', type: 'date' }),
+          ],
+          preview: { select: { title: 'label', subtitle: 'direction' } },
+        },
+      ],
+    }),
+    defineField({
       name: 'displayOrder',
       type: 'number',
       description: 'Controls sort order on characters page and carousels',
