@@ -1,3 +1,4 @@
+import { CHARACTER_FRAMING } from './characterFraming';
 // Builds sized, auto-format Sanity CDN URLs. Non-Sanity URLs pass through untouched.
 const WIDTHS = [320, 480, 640, 800, 1024, 1280, 1600, 1920, 2400];
 
@@ -17,6 +18,10 @@ export function sanityImg(
 ): string {
   if (!url || !url.includes('cdn.sanity.io/images/')) return url ?? '';
   const u = new URL(url);
+  // Under-filled character portraits get a tighter crop (see characterFraming.ts).
+  const assetId = u.pathname.split('/').pop()?.split('-')[0];
+  const rect = assetId ? CHARACTER_FRAMING[assetId] : undefined;
+  if (rect && !u.searchParams.has('rect')) u.searchParams.set('rect', rect);
   u.searchParams.set('w', String(Math.round(w)));
   if (opts.h) u.searchParams.set('h', String(Math.round(opts.h)));
   u.searchParams.set('auto', 'format');
