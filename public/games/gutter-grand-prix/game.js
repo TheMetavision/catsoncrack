@@ -1225,7 +1225,7 @@ function toast(msg) { const el = $('toast'); el.textContent = msg; el.classList.
 let shoutT = 0;
 /* character voices (from the voice programme): <id>_<kind>[1|2].mp3 in audio/voice/.
    Only racers listed here have lines; anyone else just shows the text shout. */
-const VOICED = { scratchy: 1, sassy: 1, terry: 1, whiskers: 1, oldman: 1, chubby: 1, rita: 1, ratpack: 1, duke: 1, king: 1 };   // Captain Claw: text only (ElevenLabs flagged his clone for verification)
+const VOICED = { scratchy: 1, sassy: 1, terry: 1, whiskers: 1, oldman: 1, chubby: 1, rita: 1, ratpack: 1, duke: 1, king: 1, claw: 1 };
 const VO_VARIANTS = { hit: 2, item: 2, pass: 2, start: 0, win: 0 };
 let voBusyUntil = 0;
 function voice(id, kind, force) {
