@@ -1,4 +1,5 @@
 import { defineType, defineField } from 'sanity'
+import { proportionsField } from './canon';
 import { UserIcon } from '@sanity/icons'
 import { referenceFieldset, referenceGalleryField } from './galleryImage'
 
@@ -107,6 +108,7 @@ export default defineType({
       type: 'string',
       description: 'COC: per-character hex colour e.g. "#ff8c00"',
     }),
+    proportionsField,
     defineField({
       name: 'voices',
       title: 'Voice (canon)',

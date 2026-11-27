@@ -20,6 +20,9 @@ export default defineConfig({
                   .schemaType('siteSettings')
                   .documentId('siteSettings')
               ),
+            S.listItem()
+              .title('Brand Canon (consistency)')
+              .child(S.document().schemaType('brandCanon').documentId('brandCanon')),
             S.divider(),
             S.documentTypeListItem('worldLocation').title('World Locations'),
             S.divider(),
