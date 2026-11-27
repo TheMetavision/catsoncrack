@@ -1,4 +1,5 @@
 import character from './character';
+import { brandCanon } from './canon';
 import product from './product';
 import printfulVariant from './printfulVariant';
 import blogPost from './blogPost';
@@ -17,6 +18,7 @@ import galleryImage from './galleryImage';
 import game from './game';
 
 export const schemaTypes = [
+  brandCanon,
   siteSettings,
   worldLocation,
   character,
